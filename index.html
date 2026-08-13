@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hidden Gems Discoverer | மறைந்த சுற்றுலா தலங்கள்</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/openlocationcode@1.0.3/openlocationcode.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --card:#1c2331; --border:#2d3648;
+  --text:#e6edf3; --muted:#8b98a9; --accent:#2f81f7; --chip:#21262d;
+  --star:#facc15;
+  --trek:#f0883e; --water:#38bdf8; --view:#a78bfa; --temple:#f472b6; --dam:#facc15;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,Tahoma,Arial,sans-serif}
+header{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:1.25rem;line-height:1.35}
+header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
+.lang{display:flex;gap:6px;margin-left:auto}
+.lang button{background:var(--chip);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer}
+.lang button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;padding:12px 20px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:1000;border-bottom:1px solid var(--border)}
+.searchbox{display:flex;flex:1;min-width:260px}
+.searchbox input{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px 0 0 8px;padding:9px 12px;outline:none}
+.searchbox button{background:var(--accent);border:none;color:#fff;padding:9px 14px;cursor:pointer;border-radius:0 8px 8px 0;font-weight:600}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--chip);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:20px;cursor:pointer;font-size:.85rem}
+.chip.active{border-color:var(--accent);color:var(--accent);background:rgba(47,129,247,.12)}
+.main{display:grid;grid-template-columns:440px 1fr;gap:0;height:calc(100vh - 120px)}
+#list{background:var(--panel);overflow-y:auto;border-right:1px solid var(--border);padding:12px}
+.listhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.listhead .count{color:var(--muted);font-size:.85rem}
+.addbtn{background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+.addbtn:hover{filter:brightness(1.15)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--accent)}
+.card .cat{font-size:.72rem;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:12px;display:inline-block;margin-bottom:6px}
+.card h3{font-size:1rem;margin-bottom:2px}
+.card .desc{color:var(--muted);font-size:.85rem;margin:6px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .meta{color:var(--muted);font-size:.8rem;display:flex;flex-wrap:wrap;gap:8px}
+.card .meta span{background:var(--chip);padding:2px 8px;border-radius:8px}
+.rate{display:flex;align-items:center;gap:8px;margin-top:9px}
+.stars{display:flex;gap:2px}
+.stars .st{background:none;border:none;color:#3d4c5f;font-size:1.15rem;cursor:pointer;line-height:1;padding:0 2px}
+.stars .st.on{color:var(--star)}
+.rlbl{font-size:.75rem;color:var(--muted)}
+.cbtn{margin-top:9px;background:var(--chip);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:.78rem;font-weight:600}
+.cbtn:hover{border-color:var(--accent)}
+.edit{margin-top:9px;margin-right:6px;background:var(--chip);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:.78rem;font-weight:600}
+.edit:hover{border-color:var(--accent)}
+.stars.big .st{font-size:1.6rem;padding:0 4px}
+.citem{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
+.citem .chead{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--muted)}
+.citem .cstars{color:var(--star);font-size:.8rem;letter-spacing:1px}
+.citem .ctext{font-size:.85rem;margin-top:5px;line-height:1.45}
+.citem .cwho{color:var(--accent);font-weight:700}
+.citem.mine{border-color:var(--accent)}
+#map{height:100%;min-height:380px;background:#0a0f16}
+.leaflet-container{height:100%}
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.leaflet-popup-tip{background:var(--card)}
+.leaflet-popup-content{margin:12px 14px}
+.pop h3{margin-bottom:4px}
+.pop .desc{color:var(--muted);font-size:.85rem}
+.pop .row{color:var(--muted);font-size:.8rem;margin-top:6px}
+.pop .link{display:inline-block;margin-top:8px;background:var(--accent);color:#fff;padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.8rem}
+.badge{position:absolute;top:10px;left:50px;z-index:900;background:rgba(13,17,23,.8);border:1px solid var(--border);padding:6px 12px;border-radius:8px;font-size:.8rem;color:var(--muted);pointer-events:none}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center}
+.modal.show{display:flex;align-items:center;justify-content:center}
+.modalbox{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;width:min(560px,94vw);max-height:92vh;overflow-y:auto}
+.modalbox h2{margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field label{font-size:.85rem;color:var(--muted)}
+.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;outline:none;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.actions button{border:none;border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:600}
+.primary{background:var(--accent);color:#fff}
+.ghost{background:var(--chip);color:var(--text)}
+.minimap{height:220px;width:100%;border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
+.hint{color:var(--muted);font-size:.78rem}
+.mode{position:absolute;top:10px;left:50px;z-index:900;font-size:.72rem;color:var(--muted);background:rgba(13,17,23,.8);border:1px solid var(--border);padding:6px 12px;border-radius:8px;pointer-events:none;display:none}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--accent);padding:11px 18px;border-radius:10px;z-index:3000;transition:transform .3s;opacity:0;font-size:.9rem}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media(max-width:900px){.main{grid-template-columns:1fr;height:auto}#list{order:2;border-right:none;border-top:1px solid var(--border)}#map{height:55vh}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="t-title">Hidden Gems – மறைந்த சுற்றுலா தலங்கள்</h1>
+    <div class="sub" id="t-sub">Discover offbeat trekking, waterfalls, viewpoints, temples &amp; dams</div>
+  </div>
+  <div class="lang">
+    <button id="btn-en" class="active">English</button>
+    <button id="btn-ta">தமிழ்</button>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="searchbox">
+    <input id="search" type="text" placeholder="Search place name or location…" autocomplete="off">
+    <button id="btn-search">Search</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="main">
+  <aside id="list">
+    <div class="listhead">
+      <div>
+        <h3 id="t-places">Places</h3>
+        <div class="count" id="t-total">0 places</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="addbtn" id="btn-export" title="Export">⇧</button>
+        <button class="addbtn" id="btn-import" title="Import">⇩</button>
+        <button class="addbtn" id="btn-add">+ <span id="t-add">Add Place</span></button>
+      </div>
+    </div>
+    <div id="cards"></div>
+  </aside>
+  <div style="position:relative">
+    <div id="map"></div>
+    <div class="mode" id="modeLabel"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <h2 id="m-title">Add New Place</h2>
+    <div class="field"><label id="l-name">Place Name *</label><input id="f-name"></div>
+    <div class="field"><label id="l-nameTa">Place Name (தமிழ்)</label><input id="f-nameTa"></div>
+    <div class="field"><label id="l-cat">Category *</label>
+      <select id="f-cat">
+        <option value="trekking">Trekking</option>
+        <option value="waterfalls">Waterfalls</option>
+        <option value="viewpoints">Viewpoints</option>
+        <option value="temples">Temples</option>
+        <option value="dams">Dams</option>
+      </select>
+    </div>
+    <div class="field"><label id="l-desc">Description</label><textarea id="f-desc" rows="3"></textarea></div>
+    <div class="field"><label id="l-descTa">Description (தமிழ்)</label><textarea id="f-descTa" rows="3"></textarea></div>
+    <div class="row2">
+      <div class="field">
+        <label id="l-state">State</label>
+        <select id="f-state"><option value="">—</option></select>
+      </div>
+      <div class="field"><label id="l-season">Best Season</label><input id="f-season"></div>
+    </div>
+    <div class="field">
+      <label id="l-district">District</label>
+      <input id="f-district" list="district-list" placeholder="Search or choose district…">
+      <datalist id="district-list"></datalist>
+    </div>
+    <div class="field"><label id="l-address">Address / Location name</label><input id="f-address"></div>
+    <div class="field">
+      <label id="l-pluscode">Plus Code</label>
+      <input id="f-pluscode" placeholder="e.g. 7JVW+M8 Theni">
+      <div class="hint" id="h-pluscode">Optional: enter a Plus Code — coordinates fill in automatically.</div>
+      <button class="addbtn" id="btn-track" style="margin-top:6px;align-self:flex-start">📡 Use my location</button>
+    </div>
+    <div class="field">
+      <label id="l-coord">Coordinates (lat, lng)</label>
+      <input id="f-lat" placeholder="10.2240  ,  77.5070">
+      <div class="hint" id="h-coord-dms">🧭 <span id="coord-dms">–° – · –° –</span></div>
+      <div class="hint" id="h-geo">Tip: type the location name above — coordinates fill in automatically. Or pick a point on the map below.</div>
+      <button class="addbtn" id="btn-geocode" style="margin-top:6px;align-self:flex-start">Locate Address</button>
+    </div>
+    <div class="minimap" id="configmap"></div>
+    <div class="actions">
+      <button class="ghost" id="btn-cancel">Cancel</button>
+      <button class="primary" id="btn-save">Save Place</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="cmodal">
+  <div class="modalbox">
+    <h2 id="cm-title">Your experience</h2>
+    <div id="cm-place" style="color:#38bdf8;font-size:.9rem;margin-bottom:12px"></div>
+    <div class="field">
+      <label id="cm-star-label">Your rating</label>
+      <div class="stars big" id="cm-stars"></div>
+    </div>
+    <div class="field">
+      <label id="cm-text-label">Write your experience</label>
+      <textarea id="cm-text" rows="3" placeholder="…"></textarea>
+    </div>
+    <button class="primary" id="cm-save" style="width:100%;padding:12px;border:none;border-radius:11px;font-weight:700;margin-bottom:16px">Post</button>
+    <h3 id="cm-list-title" style="font-size:.9rem;color:var(--muted);margin-bottom:8px">Comments</h3>
+    <div id="cm-list"></div>
+    <div class="actions"><button class="ghost" id="cm-close">Close</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== CONFIG ===== */
+var CONFIG = {
+  BHUVAN_API_KEY: "PASTE_YOUR_BHUVAN_API_KEY_HERE",
+  BHUVAN_WMS_URL: "https://bhuvan-ras1.nrsc.gov.in/bhuvan/wms",
+  BHUVAN_LAYER: "ISRO_RS2_2",
+  DEFAULT_CENTER: [11.0, 78.4],
+  DEFAULT_ZOOM: 7
+};
+
+var I18N = {
+  en:{
+    title:"Hidden Gems – Offbeat Tourist Places",
+    sub:"Discover hidden trekking, waterfalls, viewpoints, temples & dams",
+    search:"Search place name or location…",
+    places:"Places", add:"Add Place", total:"{n} places", noPlaces:"No places found for this search.",
+    export:"Export", import:"Import", delete:"✕ Delete",
+    mTitle:"Add New Place",
+    name:"Place Name *", nameTa:"Place Name (தமிழ்)", cat:"Category *",
+    desc:"Description", descTa:"Description (தமிழ்)", district:"District",
+    season:"Best Season", address:"Address / Location name",
+    state:"State", selectState:"Select state", districtPlaceholder:"Search or choose district…",
+    coord:"Coordinates (lat, lng)",
+    hGeo:"Tip: pick a point on the map below, or type a location name and click Locate.",
+    cancel:"Cancel", save:"Save Place", locate:"Locate Address",
+    layerOsm:"Map (OpenStreetMap)", layerBhuvan:"Bhuvan Satellite (ISRO)",
+    notFound:"Could not find that location.",
+    saved:"Place added.", imported:"Places imported successfully.",
+    popDirections:"Open in Google Maps",
+    catTrek:"Trekking", catWater:"Waterfalls", catView:"Viewpoints", catTemple:"Temples", catDam:"Dams", catAll:"All",
+    mapJoined:"OpenStreetMap + Bhuvan layers",
+    noRatings:"Be the first to rate", rated:"Thanks for rating!",
+    comments:"Comments", yourRating:"Your rating", writeExp:"Write your experience",
+    post:"Post", close:"Close", you:"You", anonymous:"Traveller",
+    commentSaved:"Comment posted!", noComments:"No comments yet. Be the first!",
+    local:"Offline mode: data stored in this browser.",
+    confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the owner device can delete places.",
+    edit:"Edit", editTitle:"Edit Place", edited:"Place updated."
+  },
+  ta:{
+    title:"மறைந்த சுற்றுலா தலங்கள் – Hidden Gems",
+    sub:"தென்னிந்தியாவின் அறியப்படாத மலைப்பயணங்கள், அருவிகள், பார்வைத் தளங்கள், கோயில்கள் & அணைகளை கண்டறியுங்கள்",
+    search:"இடத்தின் பெயரை அல்லது இருப்பிடத்தை தேடுங்கள்…",
+    places:"இடங்கள்", add:"இடம் சேர்", total:"{n} இடங்கள்", noPlaces:"இந்த தேடலுக்கு இடங்கள் இல்லை.",
+    export:"ஏற்றுமதி", import:"இறக்குமதி", delete:"✕ நீக்கு",
+    mTitle:"புதிய இடம் சேர்க்க",
+    name:"இடத்தின் பெயர் *", nameTa:"இடத்தின் பெயர் (தமிழ்)", cat:"வகை *",
+    desc:"விளக்கம்", descTa:"விளக்கம் (தமிழ்)", district:"மாவட்டம்",
+    season:"சிறந்த பருவம்", address:"முகவரி / இடம்",
+    state:"மாநிலம்", selectState:"மாநிலத்தை தேர்வு செய்யவும்", districtPlaceholder:"மாவட்டத்தை தேடி/தேர்வு செய்யவும்…",
+    coord:"ஆயத்தொலைவுகள் (latitude, longitude)",
+    hGeo:"குறிப்பு: கீழே உள்ள வரைபடத்தில் ஒரு இடத்தை தேர்வு செய்யவும், அல்லது இடத்தின் பெயரை தட்டச்சு செய்து இருப்பிடம் என்பதை அழுத்தவும்.",
+    cancel:"ரத்து", save:"இடத்தை சேமி", locate:"இருப்பிடம்",
+    layerOsm:"வரைபடம் (OpenStreetMap)", layerBhuvan:"புவன் செயற்கைக்கோள் (ISRO)",
+    notFound:"அந்த இருப்பிடம் கிடைக்கவில்லை.",
+    saved:"இடம் சேர்க்கப்பட்டது.", imported:"இடங்கள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன.",
+    popDirections:"Google வரைபடத்தில் திறக்க",
+    catTrek:"மலைப்பயணம்", catWater:"அருவிகள்", catView:"பார்வைத் தளம்", catTemple:"கோயில்", catDam:"அணைகள்", catAll:"அனைத்தும்",
+    mapJoined:"OpenStreetMap + புவன்",
+    noRatings:"முதலில் மதிப்பீடு செய்யுங்கள்", rated:"மதிப்பீடு சேமிக்கப்பட்டது!",
+    comments:"கருத்துகள்", yourRating:"உங்கள் மதிப்பீடு", writeExp:"உங்கள் அனுபவத்தை எழுதுங்கள்",
+    post:"பதிவிடு", close:"மூடு", you:"நீங்கள்", anonymous:"பயணி",
+    commentSaved:"கருத்து பதிவானது!", noComments:"இன்னும் கருத்துகள் இல்லை. முதலில் எழுதுங்கள்!",
+    local:"ஆஃப்லைன் முறை: தரவு இந்த உலாவியில் சேமிக்கப்படும்.",
+    confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"நீக்க உரிமை இந்த சாதனம்/நிர்வாகிக்கு மட்டுமே.",
+    edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது."
+  }
+};
+
+var CATS = {
+  trekking:{color:"#f0883e", label:{en:"Trekking",ta:"மலைப்பயணம்"}},
+  waterfalls:{color:"#38bdf8", label:{en:"Waterfalls",ta:"அருவிகள்"}},
+  viewpoints:{color:"#a78bfa", label:{en:"Viewpoints",ta:"பார்வைத் தளம்"}},
+  temples:{color:"#f472b6", label:{en:"Temples",ta:"கோயில்"}},
+  dams:{color:"#facc15", label:{en:"Dams",ta:"அணைகள்"}}
+};
+
+var SAMPLE = [
+  {id:1,name:"Agaya Gangai Waterfalls",nameTa:"ஆகாய கங்கை அருவி",category:"waterfalls",lat:11.2581,lng:78.3474,district:"Namakkal",season:"Oct–Dec",desc:"A hidden waterfall at the foot of the Kolli Hills, reached by a long stone stairway of around 1200 steps.",descTa:"கொல்லிமலை அடிவாரத்தில் சுமார் 1200 படிக்கட்டுகள் வழியாக செல்லும் மறைவான அருவி."},
+  {id:2,name:"Suruli Falls",nameTa:"சுருளி அருவி",category:"waterfalls",lat:9.6607,lng:77.3872,district:"Theni",season:"Jun–Jan",desc:"Layered cascade near Theni fed by the Suruli river, often far less crowded than neighbouring falls.",descTa:"தேனி அருகே சுருளி ஆற்றில் இருந்து வரும் அடுக்கடுக்கான அருவி."},
+  {id:3,name:"Tadiyankudisai Falls",nameTa:"தடியன்குடிசை அருவி",category:"waterfalls",lat:10.3653,lng:77.3376,district:"Dindigul",season:"Sep–Dec",desc:"Hidden gem en route to Tadiyandamalai, through spice and coffee plantations.",descTa:"மிளகு மற்றும் காபி தோட்டங்கள் வழியே தடியன்மலையை நோக்கி செல்லும்போது காணும் மறைந்த அருவி."},
+  {id:4,name:"Meghamalai View Point",nameTa:"மேகமலை பார்வைத் தளம்",category:"viewpoints",lat:9.6862,lng:77.3453,district:"Theni",season:"Sep–Feb",desc:"Misty high-altitude viewpoint overlooking cardamom hills, waterfalls and tea estates.",descTa:"ஏலம் மலைகள், அருவிகள், தேயிலை தோட்டங்களை காணும் உயரமான பனிமூட்டமான பார்வைத் தளம்."},
+  {id:5,name:"Top Station",nameTa:"டாப் ஸ்டேஷன்",category:"viewpoints",lat:10.1351,lng:77.1127,district:"Theni",season:"Sep–Feb",desc:"Cloud-garden viewpoint above Munnar valley, accessible from the Tamil Nadu side.",descTa:"மூணாரை விட உயரத்தில் அமைந்த பார்வைத் தளம்."},
+  {id:6,name:"Leopards Valley Trek",nameTa:"லெப்பார்ட்ஸ் பள்ளத்தாக்கு",category:"trekking",lat:10.2182,lng:77.5345,district:"Dindigul",season:"Oct–Mar",desc:"Gentle rainforest trek in the Palani hills from Grizzled Squirrel Wildlife Sanctuary.",descTa:"பழநி மலையில் உள்ள அழகான காடு வழி மலைப்பயணம்."},
+  {id:7,name:"Velliangiri Hills",nameTa:"வெள்ளியங்கிரி மலை",category:"trekking",lat:10.9786,lng:76.7790,district:"Coimbatore",season:"Nov–Mar",desc:"Challenging 7-stage trek through shola forests and grasslands, spiritual summit atop Lord Shiva's abode.",descTa:"ஏழு கட்டங்களை கொண்ட கடினமான மலைப்பயணம்; சிவபெருமானின் தலமாக போற்றப்படுகிறது."},
+  {id:8,name:"Kodiveri Dam",nameTa:"கொடிவேரி அணை",category:"dams",lat:11.4547,lng:77.0380,district:"Erode",season:"All year",desc:"Scenic British-era dam on the Bhavani river with a garden and walkway.",descTa:"பவானி ஆற்றில் அமைந்த பழங்கால அணை; தோட்டம் மற்றும் நடைபாதையுடன்."},
+  {id:9,name:"Sathanur Dam",nameTa:"சத்தானூர் அணை",category:"dams",lat:12.1788,lng:78.8420,district:"Tiruvannamalai",season:"Mar–Sep",desc:"Quiet reservoir near Javadi hills with a fish farm and hill-view park.",descTa:"ஜவ்வாது மலை அருகே அமைதியான நீர்த்தேக்கம்."},
+  {id:10,name:"Thirumurthi Dam",nameTa:"திருமூர்த்தி அணை",category:"dams",lat:10.5924,lng:77.2399,district:"Tiruppur",season:"Sep–Jun",desc:"Hidden dam for wildlife-safari style exploration near the Amaravathi reservoir.",descTa:"அமராவதி நீர்த்தேக்கம் அருகே உள்ள மறைவான அணை."},
+  {id:11,name:"Vijayalaya Choleeswaram",nameTa:"விஜயாலய சோழீஸ்வரம்",category:"temples",lat:10.5196,lng:78.8776,district:"Pudukkottai",season:"All year",desc:"One of the oldest Chola temples hidden on Narthamalai hill, with stunning rock-cut sculptures.",descTa:"நார்த்தாமலை மலையில் மறைந்துள்ள பழமையான சோழர் கோயில்; அழகிய சிற்பங்களுடன்."},
+  {id:12,name:"Brahmapuriswarar Temple",nameTa:"பிரம்மபுரீஸ்வரர் கோயில்",category:"temples",lat:10.9616,lng:79.0141,district:"Thanjavur",season:"All year",desc:"Hidden gem of the Chola era at Pullamangai, famous for its exquisitely carved pillars.",descTa:"புல்லமங்கையில் மறைந்துள்ள சோழர் கால அற்புத சிற்ப வேலைப்பாடுகள் கொண்ட கோயில்."}
+];
+
+var STATES = {
+  "Tamil Nadu": ["Ariyalur","Chengalpattu","Chennai","Coimbatore","Cuddalore","Dharmapuri","Dindigul","Erode","Kallakurichi","Kanchipuram","Kanyakumari","Karur","Krishnagiri","Madurai","Mayiladuthurai","Nagapattinam","Namakkal","Nilgiris","Perambalur","Pudukkottai","Ramanathapuram","Ranipet","Salem","Sivaganga","Tenkasi","Thanjavur","Theni","Thoothukudi","Tiruchirappalli","Tirunelveli","Tirupathur","Tiruppur","Tiruvallur","Tiruvannamalai","Tiruvarur","Vellore","Viluppuram","Virudhunagar"],
+  "Kerala": ["Alappuzha","Ernakulam","Idukki","Kannur","Kasaragod","Kollam","Kottayam","Kozhikode","Malappuram","Palakkad","Pathanamthitta","Thiruvananthapuram","Thrissur","Wayanad"],
+  "Karnataka": ["Bagalkot","Ballari","Belagavi","Bengaluru Rural","Bengaluru Urban","Bidar","Chamarajanagar","Chikkaballapur","Chikkamagaluru","Chitradurga","Dakshina Kannada","Davanagere","Dharwad","Gadag","Hassan","Haveri","Kalaburagi","Kodagu","Kolar","Koppal","Mandya","Mysuru","Raichur","Ramanagara","Shivamogga","Tumakuru","Udupi","Uttara Kannada","Vijayapura","Yadgir"],
+  "Andhra Pradesh": ["Alluri Sitharama Raju","Anakapalli","Anantapur","Annamayya","Bapatla","Chittoor","East Godavari","Eluru","Guntur","Kakinada","Konaseema","Krishna","Kurnool","Nandyal","NTR","Palnadu","Parvathipuram Manyam","Prakasam","Sri Potti Sriramulu Nellore","Sri Sathya Sai","Srikakulam","Tirupati","Visakhapatnam","Vizianagaram","West Godavari","YSR Kadapa"],
+  "Telangana": ["Adilabad","Bhadradri Kothagudem","Hanamkonda","Hyderabad","Jagtial","Jangaon","Jayashankar Bhupalpally","Jogulamba Gadwal","Kamareddy","Karimnagar","Khammam","Komaram Bheem","Mahabubabad","Mahabubnagar","Mancherial","Medak","Medchal-Malkajgiri","Mulugu","Nagarkurnool","Nalgonda","Narayanpet","Nirmal","Nizamabad","Peddapalli","Rajanna Sircilla","Rangareddy","Sangareddy","Siddipet","Suryapet","Vikarabad","Wanaparthy","Warangal","Yadadri Bhuvanagiri"],
+  "Puducherry": ["Karaikal","Mahe","Puducherry","Yanam"]
+};
+SAMPLE.forEach(function(p){ if(!p.state) p.state = "Tamil Nadu"; });
+
+var t = I18N.en;
+var LANG = "en";
+var places = [];
+var placeId = 1000;
+var map, configMap, tempMarker, picking = false;
+var markers = {};
+var currentCat = "all";
+var currentSearch = "";
+var ratingData = {};
+var commentData = {};
+var currentCid = null;
+var editingId = null;
+var deviceId = "";
+var serverOn = false;
+var isAdmin = false;
+var lastRev = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function clean(p,f){ return p[f]||"—"; }
+function locLabel(p){
+  var parts=[];
+  if(p && p.state) parts.push(p.state);
+  if(p && p.district) parts.push(p.district);
+  return parts.join(" · ") || "—";
+}
+function dms(lat, lng){
+  function fmt(v, pos, neg){
+    var dir = v >= 0 ? pos : neg;
+    return Math.round(Math.abs(v)) + "°" + dir;
+  }
+  return fmt(lat, "N", "S") + "  " + fmt(lng, "E", "W");
+}
+function hasKey(){ return CONFIG.BHUVAN_API_KEY && CONFIG.BHUVAN_API_KEY.indexOf("PASTE_YOUR")===-1; }
+
+function initDeviceId(){
+  try{
+    deviceId = localStorage.getItem("hiddenDevice_v1");
+    if(!deviceId){ deviceId = "d" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem("hiddenDevice_v1", deviceId); }
+  }catch(e){ deviceId = "d" + Date.now().toString(36); }
+}
+
+/* ===== data layer ===== */
+function recomputeMaxId(){ places.forEach(function(p){ if(p.id>placeId) placeId=p.id; }); placeId++; }
+
+function apiCall(method, url, body){
+  return fetch(url, {
+    method: method,
+    headers: {"Content-Type":"application/json", "X-Device": deviceId},
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r){ return r.json(); });
+}
+
+function buildRatingData(list){
+  ratingData = {};
+  (list||[]).forEach(function(r){
+    var g = ratingData[r.placeId] || {sum:0,count:0,mine:null};
+    g.sum += r.value; g.count++;
+    if(r.deviceId === deviceId) g.mine = r.value;
+    ratingData[r.placeId] = g;
+  });
+}
+
+function buildCommentData(list){
+  commentData = {};
+  (list||[]).forEach(function(c){
+    var g = commentData[c.placeId] || {list:[], mine:null};
+    g.list.push(c);
+    if(c.deviceId === deviceId) g.mine = c;
+    commentData[c.placeId] = g;
+  });
+}
+
+function loadData(){
+  return new Promise(function(resolve){
+    apiCall("GET", "api/state").then(function(s){
+      if(!s || !Array.isArray(s.places)) throw new Error("no server");
+      serverOn = true;
+      places = s.places;
+      isAdmin = s.isAdminDevice === true || (s.adminDeviceId && s.adminDeviceId === deviceId);
+      if(s.isAdminDevice) deviceId = s.adminDeviceId || deviceId;
+      buildRatingData(s.ratings);
+      buildCommentData(s.comments);
+      recomputeMaxId();
+      lastRev = s.rev;
+    }).catch(function(){
+      serverOn = false;
+      loadLocal();
+    }).then(function(){ resolve(); });
+  });
+}
+
+function loadLocal(){
+  try{ var s=JSON.parse(localStorage.getItem("hiddenPlaces_v1")); places=(Array.isArray(s)&&s.length)?s:SAMPLE.slice(); }catch(e){ places=SAMPLE.slice(); }
+  try{
+    var r=JSON.parse(localStorage.getItem("hiddenRatings_v1"))||{};
+    ratingData={};
+    Object.keys(r).forEach(function(k){ ratingData[k]={sum:r[k],count:1,mine:r[k]}; });
+  }catch(e){ ratingData={}; }
+  try{
+    var cm=JSON.parse(localStorage.getItem("hiddenComments_v1"))||{};
+    commentData={};
+    Object.keys(cm).forEach(function(k){
+      var c=cm[k]; c.placeId=Number(k); c.deviceId=deviceId;
+      commentData[c.placeId]={list:[c],mine:c};
+    });
+  }catch(e){ commentData={}; }
+  recomputeMaxId();
+}
+function saveLocalPlaces(){ localStorage.setItem("hiddenPlaces_v1", JSON.stringify(places)); }
+function saveLocalRatings(){
+  var o={};
+  Object.keys(ratingData).forEach(function(k){ var g=ratingData[k]; if(g.mine) o[k]=g.mine; });
+  localStorage.setItem("hiddenRatings_v1", JSON.stringify(o));
+}
+function saveLocalComments(){
+  var o={};
+  Object.keys(commentData).forEach(function(k){ var g=commentData[k]; if(g.mine) o[k]={text:g.mine.text,value:g.mine.value}; });
+  localStorage.setItem("hiddenComments_v1", JSON.stringify(o));
+}
+
+function getRating(pid){
+  var g = ratingData[pid];
+  if(!g || !g.count) return {avg:0,count:0,mine:0};
+  return {avg:g.sum/g.count, count:g.count, mine:g.mine||0};
+}
+function commentCount(pid){
+  var g = commentData[pid];
+  return g && g.list ? g.list.length : 0;
+}
+function saveComment(pid, value, text){
+  var c = {id: pid+"_"+deviceId, placeId: pid, deviceId: deviceId, value: value, text: text, at: Date.now()};
+  var g = commentData[pid] || {list:[], mine:null};
+  g.list = g.list.filter(function(x){ return x.deviceId !== deviceId; });
+  g.list.push(c);
+  g.mine = c;
+  commentData[pid] = g;
+  if(serverOn){
+    apiCall("POST", "api/comments", {placeId: pid, deviceId: deviceId, value: value, text: text}).catch(function(){});
+  } else {
+    saveLocalComments();
+  }
+}
+function timeAgo(ts){
+  var s = Math.floor((Date.now()-ts)/1000);
+  if(s < 60) return LANG==="ta" ? "இப்போது" : "just now";
+  var m = Math.floor(s/60); if(m < 60) return LANG==="ta" ? m+" நிமிடம் முன்" : m+"m ago";
+  var h = Math.floor(m/60); if(h < 24) return LANG==="ta" ? h+" மணி முன்" : h+"h ago";
+  var d = Math.floor(h/24); return LANG==="ta" ? d+" நாள் முன்" : d+"d ago";
+}
+function setMyRating(pid, v){
+  var g = ratingData[pid] || {sum:0,count:0,mine:null};
+  if(g.mine){ g.sum -= g.mine; } else { g.count++; }
+  g.mine = v; g.sum += v;
+  ratingData[pid] = g;
+  if(serverOn){
+    apiCall("POST", "api/ratings", {placeId: pid, deviceId: deviceId, value: v}).catch(function(){});
+  } else {
+    saveLocalRatings();
+  }
+  renderAll();
+  toast(t.rated);
+}
+
+/* ===== map ===== */
+function initMap(){
+  map = L.map("map").setView(CONFIG.DEFAULT_CENTER, CONFIG.DEFAULT_ZOOM);
+  var osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:19, attribution:'&copy; OpenStreetMap contributors'
+  });
+  var base = {"Map (OSM)": osm};
+  osm.addTo(map);
+  if(hasKey()){
+    var bhuvan = L.tileLayer.wms(CONFIG.BHUVAN_WMS_URL,{
+      layers: CONFIG.BHUVAN_LAYER, format:"image/png", transparent:false,
+      crs: L.CRS.EPSG3857, maxZoom:18, apikey: CONFIG.BHUVAN_API_KEY,
+      attribution:'&copy; Bhuvan, ISRO'
+    });
+    base["Bhuvan Satellite (ISRO)"] = bhuvan;
+    L.control.layers(base, null, {collapsed:false}).addTo(map);
+  } else {
+    L.control.layers(base, null, {collapsed:true}).addTo(map);
+  }
+}
+
+/* ===== markers + cards ===== */
+function renderAll(){
+  var q = currentSearch.trim().toLowerCase();
+  var list = places.filter(function(p){
+    if(currentCat !== "all" && p.category !== currentCat) return false;
+    if(!q) return true;
+    return p.name.toLowerCase().indexOf(q)!==-1 ||
+           (p.nameTa||"").toLowerCase().indexOf(q)!==-1 ||
+           (p.district||"").toLowerCase().indexOf(q)!==-1 ||
+           (p.state||"").toLowerCase().indexOf(q)!==-1;
+  });
+  list.forEach(function(p){ showMarker(p); });
+  var shown = {};
+  list.forEach(function(p){ shown[p.id]=true; });
+  Object.keys(markers).forEach(function(id){
+    if(!shown[id]){ map.removeLayer(markers[id]); delete markers[id]; }
+  });
+  renderCards(list);
+  $("t-total").textContent = t.total.replace("{n}", list.length);
+}
+
+function showMarker(p){
+  if(markers[p.id]){ markers[p.id].setLatLng([p.lat,p.lng]); return; }
+  var c = CATS[p.category].color;
+  var icon = L.divIcon({
+    className:"",
+    html:'<div style="width:22px;height:22px;background:'+c+';border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>',
+    iconSize:[22,22], iconAnchor:[11,22], popupAnchor:[0,-18]
+  });
+  var m = L.marker([p.lat,p.lng], {icon:icon}).addTo(map);
+  m.bindPopup(popupHTML(p));
+  markers[p.id] = m;
+}
+
+function popupHTML(p){
+  var c = CATS[p.category];
+  var urls = "https://www.google.com/maps/search/?api=1&query="+p.lat+","+p.lng;
+  var r = getRating(p.id);
+  var rl = r.count ? "★ "+r.avg.toFixed(1)+" · "+r.count : t.noRatings;
+  return '<div class="pop"><span style="font-size:.7rem;font-weight:700;color:'+c.color+'">'+c.label[LANG]+'</span>'+
+    '<h3>'+esc(p.name)+'</h3>'+
+    (p.nameTa?'<div style="color:#38bdf8">'+esc(p.nameTa)+'</div>':'')+
+    '<div class="desc">'+esc(clean(p,"desc"))+'</div>'+
+    '<div class="row">📍 '+esc(locLabel(p))+'</div>'+
+    '<div class="row">🗓 '+esc(clean(p,"season"))+'</div>'+
+    '<div class="row">🧭 '+dms(p.lat, p.lng)+'</div>'+
+    '<div class="row" style="color:#facc15">'+rl+'</div>'+
+    '<a class="link" target="_blank" rel="noopener" href="'+urls+'">'+t.popDirections+' ↗</a>'+
+  '</div>';
+}
+
+function starsHTML(pid){
+  var r = getRating(pid);
+  var s = '<div class="stars">';
+  for(var i=1;i<=5;i++){ s += '<button class="st'+(r.mine>=i?" on":"")+'" data-v="'+i+'">★</button>'; }
+  s += '</div>';
+  s += '<span class="rlbl">'+(r.count ? r.avg.toFixed(1)+" · "+r.count : t.noRatings)+'</span>';
+  return s;
+}
+
+function canManage(p){
+  if(serverOn) return isAdmin;
+  return true;
+}
+
+function renderCards(list){
+  var el = $("cards");
+  if(!list.length){ el.innerHTML = '<div class="count">'+t.noPlaces+'</div>'; return; }
+  el.innerHTML = list.map(function(p){
+    var c = CATS[p.category];
+    var manage = canManage(p);
+    var delBtn = manage ? '<button class="del" data-del="'+p.id+'">✕ '+t.delete+'</button>' : '';
+    var editBtn = manage ? '<button class="edit" data-edit="'+p.id+'">✏ '+t.edit+'</button>' : '';
+    return '<div class="card" data-id="'+p.id+'">'+
+      '<span class="cat" style="background:'+c.color+'22;color:'+c.color+'">'+c.label[LANG]+'</span>'+
+      '<h3>'+esc(p.name)+'</h3>'+
+      (p.nameTa?'<div style="color:#38bdf8;font-size:.8rem">'+esc(p.nameTa)+'</div>':'')+
+      '<div class="desc">'+esc(clean(p,"desc"))+'</div>'+
+      '<div class="meta"><span>📍'+esc(locLabel(p))+'</span><span>🗓 '+esc(clean(p,"season"))+'</span></div>'+
+      '<div class="rate" data-pid="'+p.id+'">'+starsHTML(p.id)+'</div>'+
+      '<button class="cbtn" data-cid="'+p.id+'">✎ '+t.comments+' ('+commentCount(p.id)+')</button>'+
+      editBtn+delBtn+
+    '</div>';
+  }).join("");
+  el.querySelectorAll(".card").forEach(function(card){
+    card.addEventListener("click", function(e){
+      if(e.target.classList && (e.target.classList.contains("st") || e.target.classList.contains("cbtn") || e.target.classList.contains("del") || e.target.classList.contains("edit"))) return;
+      focusPlace(parseInt(card.getAttribute("data-id"),10));
+    });
+  });
+  el.querySelectorAll(".card .st").forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var card = btn.closest(".card");
+      setMyRating(parseInt(card.getAttribute("data-id"),10), parseInt(btn.getAttribute("data-v"),10));
+    });
+  });
+  el.querySelectorAll(".card .cbtn").forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      openComment(parseInt(btn.getAttribute("data-cid"),10));
+    });
+  });
+  el.querySelectorAll(".card .edit").forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      openEdit(parseInt(btn.getAttribute("data-edit"),10));
+    });
+  });
+  el.querySelectorAll(".card .del").forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      delPlace(parseInt(btn.getAttribute("data-del"),10));
+    });
+  });
+}
+
+function delPlace(id){
+  if(!confirm(t.confirmDel)) return;
+  var p = places.find(function(x){ return x.id===id; });
+  if(p && !canManage(p)){ toast(t.noDel); return; }
+  var removeLocal = function(){
+    places = places.filter(function(x){ return x.id!==id; });
+    if(markers[id]){ map.removeLayer(markers[id]); delete markers[id]; }
+    delete ratingData[id];
+    renderAll(); toast(t.deleted);
+  };
+  if(serverOn){
+    apiCall("DELETE", "api/places/"+id).then(function(res){
+      if(res && res.ok){ removeLocal(); }
+      else { toast(t.noDel); }
+    });
+    return;
+  }
+  saveLocalPlaces(); saveLocalRatings();
+  removeLocal();
+}
+
+function focusPlace(id){
+  var p = places.find(function(x){ return x.id===id; });
+  if(!p) return;
+  map.setView([p.lat,p.lng], 14);
+  if(markers[id]) markers[id].openPopup();
+  var card = document.querySelector('.card[data-id="'+id+'"]');
+  if(card){ card.scrollIntoView({behavior:"smooth", block:"nearest"}); card.style.borderColor = CATS[p.category].color; }
+}
+
+/* ===== search ===== */
+$("btn-search").addEventListener("click", doSearch);
+$("search").addEventListener("keydown", function(e){ if(e.key==="Enter") doSearch(); });
+
+function doSearch(){
+  var q = $("search").value.trim();
+  currentSearch = q;
+  var matched = q ? places.filter(function(p){
+    var n=p.name.toLowerCase(), nt=(p.nameTa||"").toLowerCase(), d=(p.district||"").toLowerCase(), st=(p.state||"").toLowerCase();
+    return n.indexOf(q.toLowerCase())!==-1 || nt.indexOf(q.toLowerCase())!==-1 || d.indexOf(q.toLowerCase())!==-1 || st.indexOf(q.toLowerCase())!==-1;
+  }) : [];
+  if(matched.length){
+    renderAll();
+    if(matched.length===1){ focusPlace(matched[0].id); }
+    else { map.fitBounds(L.latLngBounds(matched.map(function(p){ return [p.lat,p.lng]; })), {padding:[30,30]}); }
+    return;
+  }
+  renderAll();
+  if(q) geocodeText(q);
+}
+
+function geocode(q, cc){
+  return new Promise(function(resolve, reject){
+    function tryNom(){
+      fetch("https://nominatim.openstreetmap.org/search?format=json&q="+encodeURIComponent(q)+(cc?"&countrycodes="+cc:"")+"&limit=1")
+      .then(function(r){ return r.json(); }).then(function(data){
+        if(data && data.length){ resolve({lat:parseFloat(data[0].lat), lon:parseFloat(data[0].lon), name:data[0].display_name}); return; }
+        tryPhoto();
+      }).catch(tryPhoto);
+    }
+    function tryPhoto(){
+      fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+"  "+(cc==="in"?"india":""))+"&limit=1")
+      .then(function(r){ return r.json(); }).then(function(data){
+        if(data && data.features && data.features.length){
+          var f = data.features[0];
+          resolve({lat:f.geometry.coordinates[1], lon:f.geometry.coordinates[0], name:(f.properties.name||"")+(f.properties.city?", "+f.properties.city:"")+(f.properties.state?", "+f.properties.state:"")});
+          return;
+        }
+        reject(new Error("nf"));
+      }).catch(function(){ reject(new Error("nf")); });
+    }
+    tryNom();
+  });
+}
+
+function geocodeText(q){
+  geocode(q, "in").then(function(d){
+    map.setView([d.lat, d.lon], 13);
+    if(tempMarker) map.removeLayer(tempMarker);
+    tempMarker = L.marker([d.lat, d.lon]).addTo(map).bindPopup("<b>"+esc(d.name)+"</b>").openPopup();
+  }).catch(function(){ toast(t.notFound); });
+}
+
+/* ===== chips ===== */
+function buildChips(){
+  var el = $("chips");
+  var keys = ["all"].concat(Object.keys(CATS));
+  el.innerHTML = keys.map(function(k){
+    var lbl = k==="all" ? t.catAll : CATS[k].label[LANG];
+    return '<button class="chip'+(currentCat===k?' active':'')+'" data-cat="'+k+'">'+lbl+'</button>';
+  }).join("");
+  el.querySelectorAll(".chip").forEach(function(ch){
+    ch.addEventListener("click", function(){
+      currentCat = ch.getAttribute("data-cat");
+      buildChips(); renderAll();
+    });
+  });
+}
+
+/* ===== add place ===== */
+$("btn-add").addEventListener("click", openModal);
+$("btn-cancel").addEventListener("click", function(){ closeModal(); if(tempMarker) map.removeLayer(tempMarker); });
+$("btn-save").addEventListener("click", saveNew);
+$("btn-geocode").addEventListener("click", function(){
+  var addr = $("f-address").value.trim();
+  if(!addr){ toast(t.notFound); return; }
+  geocodeToForm(addr);
+});
+var geoDebounce = null;
+$("f-address").addEventListener("input", function(){
+  clearTimeout(geoDebounce);
+  var addr = this.value.trim();
+  if(addr.length < 4) return;
+  geoDebounce = setTimeout(function(){ geocodeToForm(addr); }, 3000);
+});
+function trackLocation(){
+  if(!navigator.geolocation){ toast(t.notFound); return; }
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat = pos.coords.latitude, lng = pos.coords.longitude;
+    $("f-lat").value = lat.toFixed(6)+", "+lng.toFixed(6);
+    if(typeof OpenLocationCode !== "undefined"){
+      $("f-pluscode").value = OpenLocationCode.encode(lat, lng, 10);
+    }
+    syncCoord();
+    if(configMap){
+      configMap.setView([lat, lng], 15);
+      if(tempMarker) configMap.removeLayer(tempMarker);
+      tempMarker = L.marker([lat, lng]).addTo(configMap);
+    }
+    reverseGeocode(lat, lng);
+  }, function(err){
+    toast(LANG==="ta" ? "இருப்பிடத்தை அணுக முடியவில்லை" : "Could not get your location. Check browser permission.");
+  }, {enableHighAccuracy:true});
+}
+$("btn-track").addEventListener("click", trackLocation);
+function autoTrackIfNew(){
+  if(editingId) return;
+  if(!navigator.geolocation) return;
+  setTimeout(trackLocation, 400);
+}
+$("f-pluscode").addEventListener("input", function(){
+  var v = this.value.trim().toUpperCase();
+  var m = v.match(/[23456789CFGHJMPQRVWX]{6,7}\+[23456789CFGHJMPQRVWX]{2,3}/);
+  if(!m) return;
+  try{
+    if(typeof OpenLocationCode === "undefined"){ toast("Plus code library not loaded"); return; }
+    var d = OpenLocationCode.decode(m[0]);
+    if(d && d.latitudeCenter){
+      var lat = d.latitudeCenter, lng = d.longitudeCenter;
+      $("f-lat").value = lat.toFixed(6)+", "+lng.toFixed(6);
+      syncCoord();
+      if(configMap){
+        configMap.setView([lat, lng], 15);
+        if(tempMarker) configMap.removeLayer(tempMarker);
+        tempMarker = L.marker([lat, lng]).addTo(configMap);
+      }
+      reverseGeocode(lat, lng);
+    }
+  }catch(e){ /* invalid code - ignore */ }
+});
+function reverseGeocode(lat, lng){
+  fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng+"&zoom=16")
+  .then(function(r){ return r.json(); }).then(function(data){
+    if(data && data.display_name) $("f-address").value = data.display_name;
+  }).catch(function(){});
+}
+$("modal").addEventListener("click", function(e){ if(e.target===this) closeModal(); });
+
+function openModal(){
+  editingId = null;
+  resetForm();
+  $("m-title").textContent = t.mTitle;
+  $("modal").classList.add("show");
+  setTimeout(function(){ initConfigMap(); }, 30);
+  autoTrackIfNew();
+}
+function openEdit(id){
+  var p = places.find(function(x){ return x.id===id; });
+  if(!p) return;
+  editingId = id;
+  resetForm();
+  $("m-title").textContent = t.editTitle;
+  $("f-name").value = p.name || "";
+  $("f-nameTa").value = p.nameTa || "";
+  $("f-cat").value = p.category || "trekking";
+  $("f-desc").value = p.desc || "";
+  $("f-descTa").value = p.descTa || "";
+  $("f-district").value = p.district || "";
+  $("f-season").value = p.season || "";
+  $("f-state").value = p.state || "";
+  fillDistricts(p.state || "");
+  $("f-lat").value = p.lat + ", " + p.lng;
+  syncCoord();
+  $("modal").classList.add("show");
+  setTimeout(function(){
+    initConfigMap();
+    configMap.setView([p.lat,p.lng], 13);
+    if(tempMarker) configMap.removeLayer(tempMarker);
+    tempMarker = L.marker([p.lat,p.lng]).addTo(configMap);
+  }, 30);
+}
+function closeModal(){
+  $("modal").classList.remove("show");
+  if(configMap){ configMap.remove(); configMap = null; }
+}
+function resetForm(){
+  ["f-name","f-nameTa","f-desc","f-descTa","f-season","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
+  $("f-state").value = ""; fillDistricts("");
+  $("f-district").value = "";
+  $("f-lat").value = ""; picking = false; syncCoord();
+}
+
+function populateStates(){
+  var sel = $("f-state");
+  sel.innerHTML = '<option value="">'+esc(t.selectState)+'</option>' +
+    Object.keys(STATES).map(function(s){ return '<option value="'+esc(s)+'">'+esc(s)+'</option>'; }).join("");
+}
+function fillDistricts(state){
+  var dl = $("district-list");
+  var list = STATES[state] || [];
+  dl.innerHTML = list.map(function(d){ return '<option value="'+esc(d)+'">'+esc(d)+'</option>'; }).join("");
+}
+$("f-state").addEventListener("change", function(){ fillDistricts(this.value); });
+function syncCoord(){
+  var v = $("f-lat").value.trim();
+  var parts = v.split(",").map(function(s){ return parseFloat(s.trim()); });
+  var el = $("coord-dms");
+  if(parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1])){ el.textContent = dms(parts[0], parts[1]); }
+  else { el.textContent = LANG==="ta" ? "–° – · –° –" : "–° – · –° –"; }
+  var pc = $("f-pluscode");
+  if(pc && typeof OpenLocationCode !== "undefined" && parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1])){
+    if(pc.value.trim()==="") pc.value = OpenLocationCode.encode(parts[0], parts[1], 10);
+  }
+}
+$("f-lat").addEventListener("input", syncCoord);
+function initConfigMap(){
+  if(configMap) configMap.remove();
+  configMap = L.map("configmap");
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19}).addTo(configMap);
+  configMap.setView(CONFIG.DEFAULT_CENTER, 7);
+  configMap.on("click", function(e){
+    picking = true;
+    $("f-lat").value = e.latlng.lat.toFixed(6)+", "+e.latlng.lng.toFixed(6);
+    syncCoord();
+    if(tempMarker) configMap.removeLayer(tempMarker);
+    tempMarker = L.marker(e.latlng).addTo(configMap);
+  });
+}
+function geocodeToForm(addr){
+  geocode(addr).then(function(d){
+    if(!d){ toast(t.notFound); return; }
+    $("f-address").value = d.name;
+    $("f-lat").value = d.lat.toFixed(6)+", "+d.lon.toFixed(6);
+    syncCoord();
+    if(configMap){
+      configMap.setView([d.lat, d.lon], 13);
+      if(tempMarker) configMap.removeLayer(tempMarker);
+      tempMarker = L.marker([d.lat, d.lon]).addTo(configMap).bindPopup("<b>"+esc(d.name)+"</b>");
+    }
+  }).catch(function(){ toast(t.notFound); });
+}
+function saveNew(){
+  var name = $("f-name").value.trim();
+  var latlng = $("f-lat").value.trim();
+  if(!name || !latlng){ toast(LANG==="ta"?"பெயரும் ஆயத்தொலைவும் தேவை":"Name & coordinates required"); return; }
+  var parts = latlng.split(",").map(function(s){ return parseFloat(s.trim()); });
+  if(parts.length<2 || isNaN(parts[0]) || isNaN(parts[1])){ toast(LANG==="ta"?"ஆயத்தொலைவுகள் சரியாக இல்லை":"Invalid coordinates"); return; }
+  if(picking && tempMarker) parts = [tempMarker.getLatLng().lat, tempMarker.getLatLng().lng];
+  var base = {
+    name: name,
+    nameTa: $("f-nameTa").value.trim(),
+    category: $("f-cat").value,
+    lat: parts[0], lng: parts[1],
+    desc: $("f-desc").value.trim(),
+    descTa: $("f-descTa").value.trim(),
+    district: $("f-district").value.trim(),
+    season: $("f-season").value.trim(),
+    state: $("f-state").value.trim()
+  };
+  if(editingId !== null){
+    var old = places.find(function(x){ return x.id===editingId; });
+    var ep = Object.assign({}, old, base, {id: editingId, createdBy: old ? old.createdBy : deviceId});
+    places = places.map(function(x){ return x.id===editingId ? ep : x; });
+    if(serverOn){ apiCall("PUT", "api/places/"+editingId, {place: base}).catch(function(){}); }
+    else { saveLocalPlaces(); }
+    renderAll(); closeModal(); toast(t.edited);
+    return;
+  }
+  var p = Object.assign({id: placeId++, createdBy: deviceId}, base);
+  places.push(p);
+  if(serverOn){
+    apiCall("POST", "api/places", {deviceId: deviceId, place: p}).then(function(res){
+      if(res && res.place){ var np = res.place; p.id = np.id; p.createdBy = np.createdBy; }
+      renderAll();
+    }).catch(function(){});
+  } else { saveLocalPlaces(); }
+  renderAll(); closeModal(); toast(t.saved);
+}
+
+/* ===== comment modal ===== */
+var commentStar = 0;
+
+function openComment(pid){
+  var p = places.find(function(x){ return x.id===pid; });
+  if(!p) return;
+  currentCid = pid;
+  var mine = commentData[pid] && commentData[pid].mine;
+  commentStar = (mine && mine.value) ? mine.value : (getRating(pid).mine || 0);
+  $("cm-place").textContent = esc(p.name) + (p.nameTa ? " · " + esc(p.nameTa) : "");
+  $("cm-text").value = (mine && mine.text) || "";
+  renderCommentStars();
+  renderCommentList(pid);
+  $("cmodal").classList.add("show");
+}
+function closeComment(){ $("cmodal").classList.remove("show"); currentCid = null; }
+
+function renderCommentStars(){
+  var s = "";
+  for(var i=1;i<=5;i++){ s += '<button class="st'+(commentStar>=i?" on":"")+'" data-v="'+i+'">★</button>'; }
+  $("cm-stars").innerHTML = s;
+  $("cm-stars").querySelectorAll(".st").forEach(function(b){
+    b.addEventListener("click", function(){ commentStar = parseInt(b.getAttribute("data-v"),10); renderCommentStars(); });
+  });
+}
+
+function renderCommentList(pid){
+  var g = commentData[pid];
+  var el = $("cm-list");
+  if(!g || !g.list.length){ el.innerHTML = '<div class="empty">'+t.noComments+'</div>'; return; }
+  el.innerHTML = g.list.slice().sort(function(a,b){ return b.at - a.at; }).map(function(c){
+    var who = c.deviceId === deviceId ? t.you : t.anonymous;
+    var stars = "";
+    for(var i=1;i<=5;i++){ stars += (c.value>=i ? "★" : "☆"); }
+    return '<div class="citem'+(c.deviceId===deviceId?" mine":"")+'">'+
+      '<div class="chead"><span class="cwho">'+who+'</span><span class="cstars">'+stars+'</span><span>'+timeAgo(c.at)+'</span></div>'+
+      '<div class="ctext">'+esc(c.text)+'</div></div>';
+  }).join("");
+}
+
+$("cm-save").addEventListener("click", function(){
+  if(currentCid === null) return;
+  var text = $("cm-text").value.trim();
+  if(commentStar < 1 || !text){ toast(LANG==="ta"?"மதிப்பீடும் கருத்தும் தேவை":"Rating and comment required"); return; }
+  setMyRating(currentCid, commentStar);
+  saveComment(currentCid, commentStar, text);
+  closeComment();
+  toast(t.commentSaved);
+});
+$("cm-close").addEventListener("click", closeComment);
+$("cmodal").addEventListener("click", function(e){ if(e.target===this) closeComment(); });
+
+/* ===== export / import ===== */
+$("btn-export").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify(places,null,2)], {type:"application/json"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "hidden-places.json";
+  a.click();
+});
+$("btn-import").addEventListener("click", function(){
+  var inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "application/json,.json";
+  inp.addEventListener("change", function(){
+    var f = inp.files[0]; if(!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{
+        var arr = JSON.parse(rd.result);
+        if(!Array.isArray(arr)) throw new Error();
+        arr.forEach(function(p){
+          if(p.lat!==undefined && p.lng!==undefined && p.name){
+            p.id = placeId++;
+            p.createdBy = deviceId;
+            places.push(p);
+            if(serverOn){ apiCall("POST","api/places",{deviceId:deviceId,place:p}).catch(function(){}); }
+          }
+        });
+        if(!serverOn) saveLocalPlaces();
+        renderAll(); toast(t.imported);
+      }catch(e){ toast(LANG==="ta"?"கோப்பு தவறானது":"Invalid file"); }
+    };
+    rd.readAsText(f);
+  });
+  inp.click();
+});
+
+/* ===== language ===== */
+$("btn-en").addEventListener("click", function(){ setLang("en"); });
+$("btn-ta").addEventListener("click", function(){ setLang("ta"); });
+
+function setLang(l){
+  LANG = l; t = I18N[l];
+  document.documentElement.lang = l;
+  $("btn-en").className = l==="en" ? "active" : "";
+  $("btn-ta").className = l==="ta" ? "active" : "";
+  $("t-title").textContent = t.title;
+  $("t-sub").textContent = t.sub;
+  $("search").placeholder = t.search;
+  $("t-places").textContent = t.places;
+  $("t-add").textContent = t.add;
+  $("m-title").textContent = t.mTitle;
+  $("l-name").textContent = t.name;
+  $("l-nameTa").textContent = t.nameTa;
+  $("l-cat").textContent = t.cat;
+  $("l-desc").textContent = t.desc;
+  $("l-descTa").textContent = t.descTa;
+  $("l-district").textContent = t.district;
+  $("l-state").textContent = t.state;
+  $("f-district").placeholder = t.districtPlaceholder;
+  populateStates();
+  fillDistricts($("f-state").value);
+  $("l-season").textContent = t.season;
+  $("l-address").textContent = t.address;
+  $("l-coord").textContent = t.coord;
+  $("h-geo").textContent = t.hGeo;
+  $("btn-geocode").textContent = t.locate;
+  $("btn-cancel").textContent = t.cancel;
+  $("btn-save").textContent = t.save;
+  $("btn-export").title = t.export;
+  $("btn-import").title = t.import;
+  $("cm-title").textContent = t.writeExp;
+  $("cm-star-label").textContent = t.yourRating;
+  $("cm-text-label").textContent = t.writeExp;
+  $("cm-save").textContent = t.post;
+  $("cm-list-title").textContent = t.comments;
+  $("cm-close").textContent = t.close;
+  var mode = $("modeLabel");
+  if(serverOn){ mode.textContent = LANG==="ta" ? "இந்த சாதனம் சர்வர் · பகிரப்பட்ட தரவு" : "This device server · shared data"; }
+  else { mode.textContent = t.local; }
+  mode.style.display = "block";
+  buildChips(); renderAll();
+}
+
+/* ===== toast ===== */
+var toastTimer;
+function toast(msg){
+  var el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+}
+
+/* ===== boot ===== */
+initDeviceId();
+initMap();
+buildChips();
+loadData().then(function(){
+  setLang("en");
+  startPolling();
+});
+
+function startPolling(){
+  if(!serverOn) return;
+  setInterval(function(){
+    apiCall("GET", "api/state").then(function(s){
+      if(!s || !Array.isArray(s.places) || s.rev === lastRev) return;
+      lastRev = s.rev;
+      places = s.places;
+      isAdmin = s.isAdminDevice === true || (s.adminDeviceId && s.adminDeviceId === deviceId);
+      buildRatingData(s.ratings);
+      buildCommentData(s.comments);
+      recomputeMaxId();
+      renderAll();
+    }).catch(function(){});
+  }, 8000);
+}
+</script>
+</body>
+</html>
