@@ -213,6 +213,14 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
         <span id="u-show-label">Show password</span>
       </label>
     </div>
+    <div class="field">
+      <label id="u-pass2-label">Confirm Password</label>
+      <input id="u-pass2" type="password" autocomplete="new-password">
+      <label style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="u-show2" style="width:auto">
+        <span id="u-show2-label">Show password</span>
+      </label>
+    </div>
     <div class="hint" id="u-msg"></div>
     <div class="actions">
       <button class="ghost" id="u-close">Close</button>
@@ -271,13 +279,13 @@ var I18N = {
     local:"Offline mode: data stored in this browser.",
     confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the admin or the person who added it can delete this place.",
     edit:"Edit", editTitle:"Edit Place", edited:"Place updated.",
-    uTitle:"Login / Sign Up", uUser:"User ID", uPass:"Password", uShow:"Show password",
+    uTitle:"Login / Sign Up", uUser:"User ID", uPass:"Password", uPass2:"Confirm Password", uShow:"Show password",
     uLogin:"Login", uSignup:"Create Account", uClose:"Close", myPlaces:"My Places",
     userTitle:"Login / Sign Up", logoutTitle:"Logout",
     uRequired:"Enter User ID and password.", uTaken:"User ID already taken. Try another.",
     uBadChars:"User ID: 3+ letters/numbers, - or _ only.", uShortPass:"Password must be at least 4 characters.",
     uNotFound:"User ID not found.", uWrongPass:"Wrong password.", uNoDb:"Database not connected.",
-    uCreated:"Account created!", uLogged:"Logged in!", uLogout:"Logged out.",
+    uMismatch:"Passwords do not match.", uCreated:"Account created!", uLogged:"Logged in!", uLogout:"Logged out.",
     uMyPrompt:"Not you? Press Close to stay logged out."
   },
   ta:{
@@ -307,13 +315,13 @@ var I18N = {
     local:"ஆஃப்லைன் முறை: தரவு இந்த உலாவியில் சேமிக்கப்படும்.",
     confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"இந்த இடத்தை சேர்த்தவர் அல்லது நிர்வாகி மட்டுமே நீக்க முடியும்.",
     edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது.",
-    uTitle:"உள்நுழை / கணக்கு உருவாக்கு", uUser:"பயனர் ஐடி", uPass:"கடவுச்சொல்", uShow:"கடவுச்சொல்லை காட்டு",
+    uTitle:"உள்நுழை / கணக்கு உருவாக்கு", uUser:"பயனர் ஐடி", uPass:"கடவுச்சொல்", uPass2:"கடவுச்சொல்லை உறுதிப்படுத்தவும்", uShow:"கடவுச்சொல்லை காட்டு",
     uLogin:"உள்நுழைக", uSignup:"கணக்கு உருவாக்கு", uClose:"மூடு", myPlaces:"என் இடங்கள்",
     userTitle:"உள்நுழைக / கணக்கு உருவாக்கு", logoutTitle:"வெளியேறு",
     uRequired:"பயனர் ஐடியையும் கடவுச்சொல்லையும் உள்ளிடவும்.", uTaken:"பயனர் ஐடி ஏற்கனவே உள்ளது. வேறொன்றை முயற்சிக்கவும்.",
     uBadChars:"பயனர் ஐடி: 3+ எழுத்துகள், எண்கள், - அல்லது _ மட்டும்.", uShortPass:"கடவுச்சொல் குறைந்தது 4 எழுத்துகள் இருக்க வேண்டும்.",
     uNotFound:"பயனர் ஐடி இல்லை.", uWrongPass:"தவறான கடவுச்சொல்.", uNoDb:"தரவுத்தளம் இணைக்கப்படவில்லை.",
-    uCreated:"கணக்கு உருவாக்கப்பட்டது!", uLogged:"உள்நுழைந்தீர்கள்!", uLogout:"வெளியேறினீர்கள்.",
+    uMismatch:"கடவுச்சொற்கள் பொருந்தவில்லை.", uCreated:"கணக்கு உருவாக்கப்பட்டது!", uLogged:"உள்நுழைந்தீர்கள்!", uLogout:"வெளியேறினீர்கள்.",
     uMyPrompt:"நீங்களா இல்லையா? உள்நுழையாமல் இருக்க மூடு அழுத்தவும்."
   }
 };
@@ -432,6 +440,9 @@ function openUserModal(){
   $("u-pass").value = "";
   $("u-pass").type = "password";
   $("u-show").checked = false;
+  $("u-pass2").value = "";
+  $("u-pass2").type = "password";
+  $("u-show2").checked = false;
   $("umodal").classList.add("show");
   setTimeout(function(){ $("u-user").focus(); }, 30);
 }
@@ -571,8 +582,10 @@ $("btn-user").addEventListener("click", function(){
 $("u-close").addEventListener("click", closeUserModal);
 $("umodal").addEventListener("click", function(e){ if(e.target === this) closeUserModal(); });
 $("u-show").addEventListener("change", function(){ $("u-pass").type = this.checked ? "text" : "password"; });
+$("u-show2").addEventListener("change", function(){ $("u-pass2").type = this.checked ? "text" : "password"; });
 $("u-user").addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); });
 $("u-pass").addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); });
+$("u-pass2").addEventListener("keydown", function(e){ if(e.key === "Enter") doSignup(); });
 
 function doLogin(){
   var u = sanitizeUser($("u-user").value);
@@ -594,11 +607,13 @@ function doLogin(){
 }
 $("u-login").addEventListener("click", doLogin);
 
-$("u-signup").addEventListener("click", function(){
+function doSignup(){
   var u = sanitizeUser($("u-user").value);
   var p = $("u-pass").value;
+  var p2 = $("u-pass2").value;
   if(u.length < 3){ authMsg(t.uBadChars); return; }
   if(p.length < 4){ authMsg(t.uShortPass); return; }
+  if(p !== p2){ authMsg(t.uMismatch); return; }
   if(!fbReady){ authMsg(t.uNoDb); return; }
   db.ref("users/"+u).once("value").then(function(snap){
     if(snap.exists()){ authMsg(t.uTaken); return; }
@@ -613,7 +628,8 @@ $("u-signup").addEventListener("click", function(){
       });
     });
   });
-});
+}
+$("u-signup").addEventListener("click", doSignup);
 
 function loadData(){
   return new Promise(function(resolve){
@@ -1248,7 +1264,9 @@ function setLang(l){
   $("u-title").textContent = t.uTitle;
   $("u-user-label").textContent = t.uUser;
   $("u-pass-label").textContent = t.uPass;
+  $("u-pass2-label").textContent = t.uPass2;
   $("u-show-label").textContent = t.uShow;
+  $("u-show2-label").textContent = t.uShow;
   $("u-close").textContent = t.uClose;
   $("u-signup").textContent = t.uSignup;
   $("u-login").textContent = t.uLogin;
@@ -1281,6 +1299,7 @@ buildChips();
 loadData().then(function(){
   setLang("en");
   updateUserUI();
+  if(!currentUser) setTimeout(openUserModal, 400);
 });
 </script>
 </body>
