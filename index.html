@@ -249,7 +249,7 @@ var I18N = {
     post:"Post", close:"Close", you:"You", anonymous:"Traveller",
     commentSaved:"Comment posted!", noComments:"No comments yet. Be the first!",
     local:"Offline mode: data stored in this browser.",
-    confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the admin can delete places.",
+    confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the admin or the person who added it can delete this place.",
     edit:"Edit", editTitle:"Edit Place", edited:"Place updated."
   },
   ta:{
@@ -277,7 +277,7 @@ var I18N = {
     post:"பதிவிடு", close:"மூடு", you:"நீங்கள்", anonymous:"பயணி",
     commentSaved:"கருத்து பதிவானது!", noComments:"இன்னும் கருத்துகள் இல்லை. முதலில் எழுதுங்கள்!",
     local:"ஆஃப்லைன் முறை: தரவு இந்த உலாவியில் சேமிக்கப்படும்.",
-    confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"நீக்க உரிமை நிர்வாகிக்கு மட்டுமே.",
+    confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"இந்த இடத்தை சேர்த்தவர் அல்லது நிர்வாகி மட்டுமே நீக்க முடியும்.",
     edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது."
   }
 };
@@ -648,7 +648,7 @@ function starsHTML(pid){
 }
 
 function canDelete(p){
-  if(serverOn) return isAdmin;
+  if(serverOn) return isAdmin || (p && p.createdBy === deviceId);
   return true;
 }
 function canEdit(p){
