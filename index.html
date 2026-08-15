@@ -1018,25 +1018,32 @@ function autoTrackIfNew(){
   if(!navigator.geolocation) return;
   setTimeout(trackLocation, 400);
 }
+function applyPlusCode(code){
+  if(typeof OpenLocationCode === "undefined"){ toast("Plus code library not loaded"); return; }
+  var d = OpenLocationCode.decode(code);
+  if(!d || !d.latitudeCenter) return;
+  var lat = d.latitudeCenter, lng = d.longitudeCenter;
+  $("f-lat").value = lat.toFixed(6)+", "+lng.toFixed(6);
+  syncCoord();
+  if(configMap){
+    configMap.setView([lat, lng], 15);
+    if(tempMarker) configMap.removeLayer(tempMarker);
+    tempMarker = L.marker([lat, lng]).addTo(configMap);
+  }
+  reverseGeocode(lat, lng);
+}
+function plusCodeMatch(v){
+  return v.match(/[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}/);
+}
 $("f-pluscode").addEventListener("input", function(){
-  var v = this.value.trim().toUpperCase();
-  var m = v.match(/[23456789CFGHJMPQRVWX]{6,7}\+[23456789CFGHJMPQRVWX]{2,3}/);
+  var m = plusCodeMatch(this.value.trim().toUpperCase());
   if(!m) return;
-  try{
-    if(typeof OpenLocationCode === "undefined"){ toast("Plus code library not loaded"); return; }
-    var d = OpenLocationCode.decode(m[0]);
-    if(d && d.latitudeCenter){
-      var lat = d.latitudeCenter, lng = d.longitudeCenter;
-      $("f-lat").value = lat.toFixed(6)+", "+lng.toFixed(6);
-      syncCoord();
-      if(configMap){
-        configMap.setView([lat, lng], 15);
-        if(tempMarker) configMap.removeLayer(tempMarker);
-        tempMarker = L.marker([lat, lng]).addTo(configMap);
-      }
-      reverseGeocode(lat, lng);
-    }
-  }catch(e){ /* invalid code - ignore */ }
+  try{ applyPlusCode(m[0]); }catch(e){ /* invalid code - ignore */ }
+});
+$("f-address").addEventListener("input", function(){
+  var m = plusCodeMatch(this.value.trim().toUpperCase());
+  if(!m) return;
+  try{ applyPlusCode(m[0]); }catch(e){ /* invalid code - ignore */ }
 });
 function reverseGeocode(lat, lng){
   fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng+"&zoom=16")
