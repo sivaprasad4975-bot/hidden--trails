@@ -99,6 +99,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
   </div>
   <div class="lang">
     <button id="btn-admin" title="Admin" style="display:none">🔑</button>
+    <button id="btn-user" title="Login / Sign Up">👤</button>
     <button id="btn-en" class="active">English</button>
     <button id="btn-ta">தமிழ்</button>
   </div>
@@ -120,8 +121,6 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
         <div class="count" id="t-total">0 places</div>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="addbtn" id="btn-export" title="Export">⇧</button>
-        <button class="addbtn" id="btn-import" title="Import">⇩</button>
         <button class="addbtn" id="btn-add">+ <span id="t-add">Add Place</span></button>
       </div>
     </div>
@@ -202,6 +201,27 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
   </div>
 </div>
 
+<div class="modal" id="umodal">
+  <div class="modalbox">
+    <h2 id="u-title">Login / Sign Up</h2>
+    <div class="field"><label id="u-user-label">User ID</label><input id="u-user" autocomplete="username"></div>
+    <div class="field">
+      <label id="u-pass-label">Password</label>
+      <input id="u-pass" type="password" autocomplete="current-password">
+      <label style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="u-show" style="width:auto">
+        <span id="u-show-label">Show password</span>
+      </label>
+    </div>
+    <div class="hint" id="u-msg"></div>
+    <div class="actions">
+      <button class="ghost" id="u-close">Close</button>
+      <button class="ghost" id="u-signup">Create Account</button>
+      <button class="primary" id="u-login">Login</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -250,7 +270,15 @@ var I18N = {
     commentSaved:"Comment posted!", noComments:"No comments yet. Be the first!",
     local:"Offline mode: data stored in this browser.",
     confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the admin or the person who added it can delete this place.",
-    edit:"Edit", editTitle:"Edit Place", edited:"Place updated."
+    edit:"Edit", editTitle:"Edit Place", edited:"Place updated.",
+    uTitle:"Login / Sign Up", uUser:"User ID", uPass:"Password", uShow:"Show password",
+    uLogin:"Login", uSignup:"Create Account", uClose:"Close", myPlaces:"My Places",
+    userTitle:"Login / Sign Up", logoutTitle:"Logout",
+    uRequired:"Enter User ID and password.", uTaken:"User ID already taken. Try another.",
+    uBadChars:"User ID: 3+ letters/numbers, - or _ only.", uShortPass:"Password must be at least 4 characters.",
+    uNotFound:"User ID not found.", uWrongPass:"Wrong password.", uNoDb:"Database not connected.",
+    uCreated:"Account created!", uLogged:"Logged in!", uLogout:"Logged out.",
+    uMyPrompt:"Not you? Press Close to stay logged out."
   },
   ta:{
     title:"மறைந்த சுற்றுலா தலங்கள் – Hidden Gems",
@@ -278,7 +306,15 @@ var I18N = {
     commentSaved:"கருத்து பதிவானது!", noComments:"இன்னும் கருத்துகள் இல்லை. முதலில் எழுதுங்கள்!",
     local:"ஆஃப்லைன் முறை: தரவு இந்த உலாவியில் சேமிக்கப்படும்.",
     confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"இந்த இடத்தை சேர்த்தவர் அல்லது நிர்வாகி மட்டுமே நீக்க முடியும்.",
-    edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது."
+    edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது.",
+    uTitle:"உள்நுழை / கணக்கு உருவாக்கு", uUser:"பயனர் ஐடி", uPass:"கடவுச்சொல்", uShow:"கடவுச்சொல்லை காட்டு",
+    uLogin:"உள்நுழைக", uSignup:"கணக்கு உருவாக்கு", uClose:"மூடு", myPlaces:"என் இடங்கள்",
+    userTitle:"உள்நுழைக / கணக்கு உருவாக்கு", logoutTitle:"வெளியேறு",
+    uRequired:"பயனர் ஐடியையும் கடவுச்சொல்லையும் உள்ளிடவும்.", uTaken:"பயனர் ஐடி ஏற்கனவே உள்ளது. வேறொன்றை முயற்சிக்கவும்.",
+    uBadChars:"பயனர் ஐடி: 3+ எழுத்துகள், எண்கள், - அல்லது _ மட்டும்.", uShortPass:"கடவுச்சொல் குறைந்தது 4 எழுத்துகள் இருக்க வேண்டும்.",
+    uNotFound:"பயனர் ஐடி இல்லை.", uWrongPass:"தவறான கடவுச்சொல்.", uNoDb:"தரவுத்தளம் இணைக்கப்படவில்லை.",
+    uCreated:"கணக்கு உருவாக்கப்பட்டது!", uLogged:"உள்நுழைந்தீர்கள்!", uLogout:"வெளியேறினீர்கள்.",
+    uMyPrompt:"நீங்களா இல்லையா? உள்நுழையாமல் இருக்க மூடு அழுத்தவும்."
   }
 };
 
@@ -332,6 +368,8 @@ var serverOn = false;
 var isAdmin = false;
 var adminDeviceId = null;
 var adminClaim = null;
+var currentUser = "";
+var myOnly = false;
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -357,6 +395,55 @@ function initDeviceId(){
     if(!deviceId){ deviceId = "d" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem("hiddenDevice_v1", deviceId); }
   }catch(e){ deviceId = "d" + Date.now().toString(36); }
 }
+
+/* ===== account ===== */
+function initUser(){
+  try{ currentUser = localStorage.getItem("hiddenUser_v1") || ""; }catch(e){ currentUser = ""; }
+  myOnly = false;
+}
+function saveUserSession(u){
+  currentUser = u;
+  try{ localStorage.setItem("hiddenUser_v1", u); }catch(e){}
+}
+function logoutUser(){
+  currentUser = "";
+  myOnly = false;
+  try{ localStorage.removeItem("hiddenUser_v1"); }catch(e){}
+}
+function sanitizeUser(u){
+  return String(u||"").trim().replace(/[^A-Za-z0-9_-]/g, "");
+}
+function sha256(str){
+  if(window.crypto && crypto.subtle){
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ("0"+b.toString(16)).slice(-2); }).join("");
+    });
+  }
+  var h = 0;
+  for(var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) % 2147483647; }
+  return Promise.resolve("h"+h.toString(36));
+}
+function isMine(p){
+  return !!(p && ((currentUser && p.createdBy === currentUser) || p.createdBy === deviceId));
+}
+function openUserModal(){
+  $("u-msg").textContent = "";
+  $("u-user").value = "";
+  $("u-pass").value = "";
+  $("u-pass").type = "password";
+  $("u-show").checked = false;
+  $("umodal").classList.add("show");
+  setTimeout(function(){ $("u-user").focus(); }, 30);
+}
+function closeUserModal(){ $("umodal").classList.remove("show"); }
+function updateUserUI(){
+  var b = $("btn-user");
+  if(!b) return;
+  if(currentUser){ b.textContent = "👤 " + currentUser; b.title = t.logoutTitle + " (" + currentUser + ")"; }
+  else { b.textContent = "👤"; b.title = t.userTitle; }
+  buildChips();
+}
+function authMsg(msg){ $("u-msg").textContent = msg; }
 
 /* ===== data layer ===== */
 var fbReady = false;
@@ -467,6 +554,65 @@ $("btn-admin").addEventListener("click", function(){
   } else {
     toast(LANG === "ta" ? "தவறான குறியீடு" : "Wrong code");
   }
+});
+
+$("btn-user").addEventListener("click", function(){
+  if(currentUser){
+    if(confirm(LANG === "ta" ? ("வெளியேற வேண்டுமா? (" + currentUser + ")") : ("Logout " + currentUser + "?"))){
+      logoutUser();
+      toast(t.uLogout);
+      updateUserUI();
+      renderAll();
+    }
+    return;
+  }
+  openUserModal();
+});
+$("u-close").addEventListener("click", closeUserModal);
+$("umodal").addEventListener("click", function(e){ if(e.target === this) closeUserModal(); });
+$("u-show").addEventListener("change", function(){ $("u-pass").type = this.checked ? "text" : "password"; });
+$("u-user").addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); });
+$("u-pass").addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); });
+
+function doLogin(){
+  var u = sanitizeUser($("u-user").value);
+  var p = $("u-pass").value;
+  if(!u || !p){ authMsg(t.uRequired); return; }
+  if(!fbReady){ authMsg(t.uNoDb); return; }
+  db.ref("users/"+u).once("value").then(function(snap){
+    if(!snap.exists()){ authMsg(t.uNotFound); return; }
+    return sha256(p).then(function(hash){
+      if(snap.val().pass !== hash){ authMsg(t.uWrongPass); return; }
+      saveUserSession(u);
+      closeUserModal();
+      toast(t.uLogged + " " + u);
+      myOnly = true;
+      updateUserUI();
+      renderAll();
+    });
+  });
+}
+$("u-login").addEventListener("click", doLogin);
+
+$("u-signup").addEventListener("click", function(){
+  var u = sanitizeUser($("u-user").value);
+  var p = $("u-pass").value;
+  if(u.length < 3){ authMsg(t.uBadChars); return; }
+  if(p.length < 4){ authMsg(t.uShortPass); return; }
+  if(!fbReady){ authMsg(t.uNoDb); return; }
+  db.ref("users/"+u).once("value").then(function(snap){
+    if(snap.exists()){ authMsg(t.uTaken); return; }
+    return sha256(p).then(function(hash){
+      return db.ref("users/"+u).set({pass: hash, at: Date.now()}).then(function(){
+        saveUserSession(u);
+        closeUserModal();
+        toast(t.uCreated + " " + u);
+        myOnly = true;
+        updateUserUI();
+        renderAll();
+      });
+    });
+  });
 });
 
 function loadData(){
@@ -591,6 +737,7 @@ function initMap(){
 function renderAll(){
   var q = currentSearch.trim().toLowerCase();
   var list = places.filter(function(p){
+    if(myOnly && !isMine(p)) return false;
     if(currentCat !== "all" && p.category !== currentCat) return false;
     if(!q) return true;
     return p.name.toLowerCase().indexOf(q)!==-1 ||
@@ -647,12 +794,12 @@ function starsHTML(pid){
   return s;
 }
 
-function canDelete(p){
-  if(serverOn) return isAdmin || (p && p.createdBy === deviceId);
+function canEdit(p){
+  if(serverOn) return isAdmin || isMine(p);
   return true;
 }
-function canEdit(p){
-  if(serverOn) return isAdmin || (p && p.createdBy === deviceId);
+function canDelete(p){
+  if(serverOn) return isAdmin || isMine(p);
   return true;
 }
 
@@ -745,6 +892,7 @@ function doSearch(){
   var q = $("search").value.trim();
   currentSearch = q;
   var matched = q ? places.filter(function(p){
+    if(myOnly && !isMine(p)) return false;
     var n=p.name.toLowerCase(), nt=(p.nameTa||"").toLowerCase(), d=(p.district||"").toLowerCase(), st=(p.state||"").toLowerCase();
     return n.indexOf(q.toLowerCase())!==-1 || nt.indexOf(q.toLowerCase())!==-1 || d.indexOf(q.toLowerCase())!==-1 || st.indexOf(q.toLowerCase())!==-1;
   }) : [];
@@ -794,13 +942,16 @@ function geocodeText(q){
 function buildChips(){
   var el = $("chips");
   var keys = ["all"].concat(Object.keys(CATS));
-  el.innerHTML = keys.map(function(k){
+  var mineChip = currentUser ? '<button class="chip'+(myOnly?' active':'')+'" data-cat="mine">'+t.myPlaces+'</button>' : '';
+  el.innerHTML = mineChip + keys.map(function(k){
     var lbl = k==="all" ? t.catAll : CATS[k].label[LANG];
-    return '<button class="chip'+(currentCat===k?' active':'')+'" data-cat="'+k+'">'+lbl+'</button>';
+    return '<button class="chip'+(currentCat===k && !myOnly?' active':'')+'" data-cat="'+k+'">'+lbl+'</button>';
   }).join("");
   el.querySelectorAll(".chip").forEach(function(ch){
     ch.addEventListener("click", function(){
-      currentCat = ch.getAttribute("data-cat");
+      var k = ch.getAttribute("data-cat");
+      if(k === "mine"){ myOnly = true; currentCat = "all"; }
+      else { myOnly = false; currentCat = k; }
       buildChips(); renderAll();
     });
   });
@@ -814,13 +965,6 @@ $("btn-geocode").addEventListener("click", function(){
   var addr = $("f-address").value.trim();
   if(!addr){ toast(t.notFound); return; }
   geocodeToForm(addr);
-});
-var geoDebounce = null;
-$("f-address").addEventListener("input", function(){
-  clearTimeout(geoDebounce);
-  var addr = this.value.trim();
-  if(addr.length < 4) return;
-  geoDebounce = setTimeout(function(){ geocodeToForm(addr); }, 3000);
 });
 function trackLocation(){
   if(!navigator.geolocation){ toast(t.notFound); return; }
@@ -995,7 +1139,7 @@ function saveNew(){
     renderAll(); closeModal(); toast(t.edited);
     return;
   }
-  var p = Object.assign({id: placeId++, createdBy: deviceId}, base);
+  var p = Object.assign({id: placeId++, createdBy: currentUser || deviceId}, base);
   places.push(p);
   if(fbReady){
     db.ref("places/"+p.id).set(p);
@@ -1057,41 +1201,6 @@ $("cm-save").addEventListener("click", function(){
 $("cm-close").addEventListener("click", closeComment);
 $("cmodal").addEventListener("click", function(e){ if(e.target===this) closeComment(); });
 
-/* ===== export / import ===== */
-$("btn-export").addEventListener("click", function(){
-  var blob = new Blob([JSON.stringify(places,null,2)], {type:"application/json"});
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "hidden-places.json";
-  a.click();
-});
-$("btn-import").addEventListener("click", function(){
-  var inp = document.createElement("input");
-  inp.type = "file"; inp.accept = "application/json,.json";
-  inp.addEventListener("change", function(){
-    var f = inp.files[0]; if(!f) return;
-    var rd = new FileReader();
-    rd.onload = function(){
-      try{
-        var arr = JSON.parse(rd.result);
-        if(!Array.isArray(arr)) throw new Error();
-        arr.forEach(function(p){
-          if(p.lat!==undefined && p.lng!==undefined && p.name){
-            p.id = placeId++;
-            p.createdBy = deviceId;
-            places.push(p);
-            if(fbReady){ db.ref("places/"+p.id).set(p); }
-          }
-        });
-        if(!fbReady) saveLocalPlaces();
-        renderAll(); toast(t.imported);
-      }catch(e){ toast(LANG==="ta"?"கோப்பு தவறானது":"Invalid file"); }
-    };
-    rd.readAsText(f);
-  });
-  inp.click();
-});
-
 /* ===== language ===== */
 $("btn-en").addEventListener("click", function(){ setLang("en"); });
 $("btn-ta").addEventListener("click", function(){ setLang("ta"); });
@@ -1136,8 +1245,14 @@ function setLang(l){
   $("btn-geocode").textContent = t.locate;
   $("btn-cancel").textContent = t.cancel;
   $("btn-save").textContent = t.save;
-  $("btn-export").title = t.export;
-  $("btn-import").title = t.import;
+  $("u-title").textContent = t.uTitle;
+  $("u-user-label").textContent = t.uUser;
+  $("u-pass-label").textContent = t.uPass;
+  $("u-show-label").textContent = t.uShow;
+  $("u-close").textContent = t.uClose;
+  $("u-signup").textContent = t.uSignup;
+  $("u-login").textContent = t.uLogin;
+  $("btn-user").title = currentUser ? t.logoutTitle : t.userTitle;
   $("cm-title").textContent = t.writeExp;
   $("cm-star-label").textContent = t.yourRating;
   $("cm-text-label").textContent = t.writeExp;
@@ -1160,10 +1275,12 @@ function toast(msg){
 
 /* ===== boot ===== */
 initDeviceId();
+initUser();
 initMap();
 buildChips();
 loadData().then(function(){
   setLang("en");
+  updateUserUI();
 });
 </script>
 </body>
