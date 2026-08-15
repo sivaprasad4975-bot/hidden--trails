@@ -98,6 +98,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
     <div class="sub" id="t-sub">Discover offbeat trekking, waterfalls, viewpoints, temples &amp; dams</div>
   </div>
   <div class="lang">
+    <button id="btn-admin" title="Admin" style="display:none">🔑</button>
     <button id="btn-en" class="active">English</button>
     <button id="btn-ta">தமிழ்</button>
   </div>
@@ -329,6 +330,8 @@ var editingId = null;
 var deviceId = "";
 var serverOn = false;
 var isAdmin = false;
+var adminDeviceId = null;
+var adminClaim = null;
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -432,6 +435,40 @@ function listenAll(){
   db.ref("comments").on("value", updateComments);
 }
 
+function listenMeta(){
+  db.ref("meta/adminDevice").on("value", function(snap){
+    adminDeviceId = snap.val() || null;
+    isAdmin = !!(adminDeviceId && deviceId === adminDeviceId);
+    refreshAdminUI();
+    updateModeLabel();
+    renderAll();
+  });
+  db.ref("meta/adminClaim").on("value", function(snap){
+    adminClaim = snap.val() || null;
+    refreshAdminUI();
+  });
+}
+
+function refreshAdminUI(){
+  var b = $("btn-admin");
+  if(!b) return;
+  b.style.display = (fbReady && adminClaim && !adminDeviceId) ? "" : "none";
+  b.title = LANG === "ta" ? "நிர்வாகியாக்க" : "Become admin";
+}
+
+$("btn-admin").addEventListener("click", function(){
+  if(!adminClaim) return;
+  var code = prompt(LANG === "ta" ? "நிர்வாகி குறியீட்டை உள்ளிடவும்:" : "Enter the admin code:");
+  if(!code) return;
+  if(code.trim() === adminClaim){
+    db.ref("meta/adminDevice").set(deviceId);
+    db.ref("meta/adminClaim").remove();
+    toast(LANG === "ta" ? "இந்த சாதனம் இப்போது நிர்வாகி!" : "This device is now the admin!");
+  } else {
+    toast(LANG === "ta" ? "தவறான குறியீடு" : "Wrong code");
+  }
+});
+
 function loadData(){
   return new Promise(function(resolve){
     if(!fbConfigured()){
@@ -445,9 +482,9 @@ function loadData(){
       db = firebase.database();
       fbReady = true;
       serverOn = true;
-      isAdmin = true;
       seedIfEmpty();
       listenAll();
+      listenMeta();
     }catch(e){
       fbReady = false;
       serverOn = false;
@@ -1056,6 +1093,18 @@ $("btn-import").addEventListener("click", function(){
 $("btn-en").addEventListener("click", function(){ setLang("en"); });
 $("btn-ta").addEventListener("click", function(){ setLang("ta"); });
 
+function updateModeLabel(){
+  var mode = $("modeLabel");
+  if(!mode) return;
+  if(serverOn){
+    mode.textContent = LANG === "ta" ? "நேரலை ஒத்திசைவு · அனைவரும் உடனடியாக பார்க்கலாம்" : "Live sync · everyone sees changes instantly";
+    if(isAdmin) mode.textContent += LANG === "ta" ? " · நிர்வாகி" : " · Admin";
+  } else {
+    mode.textContent = t.local;
+  }
+  mode.style.display = "block";
+}
+
 function setLang(l){
   LANG = l; t = I18N[l];
   document.documentElement.lang = l;
@@ -1092,10 +1141,7 @@ function setLang(l){
   $("cm-save").textContent = t.post;
   $("cm-list-title").textContent = t.comments;
   $("cm-close").textContent = t.close;
-  var mode = $("modeLabel");
-  if(serverOn){ mode.textContent = LANG==="ta" ? "நேரலை ஒத்திசைவு · அனைவரும் உடனடியாக பார்க்கலாம்" : "Live sync · everyone sees changes instantly"; }
-  else { mode.textContent = t.local; }
-  mode.style.display = "block";
+  updateModeLabel();
   buildChips(); renderAll();
 }
 
