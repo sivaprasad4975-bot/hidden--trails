@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/openlocationcode@1.0.3/openlocationcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 :root{
   --bg:#0d1117; --panel:#161b22; --card:#1c2331; --border:#2d3648;
@@ -204,6 +206,15 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 <script>
 /* ===== CONFIG ===== */
 var CONFIG = {
+  FIREBASE_CONFIG: {
+    apiKey: "AIzaSyDjKJOV-D8ivCY75C6-StKdirlKm9MoBZA",
+    authDomain: "hidden-trails-yywt.firebaseapp.com",
+    databaseURL: "https://hidden-trails-yywt-default-rtdb.firebaseio.com",
+    projectId: "hidden-trails-yywt",
+    storageBucket: "hidden-trails-yywt.firebasestorage.app",
+    messagingSenderId: "1072521666254",
+    appId: "1:1072521666254:web:10fc07b8c95ff7f0623a9f"
+  },
   BHUVAN_API_KEY: "PASTE_YOUR_BHUVAN_API_KEY_HERE",
   BHUVAN_WMS_URL: "https://bhuvan-ras1.nrsc.gov.in/bhuvan/wms",
   BHUVAN_LAYER: "ISRO_RS2_2",
@@ -318,7 +329,6 @@ var editingId = null;
 var deviceId = "";
 var serverOn = false;
 var isAdmin = false;
-var lastRev = null;
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -346,52 +356,104 @@ function initDeviceId(){
 }
 
 /* ===== data layer ===== */
+var fbReady = false;
+var db = null;
+
+function fbConfigured(){
+  var c = CONFIG.FIREBASE_CONFIG || {};
+  return !!(c.databaseURL && c.databaseURL.indexOf("YOUR_") === -1 && c.apiKey && c.apiKey.indexOf("YOUR_") === -1);
+}
+
 function recomputeMaxId(){ places.forEach(function(p){ if(p.id>placeId) placeId=p.id; }); placeId++; }
 
-function apiCall(method, url, body){
-  return fetch(url, {
-    method: method,
-    headers: {"Content-Type":"application/json", "X-Device": deviceId},
-    body: body ? JSON.stringify(body) : undefined
-  }).then(function(r){ return r.json(); });
+function updatePlaces(snap){
+  var list = [];
+  snap.forEach(function(child){
+    var p = child.val();
+    if(!p) return;
+    p.id = parseInt(child.key, 10);
+    list.push(p);
+  });
+  places = list;
+  recomputeMaxId();
+  renderAll();
 }
 
-function buildRatingData(list){
+function updateRatings(snap){
   ratingData = {};
-  (list||[]).forEach(function(r){
-    var g = ratingData[r.placeId] || {sum:0,count:0,mine:null};
-    g.sum += r.value; g.count++;
-    if(r.deviceId === deviceId) g.mine = r.value;
-    ratingData[r.placeId] = g;
+  snap.forEach(function(placeChild){
+    var pid = parseInt(placeChild.key, 10);
+    var g = {sum:0,count:0,mine:null};
+    placeChild.forEach(function(devChild){
+      var v = devChild.val();
+      if(!v) return;
+      g.sum += v; g.count++;
+      if(devChild.key === deviceId) g.mine = v;
+    });
+    ratingData[pid] = g;
+  });
+  renderAll();
+}
+
+function updateComments(snap){
+  commentData = {};
+  snap.forEach(function(placeChild){
+    var pid = parseInt(placeChild.key, 10);
+    var g = {list:[], mine:null};
+    placeChild.forEach(function(devChild){
+      var c = devChild.val();
+      if(!c) return;
+      var full = {deviceId: devChild.key, placeId: pid, value: c.value||0, text: c.text||"", at: c.at||0};
+      g.list.push(full);
+      if(devChild.key === deviceId) g.mine = full;
+    });
+    commentData[pid] = g;
+  });
+  if(currentCid !== null) renderCommentList(currentCid);
+  renderAll();
+}
+
+function seedIfEmpty(){
+  db.ref("meta/initialized").once("value", function(snap){
+    if(snap.val()) return;
+    db.ref("places").once("value", function(ps){
+      if(ps.numChildren() > 0) return;
+      var upd = {};
+      SAMPLE.forEach(function(p){ upd["places/"+p.id] = p; });
+      upd["meta/initialized"] = true;
+      db.ref().update(upd);
+    });
   });
 }
 
-function buildCommentData(list){
-  commentData = {};
-  (list||[]).forEach(function(c){
-    var g = commentData[c.placeId] || {list:[], mine:null};
-    g.list.push(c);
-    if(c.deviceId === deviceId) g.mine = c;
-    commentData[c.placeId] = g;
-  });
+function listenAll(){
+  db.ref("places").on("value", updatePlaces);
+  db.ref("ratings").on("value", updateRatings);
+  db.ref("comments").on("value", updateComments);
 }
 
 function loadData(){
   return new Promise(function(resolve){
-    apiCall("GET", "api/state").then(function(s){
-      if(!s || !Array.isArray(s.places)) throw new Error("no server");
-      serverOn = true;
-      places = s.places;
-      isAdmin = s.isAdminDevice === true || (s.adminDeviceId && s.adminDeviceId === deviceId);
-      if(s.isAdminDevice) deviceId = s.adminDeviceId || deviceId;
-      buildRatingData(s.ratings);
-      buildCommentData(s.comments);
-      recomputeMaxId();
-      lastRev = s.rev;
-    }).catch(function(){
+    if(!fbConfigured()){
       serverOn = false;
       loadLocal();
-    }).then(function(){ resolve(); });
+      resolve();
+      return;
+    }
+    try{
+      firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+      db = firebase.database();
+      fbReady = true;
+      serverOn = true;
+      isAdmin = true;
+      seedIfEmpty();
+      listenAll();
+    }catch(e){
+      fbReady = false;
+      serverOn = false;
+      loadLocal();
+    }
+    resolve();
   });
 }
 
@@ -434,17 +496,17 @@ function commentCount(pid){
   return g && g.list ? g.list.length : 0;
 }
 function saveComment(pid, value, text){
+  if(fbReady){
+    db.ref("comments/"+pid+"/"+deviceId).set({text: text, value: value, at: Date.now()});
+    return;
+  }
   var c = {id: pid+"_"+deviceId, placeId: pid, deviceId: deviceId, value: value, text: text, at: Date.now()};
   var g = commentData[pid] || {list:[], mine:null};
   g.list = g.list.filter(function(x){ return x.deviceId !== deviceId; });
   g.list.push(c);
   g.mine = c;
   commentData[pid] = g;
-  if(serverOn){
-    apiCall("POST", "api/comments", {placeId: pid, deviceId: deviceId, value: value, text: text}).catch(function(){});
-  } else {
-    saveLocalComments();
-  }
+  saveLocalComments();
 }
 function timeAgo(ts){
   var s = Math.floor((Date.now()-ts)/1000);
@@ -458,8 +520,8 @@ function setMyRating(pid, v){
   if(g.mine){ g.sum -= g.mine; } else { g.count++; }
   g.mine = v; g.sum += v;
   ratingData[pid] = g;
-  if(serverOn){
-    apiCall("POST", "api/ratings", {placeId: pid, deviceId: deviceId, value: v}).catch(function(){});
+  if(fbReady){
+    db.ref("ratings/"+pid+"/"+deviceId).set(v);
   } else {
     saveLocalRatings();
   }
@@ -615,11 +677,11 @@ function delPlace(id){
     delete ratingData[id];
     renderAll(); toast(t.deleted);
   };
-  if(serverOn){
-    apiCall("DELETE", "api/places/"+id).then(function(res){
-      if(res && res.ok){ removeLocal(); }
-      else { toast(t.noDel); }
-    });
+  if(fbReady){
+    db.ref("places/"+id).remove();
+    db.ref("ratings/"+id).remove();
+    db.ref("comments/"+id).remove();
+    removeLocal();
     return;
   }
   saveLocalPlaces(); saveLocalRatings();
@@ -888,19 +950,18 @@ function saveNew(){
     var old = places.find(function(x){ return x.id===editingId; });
     var ep = Object.assign({}, old, base, {id: editingId, createdBy: old ? old.createdBy : deviceId});
     places = places.map(function(x){ return x.id===editingId ? ep : x; });
-    if(serverOn){ apiCall("PUT", "api/places/"+editingId, {place: base}).catch(function(){}); }
+    if(fbReady){ db.ref("places/"+editingId).set(ep); }
     else { saveLocalPlaces(); }
     renderAll(); closeModal(); toast(t.edited);
     return;
   }
   var p = Object.assign({id: placeId++, createdBy: deviceId}, base);
   places.push(p);
-  if(serverOn){
-    apiCall("POST", "api/places", {deviceId: deviceId, place: p}).then(function(res){
-      if(res && res.place){ var np = res.place; p.id = np.id; p.createdBy = np.createdBy; }
-      renderAll();
-    }).catch(function(){});
-  } else { saveLocalPlaces(); }
+  if(fbReady){
+    db.ref("places/"+p.id).set(p);
+  } else {
+    saveLocalPlaces();
+  }
   renderAll(); closeModal(); toast(t.saved);
 }
 
@@ -979,10 +1040,10 @@ $("btn-import").addEventListener("click", function(){
             p.id = placeId++;
             p.createdBy = deviceId;
             places.push(p);
-            if(serverOn){ apiCall("POST","api/places",{deviceId:deviceId,place:p}).catch(function(){}); }
+            if(fbReady){ db.ref("places/"+p.id).set(p); }
           }
         });
-        if(!serverOn) saveLocalPlaces();
+        if(!fbReady) saveLocalPlaces();
         renderAll(); toast(t.imported);
       }catch(e){ toast(LANG==="ta"?"கோப்பு தவறானது":"Invalid file"); }
     };
@@ -1032,7 +1093,7 @@ function setLang(l){
   $("cm-list-title").textContent = t.comments;
   $("cm-close").textContent = t.close;
   var mode = $("modeLabel");
-  if(serverOn){ mode.textContent = LANG==="ta" ? "இந்த சாதனம் சர்வர் · பகிரப்பட்ட தரவு" : "This device server · shared data"; }
+  if(serverOn){ mode.textContent = LANG==="ta" ? "நேரலை ஒத்திசைவு · அனைவரும் உடனடியாக பார்க்கலாம்" : "Live sync · everyone sees changes instantly"; }
   else { mode.textContent = t.local; }
   mode.style.display = "block";
   buildChips(); renderAll();
@@ -1054,24 +1115,7 @@ initMap();
 buildChips();
 loadData().then(function(){
   setLang("en");
-  startPolling();
 });
-
-function startPolling(){
-  if(!serverOn) return;
-  setInterval(function(){
-    apiCall("GET", "api/state").then(function(s){
-      if(!s || !Array.isArray(s.places) || s.rev === lastRev) return;
-      lastRev = s.rev;
-      places = s.places;
-      isAdmin = s.isAdminDevice === true || (s.adminDeviceId && s.adminDeviceId === deviceId);
-      buildRatingData(s.ratings);
-      buildCommentData(s.comments);
-      recomputeMaxId();
-      renderAll();
-    }).catch(function(){});
-  }, 8000);
-}
 </script>
 </body>
 </html>
