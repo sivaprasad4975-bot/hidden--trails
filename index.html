@@ -249,7 +249,7 @@ var I18N = {
     post:"Post", close:"Close", you:"You", anonymous:"Traveller",
     commentSaved:"Comment posted!", noComments:"No comments yet. Be the first!",
     local:"Offline mode: data stored in this browser.",
-    confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the owner device can delete places.",
+    confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the admin can delete places.",
     edit:"Edit", editTitle:"Edit Place", edited:"Place updated."
   },
   ta:{
@@ -277,7 +277,7 @@ var I18N = {
     post:"பதிவிடு", close:"மூடு", you:"நீங்கள்", anonymous:"பயணி",
     commentSaved:"கருத்து பதிவானது!", noComments:"இன்னும் கருத்துகள் இல்லை. முதலில் எழுதுங்கள்!",
     local:"ஆஃப்லைன் முறை: தரவு இந்த உலாவியில் சேமிக்கப்படும்.",
-    confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"நீக்க உரிமை இந்த சாதனம்/நிர்வாகிக்கு மட்டுமே.",
+    confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"நீக்க உரிமை நிர்வாகிக்கு மட்டுமே.",
     edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது."
   }
 };
@@ -647,8 +647,12 @@ function starsHTML(pid){
   return s;
 }
 
-function canManage(p){
+function canDelete(p){
   if(serverOn) return isAdmin;
+  return true;
+}
+function canEdit(p){
+  if(serverOn) return isAdmin || (p && p.createdBy === deviceId);
   return true;
 }
 
@@ -657,9 +661,8 @@ function renderCards(list){
   if(!list.length){ el.innerHTML = '<div class="count">'+t.noPlaces+'</div>'; return; }
   el.innerHTML = list.map(function(p){
     var c = CATS[p.category];
-    var manage = canManage(p);
-    var delBtn = manage ? '<button class="del" data-del="'+p.id+'">✕ '+t.delete+'</button>' : '';
-    var editBtn = manage ? '<button class="edit" data-edit="'+p.id+'">✏ '+t.edit+'</button>' : '';
+    var delBtn = canDelete(p) ? '<button class="del" data-del="'+p.id+'">✕ '+t.delete+'</button>' : '';
+    var editBtn = canEdit(p) ? '<button class="edit" data-edit="'+p.id+'">✏ '+t.edit+'</button>' : '';
     return '<div class="card" data-id="'+p.id+'">'+
       '<span class="cat" style="background:'+c.color+'22;color:'+c.color+'">'+c.label[LANG]+'</span>'+
       '<h3>'+esc(p.name)+'</h3>'+
@@ -707,7 +710,7 @@ function renderCards(list){
 function delPlace(id){
   if(!confirm(t.confirmDel)) return;
   var p = places.find(function(x){ return x.id===id; });
-  if(p && !canManage(p)){ toast(t.noDel); return; }
+  if(p && !canDelete(p)){ toast(t.noDel); return; }
   var removeLocal = function(){
     places = places.filter(function(x){ return x.id!==id; });
     if(markers[id]){ map.removeLayer(markers[id]); delete markers[id]; }
