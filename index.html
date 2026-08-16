@@ -157,7 +157,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
         <label id="l-state">State</label>
         <select id="f-state"><option value="">—</option></select>
       </div>
-      <div class="field"><label id="l-season">Best Season</label><input id="f-season"></div>
+      <div class="field"><label id="l-season">Best Season</label><div id="f-season" class="chips"></div></div>
     </div>
     <div class="field">
       <label id="l-district">District</label>
@@ -1120,7 +1120,7 @@ function openEdit(id){
   $("f-desc").value = p.desc || "";
   $("f-descTa").value = p.descTa || "";
   $("f-district").value = p.district || "";
-  $("f-season").value = p.season || "";
+  setSeasonSel(parseSeason(p.season || ""));
   $("f-state").value = p.state || "";
   fillDistricts(p.state || "");
   $("f-lat").value = p.lat + ", " + p.lng;
@@ -1137,10 +1137,77 @@ function closeModal(){
   $("modal").classList.remove("show");
   if(configMap){ configMap.remove(); configMap = null; }
 }
+var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var MONTHS_TA = ["ஜன","பிப்","மார்","ஏப்","மே","ஜூன்","ஜூலை","ஆக","செப்","அக்","நவ","டிச"];
+var MONTH_FULL = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+var seasonSel = [];
+
+function renderSeasonChips(){
+  var el = $("f-season");
+  if(!el) return;
+  var opts = MONTHS.map(function(m,i){ return {v:m, l:(LANG==="ta"?MONTHS_TA[i]:m)}; });
+  opts.push({v:"All year", l:LANG==="ta"?"ஆண்டு முழுவதும்":"All year"});
+  el.innerHTML = opts.map(function(o){
+    var on = seasonSel.indexOf(o.v)>=0 ? " active" : "";
+    return '<button type="button" class="chip'+on+'" data-m="'+o.v+'">'+o.l+'</button>';
+  }).join("");
+  el.querySelectorAll(".chip").forEach(function(b){
+    b.addEventListener("click", function(){ toggleSeason(b.getAttribute("data-m")); });
+  });
+}
+function toggleSeason(m){
+  var i = seasonSel.indexOf(m);
+  if(m === "All year"){
+    seasonSel = i>=0 ? [] : ["All year"];
+  } else {
+    if(i>=0) seasonSel.splice(i,1); else seasonSel.push(m);
+    if(seasonSel.indexOf("All year")>=0 && seasonSel.length>1) seasonSel = seasonSel.filter(function(x){ return x!=="All year"; });
+    if(seasonSel.length===12) seasonSel = ["All year"];
+  }
+  renderSeasonChips();
+}
+function formatSeason(sel){
+  if(!sel.length) return "";
+  if(sel.indexOf("All year")>=0 || sel.length>=12) return "All year";
+  var idxs = sel.map(function(m){ return MONTHS.indexOf(m); }).filter(function(i){ return i>=0; }).sort(function(a,b){ return a-b; });
+  var n = idxs.length;
+  if(n === 1) return MONTHS[idxs[0]];
+  var maxGap = 0, maxGapAt = 0;
+  for(var i=0;i<n;i++){
+    var gap = (idxs[(i+1)%n] - idxs[i] + 12) % 12;
+    if(gap > maxGap){ maxGap = gap; maxGapAt = (i+1)%n; }
+  }
+  if(maxGap === 13 - n){
+    return MONTHS[idxs[maxGapAt]] + "–" + MONTHS[idxs[(maxGapAt + n - 1) % n]];
+  }
+  return idxs.map(function(i){ return MONTHS[i]; }).join(", ");
+}
+function monthIndex(tok){
+  var t = tok.toLowerCase();
+  for(var i=0;i<12;i++){ if(MONTHS[i].toLowerCase()===t || MONTH_FULL[i]===t) return i; }
+  return -1;
+}
+function parseSeason(v){
+  if(!v) return [];
+  var s = String(v);
+  if(/all/i.test(s)) return ["All year"];
+  var idxs = (s.match(/[a-z]+/gi)||[]).map(monthIndex).filter(function(i){ return i>=0; });
+  if(!idxs.length) return [];
+  if(idxs.length === 1) return [MONTHS[idxs[0]]];
+  if(idxs.length === 2){
+    var from = idxs[0], to = idxs[1], out = [];
+    for(var k=0;k<12;k++){ var cur=(from+k)%12; out.push(MONTHS[cur]); if(cur===to) break; }
+    return out;
+  }
+  return idxs.map(function(i){ return MONTHS[i]; });
+}
+function setSeasonSel(arr){ seasonSel = arr; renderSeasonChips(); }
+
 function resetForm(){
   nameTaAuto = "";
   clearTimeout(nameTaTimer);
-  ["f-name","f-nameTa","f-desc","f-descTa","f-season","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
+  setSeasonSel([]);
+  ["f-name","f-nameTa","f-desc","f-descTa","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
   $("f-state").value = ""; fillDistricts("");
   $("f-district").value = "";
   $("f-lat").value = ""; picking = false; syncCoord();
@@ -1210,7 +1277,7 @@ function saveNew(){
     desc: $("f-desc").value.trim(),
     descTa: $("f-descTa").value.trim(),
     district: $("f-district").value.trim(),
-    season: $("f-season").value.trim(),
+    season: formatSeason(seasonSel),
     state: $("f-state").value.trim()
   };
   if(editingId !== null){
@@ -1370,7 +1437,7 @@ function setLang(l){
   $("cm-list-title").textContent = t.comments;
   $("cm-close").textContent = t.close;
   updateModeLabel();
-  buildChips(); renderAll();
+  buildChips(); renderAll(); renderSeasonChips();
 }
 
 /* ===== toast ===== */
