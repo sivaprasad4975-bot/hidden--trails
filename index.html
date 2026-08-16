@@ -850,7 +850,7 @@ function renderCards(list){
   if(!list.length){ el.innerHTML = '<div class="count">'+t.noPlaces+'</div>'; return; }
   el.innerHTML = list.map(function(p){
     var c = CATS[p.category];
-    var delBtn = canDelete(p) ? '<button class="del" data-del="'+p.id+'">✕ '+t.delete+'</button>' : '';
+    var delBtn = canDelete(p) ? '<button class="del" data-del="'+p.id+'">'+t.delete+'</button>' : '';
     var editBtn = canEdit(p) ? '<button class="edit" data-edit="'+p.id+'">✏ '+t.edit+'</button>' : '';
     return '<div class="card" data-id="'+p.id+'">'+
       '<span class="cat" style="background:'+c.color+'22;color:'+c.color+'">'+c.label[LANG]+'</span>'+
@@ -1268,7 +1268,7 @@ function renderCommentList(pid){
     var who = (c.createdBy && c.createdBy === currentUser) || c.deviceId === deviceId ? t.you : (c.createdBy ? esc(c.createdBy) : t.anonymous);
     var stars = "";
     for(var i=1;i<=5;i++){ stars += (c.value>=i ? "★" : "☆"); }
-    var delBtn = canDeleteComment(c) ? '<button class="cdel" data-did="'+c.deviceId+'" title="'+t.delCmt+'">✕</button>' : '';
+    var delBtn = canDeleteComment(c) ? '<button class="cdel" data-did="'+c.deviceId+'" title="'+t.delCmt+'">'+t.delCmt+'</button>' : '';
     return '<div class="citem'+(c.deviceId===deviceId?" mine":"")+'">'+
       '<div class="chead"><span class="cwho">'+who+'</span><span class="cstars">'+stars+'</span><span>'+timeAgo(c.at)+'</span><span style="margin-left:auto">'+delBtn+'</span></div>'+
       '<div class="ctext">'+esc(c.text)+'</div></div>';
