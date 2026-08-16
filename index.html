@@ -354,7 +354,8 @@ var SAMPLE = [
   {id:9,name:"Sathanur Dam",nameTa:"சத்தானூர் அணை",category:"dams",lat:12.1788,lng:78.8420,district:"Tiruvannamalai",season:"Mar–Sep",desc:"Quiet reservoir near Javadi hills with a fish farm and hill-view park.",descTa:"ஜவ்வாது மலை அருகே அமைதியான நீர்த்தேக்கம்."},
   {id:10,name:"Thirumurthi Dam",nameTa:"திருமூர்த்தி அணை",category:"dams",lat:10.5924,lng:77.2399,district:"Tiruppur",season:"Sep–Jun",desc:"Hidden dam for wildlife-safari style exploration near the Amaravathi reservoir.",descTa:"அமராவதி நீர்த்தேக்கம் அருகே உள்ள மறைவான அணை."},
   {id:11,name:"Vijayalaya Choleeswaram",nameTa:"விஜயாலய சோழீஸ்வரம்",category:"temples",lat:10.5196,lng:78.8776,district:"Pudukkottai",season:"All year",desc:"One of the oldest Chola temples hidden on Narthamalai hill, with stunning rock-cut sculptures.",descTa:"நார்த்தாமலை மலையில் மறைந்துள்ள பழமையான சோழர் கோயில்; அழகிய சிற்பங்களுடன்."},
-  {id:12,name:"Brahmapuriswarar Temple",nameTa:"பிரம்மபுரீஸ்வரர் கோயில்",category:"temples",lat:10.9616,lng:79.0141,district:"Thanjavur",season:"All year",desc:"Hidden gem of the Chola era at Pullamangai, famous for its exquisitely carved pillars.",descTa:"புல்லமங்கையில் மறைந்துள்ள சோழர் கால அற்புத சிற்ப வேலைப்பாடுகள் கொண்ட கோயில்."}
+  {id:12,name:"Brahmapuriswarar Temple",nameTa:"பிரம்மபுரீஸ்வரர் கோயில்",category:"temples",lat:10.9616,lng:79.0141,district:"Thanjavur",season:"All year",desc:"Hidden gem of the Chola era at Pullamangai, famous for its exquisitely carved pillars.",descTa:"புல்லமங்கையில் மறைந்துள்ள சோழர் கால அற்புத சிற்ப வேலைப்பாடுகள் கொண்ட கோயில்."},
+  {id:13,name:"Konganagiri Murugan Temple",nameTa:"கொங்கணகிரி முருகன் கோயில்",category:"temples",lat:11.1104,lng:77.3151,district:"Tiruppur",state:"Tamil Nadu",season:"Oct–Mar",pluscode:"4868+53",desc:"A serene Murugan temple on Konganagiri hill near Tiruppur, known for scenic views and a peaceful climb.",descTa:"திருப்பூர் அருகே கொங்கணகிரி மலையில் அமைந்த அமைதியான முருகன் கோயில்; அழகிய காட்சிகளுக்கும் அமைதியான மலை ஏற்றத்திற்கும் பெயர் பெற்றது."}
 ];
 
 var STATES = {
@@ -1163,8 +1164,8 @@ function syncCoord(){
   if(parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1])){ el.textContent = dms(parts[0], parts[1]); }
   else { el.textContent = LANG==="ta" ? "–° –′ –″ · –° –′ –″" : "–° –′ –″ · –° –′ –″"; }
   var pc = $("f-pluscode");
-  if(pc && typeof OpenLocationCode !== "undefined" && parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1])){
-    if(pc.value.trim()==="") pc.value = OpenLocationCode.encode(parts[0], parts[1], 10);
+  if(pc && typeof OpenLocationCode !== "undefined" && parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1]) && isFinite(parts[0]) && isFinite(parts[1])){
+    try{ pc.value = OpenLocationCode.encode(parts[0], parts[1], 10); }catch(e){}
   }
 }
 $("f-lat").addEventListener("input", syncCoord);
