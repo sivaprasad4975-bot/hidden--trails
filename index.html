@@ -59,6 +59,8 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .citem .cstars{color:var(--star);font-size:.8rem;letter-spacing:1px}
 .citem .ctext{font-size:.85rem;margin-top:5px;line-height:1.45}
 .citem .cwho{color:var(--accent);font-weight:700}
+.citem .cdel{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.78rem;padding:2px 7px;border-radius:6px;line-height:1}
+.citem .cdel:hover{color:#f87171;background:var(--chip)}
 .citem.mine{border-color:var(--accent)}
 #map{height:100%;min-height:380px;background:#0a0f16}
 .leaflet-container{height:100%}
@@ -276,6 +278,8 @@ var I18N = {
     comments:"Comments", yourRating:"Your rating", writeExp:"Write your experience",
     post:"Post", close:"Close", you:"You", anonymous:"Traveller",
     commentSaved:"Comment posted!", noComments:"No comments yet. Be the first!",
+    delCmt:"Delete", confirmDelCmt:"Delete this comment?", commentDeleted:"Comment deleted.",
+    noDelCmt:"Only the person who posted it or the admin can delete this comment.",
     local:"Offline mode: data stored in this browser.",
     confirmDel:"Delete this place?", deleted:"Place deleted.", noDel:"Only the admin or the person who added it can delete this place.",
     edit:"Edit", editTitle:"Edit Place", edited:"Place updated.",
@@ -312,6 +316,8 @@ var I18N = {
     comments:"கருத்துகள்", yourRating:"உங்கள் மதிப்பீடு", writeExp:"உங்கள் அனுபவத்தை எழுதுங்கள்",
     post:"பதிவிடு", close:"மூடு", you:"நீங்கள்", anonymous:"பயணி",
     commentSaved:"கருத்து பதிவானது!", noComments:"இன்னும் கருத்துகள் இல்லை. முதலில் எழுதுங்கள்!",
+    delCmt:"நீக்கு", confirmDelCmt:"இந்த கருத்தை நீக்கவா?", commentDeleted:"கருத்து நீக்கப்பட்டது.",
+    noDelCmt:"இதைப் பதிவிட்டவர் அல்லது நிர்வாகி மட்டுமே நீக்க முடியும்.",
     local:"ஆஃப்லைன் முறை: தரவு இந்த உலாவியில் சேமிக்கப்படும்.",
     confirmDel:"இந்த இடத்தை நீக்கவா?", deleted:"இடம் நீக்கப்பட்டது.", noDel:"இந்த இடத்தை சேர்த்தவர் அல்லது நிர்வாகி மட்டுமே நீக்க முடியும்.",
     edit:"திருத்து", editTitle:"இடத்தை திருத்து", edited:"இடம் புதுப்பிக்கப்பட்டது.",
@@ -511,7 +517,7 @@ function updateComments(snap){
     placeChild.forEach(function(devChild){
       var c = devChild.val();
       if(!c) return;
-      var full = {deviceId: devChild.key, placeId: pid, value: c.value||0, text: c.text||"", at: c.at||0};
+      var full = {deviceId: devChild.key, placeId: pid, value: c.value||0, text: c.text||"", at: c.at||0, createdBy: c.createdBy||""};
       g.list.push(full);
       if(devChild.key === deviceId) g.mine = full;
     });
@@ -684,7 +690,7 @@ function loadLocal(){
     var cm=JSON.parse(localStorage.getItem("hiddenComments_v1"))||{};
     commentData={};
     Object.keys(cm).forEach(function(k){
-      var c=cm[k]; c.placeId=Number(k); c.deviceId=deviceId;
+      var c=cm[k]; c.placeId=Number(k); c.deviceId=deviceId; c.createdBy=c.createdBy||"";
       commentData[c.placeId]={list:[c],mine:c};
     });
   }catch(e){ commentData={}; }
@@ -712,11 +718,12 @@ function commentCount(pid){
   return g && g.list ? g.list.length : 0;
 }
 function saveComment(pid, value, text){
+  var who = currentUser || "";
   if(fbReady){
-    db.ref("comments/"+pid+"/"+deviceId).set({text: text, value: value, at: Date.now()});
+    db.ref("comments/"+pid+"/"+deviceId).set({text: text, value: value, at: Date.now(), createdBy: who});
     return;
   }
-  var c = {id: pid+"_"+deviceId, placeId: pid, deviceId: deviceId, value: value, text: text, at: Date.now()};
+  var c = {id: pid+"_"+deviceId, placeId: pid, deviceId: deviceId, value: value, text: text, at: Date.now(), createdBy: who};
   var g = commentData[pid] || {list:[], mine:null};
   g.list = g.list.filter(function(x){ return x.deviceId !== deviceId; });
   g.list.push(c);
@@ -1060,6 +1067,28 @@ $("f-address").addEventListener("input", function(){
   if(!m) return;
   try{ applyPlusCode(m[0]); }catch(e){ /* invalid code - ignore */ }
 });
+var nameTaAuto = "";
+var nameTaTimer = null;
+$("f-name").addEventListener("input", function(){
+  clearTimeout(nameTaTimer);
+  var v = this.value.trim();
+  var ta = $("f-nameTa");
+  if(ta.value.trim() && ta.value !== nameTaAuto){ return; }
+  if(!v) return;
+  nameTaTimer = setTimeout(function(){
+    fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(v)+"&langpair=en|ta")
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var tt = d && d.responseData && d.responseData.translatedText;
+      if(!tt || tt.indexOf("MYMEMORY WARNING")===0) return;
+      nameTaAuto = tt;
+      $("f-nameTa").value = tt;
+    }).catch(function(){});
+  }, 600);
+});
+$("f-nameTa").addEventListener("input", function(){
+  if(this.value !== nameTaAuto) nameTaAuto = "";
+});
 function reverseGeocode(lat, lng){
   fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng+"&zoom=16")
   .then(function(r){ return r.json(); }).then(function(data){
@@ -1106,6 +1135,8 @@ function closeModal(){
   if(configMap){ configMap.remove(); configMap = null; }
 }
 function resetForm(){
+  nameTaAuto = "";
+  clearTimeout(nameTaTimer);
   ["f-name","f-nameTa","f-desc","f-descTa","f-season","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
   $("f-state").value = ""; fillDistricts("");
   $("f-district").value = "";
@@ -1224,18 +1255,43 @@ function renderCommentStars(){
   });
 }
 
+function canDeleteComment(c){
+  return isAdmin || c.deviceId === deviceId || (c.createdBy && c.createdBy === currentUser);
+}
 function renderCommentList(pid){
   var g = commentData[pid];
   var el = $("cm-list");
   if(!g || !g.list.length){ el.innerHTML = '<div class="empty">'+t.noComments+'</div>'; return; }
   el.innerHTML = g.list.slice().sort(function(a,b){ return b.at - a.at; }).map(function(c){
-    var who = c.deviceId === deviceId ? t.you : t.anonymous;
+    var who = (c.createdBy && c.createdBy === currentUser) || c.deviceId === deviceId ? t.you : (c.createdBy ? esc(c.createdBy) : t.anonymous);
     var stars = "";
     for(var i=1;i<=5;i++){ stars += (c.value>=i ? "★" : "☆"); }
+    var delBtn = canDeleteComment(c) ? '<button class="cdel" data-did="'+c.deviceId+'" title="'+t.delCmt+'">✕</button>' : '';
     return '<div class="citem'+(c.deviceId===deviceId?" mine":"")+'">'+
-      '<div class="chead"><span class="cwho">'+who+'</span><span class="cstars">'+stars+'</span><span>'+timeAgo(c.at)+'</span></div>'+
+      '<div class="chead"><span class="cwho">'+who+'</span><span class="cstars">'+stars+'</span><span>'+timeAgo(c.at)+'</span><span style="margin-left:auto">'+delBtn+'</span></div>'+
       '<div class="ctext">'+esc(c.text)+'</div></div>';
   }).join("");
+  el.querySelectorAll(".cdel").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      delComment(pid, btn.getAttribute("data-did"));
+    });
+  });
+}
+function delComment(pid, cid){
+  var g = commentData[pid];
+  var c = g && g.list.find(function(x){ return x.deviceId===cid; });
+  if(!c) return;
+  if(!canDeleteComment(c)){ toast(t.noDelCmt); return; }
+  if(!confirm(t.confirmDelCmt)) return;
+  if(fbReady){
+    db.ref("comments/"+pid+"/"+cid).remove();
+  } else {
+    g.list = g.list.filter(function(x){ return x.deviceId!==cid; });
+    if(g.mine && g.mine.deviceId===cid) g.mine = null;
+    saveLocalComments();
+    renderCommentList(pid);
+  }
+  toast(t.commentDeleted);
 }
 
 $("cm-save").addEventListener("click", function(){
