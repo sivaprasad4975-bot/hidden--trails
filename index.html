@@ -170,7 +170,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
     <div class="field">
       <label id="l-coord">Coordinates (lat, lng)</label>
       <input id="f-lat" placeholder="10.2240  ,  77.5070">
-      <div class="hint" id="h-coord-dms">🧭 <span id="coord-dms">–° – · –° –</span></div>
+      <div class="hint" id="h-coord-dms">🧭 <span id="coord-dms">–° –′ –″ · –° –′ –″</span></div>
       <div class="hint" id="h-geo">Tip: type the location name above — coordinates fill in automatically. Or pick a point on the map below.</div>
       <button class="addbtn" id="btn-geocode" style="margin-top:6px;align-self:flex-start">Locate Address</button>
     </div>
@@ -392,7 +392,13 @@ function locLabel(p){
 function dms(lat, lng){
   function fmt(v, pos, neg){
     var dir = v >= 0 ? pos : neg;
-    return Math.round(Math.abs(v)) + "°" + dir;
+    var a = Math.abs(v);
+    var d = Math.floor(a);
+    var m = Math.floor((a - d) * 60);
+    var s = Math.round(((a - d) * 60 - m) * 60);
+    if(s === 60){ s = 0; m++; }
+    if(m === 60){ m = 0; d++; }
+    return d + "°" + m + "′" + s + "″" + dir;
   }
   return fmt(lat, "N", "S") + "  " + fmt(lng, "E", "W");
 }
@@ -1020,7 +1026,7 @@ function autoTrackIfNew(){
 }
 function applyPlusCode(code){
   if(typeof OpenLocationCode === "undefined"){ toast("Plus code library not loaded"); return; }
-  var d = OpenLocationCode.decode(code);
+  var d = decodePlusCode(code);
   if(!d || !d.latitudeCenter) return;
   var lat = d.latitudeCenter, lng = d.longitudeCenter;
   $("f-lat").value = lat.toFixed(6)+", "+lng.toFixed(6);
@@ -1031,6 +1037,15 @@ function applyPlusCode(code){
     tempMarker = L.marker([lat, lng]).addTo(configMap);
   }
   reverseGeocode(lat, lng);
+}
+function decodePlusCode(code){
+  try{
+    return OpenLocationCode.decode(code);
+  }catch(e){
+    var refLat = 10.2240, refLng = 77.5070;
+    if(configMap){ refLat = configMap.getCenter().lat; refLng = configMap.getCenter().lng; }
+    return OpenLocationCode.decode(code, refLat, refLng);
+  }
 }
 function plusCodeMatch(v){
   return v.match(/[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}/);
@@ -1113,7 +1128,7 @@ function syncCoord(){
   var parts = v.split(",").map(function(s){ return parseFloat(s.trim()); });
   var el = $("coord-dms");
   if(parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1])){ el.textContent = dms(parts[0], parts[1]); }
-  else { el.textContent = LANG==="ta" ? "–° – · –° –" : "–° – · –° –"; }
+  else { el.textContent = LANG==="ta" ? "–° –′ –″ · –° –′ –″" : "–° –′ –″ · –° –′ –″"; }
   var pc = $("f-pluscode");
   if(pc && typeof OpenLocationCode !== "undefined" && parts.length>=2 && !isNaN(parts[0]) && !isNaN(parts[1])){
     if(pc.value.trim()==="") pc.value = OpenLocationCode.encode(parts[0], parts[1], 10);
