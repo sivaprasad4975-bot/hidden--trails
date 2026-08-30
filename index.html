@@ -103,6 +103,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
   </div>
   <div class="lang">
     <button id="btn-admin" title="Admin" style="display:none">🔑</button>
+    <button id="btn-addadmin" title="Add admin" style="display:none">➕</button>
     <button id="btn-user" title="Login / Sign Up">👤</button>
     <button id="btn-en" class="active">English</button>
     <button id="btn-ta">தமிழ்</button>
@@ -385,6 +386,7 @@ var serverOn = false;
 var isAdmin = false;
 var adminDeviceId = null;
 var adminClaim = null;
+var adminUsers = {};
 var currentUser = "";
 var myOnly = false;
 var promptShown = false;
@@ -428,11 +430,13 @@ function initUser(){
 function saveUserSession(u){
   currentUser = u;
   try{ localStorage.setItem("hiddenUser_v1", u); }catch(e){}
+  recomputeAdmin();
 }
 function logoutUser(){
   currentUser = "";
   myOnly = false;
   try{ localStorage.removeItem("hiddenUser_v1"); }catch(e){}
+  recomputeAdmin();
 }
 function sanitizeUser(u){
   return String(u||"").trim().replace(/[^A-Za-z0-9_-]/g, "");
@@ -552,16 +556,27 @@ function listenAll(){
 function listenMeta(){
   db.ref("meta/adminDevice").on("value", function(snap){
     adminDeviceId = snap.val() || null;
-    isAdmin = !!(adminDeviceId && deviceId === adminDeviceId);
-    refreshAdminUI();
-    updateModeLabel();
-    renderAll();
-    maybePromptLogin();
+    recomputeAdmin();
   });
   db.ref("meta/adminClaim").on("value", function(snap){
     adminClaim = snap.val() || null;
     refreshAdminUI();
   });
+  db.ref("meta/adminUsers").on("value", function(snap){
+    adminUsers = {};
+    if(snap.exists()){
+      snap.forEach(function(ch){ adminUsers[ch.key] = true; });
+    }
+    recomputeAdmin();
+  });
+}
+
+function recomputeAdmin(){
+  isAdmin = !!(adminDeviceId && deviceId === adminDeviceId) || (currentUser && !!adminUsers[currentUser]);
+  refreshAdminUI();
+  updateModeLabel();
+  renderAll();
+  maybePromptLogin();
 }
 
 function maybePromptLogin(){
@@ -578,7 +593,26 @@ function refreshAdminUI(){
   if(!b) return;
   b.style.display = (fbReady && adminClaim && !adminDeviceId) ? "" : "none";
   b.title = LANG === "ta" ? "நிர்வாகியாக்க" : "Become admin";
+  var a = $("btn-addadmin");
+  if(a){
+    a.style.display = (fbReady && isAdmin) ? "" : "none";
+    a.title = LANG === "ta" ? "புதிய நிர்வாகியைச் சேர்" : "Add admin";
+  }
 }
+
+$("btn-addadmin").addEventListener("click", function(){
+  if(!isAdmin) return;
+  var u = prompt(LANG === "ta" ? "நிர்வாகியாக சேர்க்க வேண்டிய பயனர் ஐடியை உள்ளிடவும்:" : "Enter the user id to make admin:");
+  if(!u) return;
+  u = sanitizeUser(u);
+  if(!u || u.length < 3){ toast(LANG === "ta" ? "தவறான பயனர் ஐடி" : "Invalid user id"); return; }
+  db.ref("users/"+u).once("value").then(function(snap){
+    if(!snap.exists()){ toast(LANG === "ta" ? "பயனர் இல்லை: " + u : "User not found: " + u); return; }
+    db.ref("meta/adminUsers/"+u).set(true).then(function(){
+      toast(LANG === "ta" ? u + " இப்போது நிர்வாகி!" : u + " is now an admin!");
+    });
+  });
+});
 
 $("btn-admin").addEventListener("click", function(){
   if(!adminClaim) return;
