@@ -40,6 +40,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
 .card:hover{border-color:var(--accent)}
 .card .cat{font-size:.72rem;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:12px;display:inline-block;margin-bottom:6px}
+.card .cphoto{display:block;width:100%;height:150px;object-fit:cover;border-radius:8px;margin-bottom:8px}
 .card h3{font-size:1rem;margin-bottom:2px}
 .card .desc{color:var(--muted);font-size:.85rem;margin:6px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .meta{color:var(--muted);font-size:.8rem;display:flex;flex-wrap:wrap;gap:8px}
@@ -180,6 +181,12 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
       <button class="addbtn" id="btn-geocode" style="margin-top:6px;align-self:flex-start">Locate Address</button>
     </div>
     <div class="minimap" id="configmap"></div>
+    <div class="field">
+      <label id="l-photo">Photo *</label>
+      <input type="file" id="f-photo" accept="image/*" style="margin-bottom:6px">
+      <img id="photo-preview" alt="preview" style="display:none;max-width:100%;border-radius:8px;border:1px solid var(--border)">
+      <div class="hint" id="h-photo">Photo is required. Max ~1.5MB (auto-compressed).</div>
+    </div>
     <div class="actions">
       <button class="ghost" id="btn-cancel">Cancel</button>
       <button class="primary" id="btn-save">Save Place</button>
@@ -266,7 +273,7 @@ var I18N = {
     mTitle:"Add New Place",
     name:"Place Name *", nameTa:"Place Name (தமிழ்)", cat:"Category *",
     desc:"Description", descTa:"Description (தமிழ்)", district:"District",
-    season:"Best Season", address:"Address / Location name",
+    season:"Best Season", address:"Address / Location name", photo:"Photo *",
     state:"State", selectState:"Select state", districtPlaceholder:"Search or choose district…",
     coord:"Coordinates (lat, lng)",
     hGeo:"Tip: pick a point on the map below, or type a location name and click Locate.",
@@ -304,7 +311,7 @@ var I18N = {
     mTitle:"புதிய இடம் சேர்க்க",
     name:"இடத்தின் பெயர் *", nameTa:"இடத்தின் பெயர் (தமிழ்)", cat:"வகை *",
     desc:"விளக்கம்", descTa:"விளக்கம் (தமிழ்)", district:"மாவட்டம்",
-    season:"சிறந்த பருவம்", address:"முகவரி / இடம்",
+    season:"சிறந்த பருவம்", address:"முகவரி / இடம்", photo:"புகைப்படம் *",
     state:"மாநிலம்", selectState:"மாநிலத்தை தேர்வு செய்யவும்", districtPlaceholder:"மாவட்டத்தை தேடி/தேர்வு செய்யவும்…",
     coord:"ஆயத்தொலைவுகள் (latitude, longitude)",
     hGeo:"குறிப்பு: கீழே உள்ள வரைபடத்தில் ஒரு இடத்தை தேர்வு செய்யவும், அல்லது இடத்தின் பெயரை தட்டச்சு செய்து இருப்பிடம் என்பதை அழுத்தவும்.",
@@ -888,6 +895,7 @@ function renderCards(list){
     var delBtn = canDelete(p) ? '<button class="del" data-del="'+p.id+'">'+t.delete+'</button>' : '';
     var editBtn = canEdit(p) ? '<button class="edit" data-edit="'+p.id+'">✏ '+t.edit+'</button>' : '';
     return '<div class="card" data-id="'+p.id+'">'+
+      (p.photo ? '<img class="cphoto" src="'+p.photo+'" alt="'+esc(p.name)+'" loading="lazy">' : '')+
       '<span class="cat" style="background:'+c.color+'22;color:'+c.color+'">'+c.label[LANG]+'</span>'+
       '<h3>'+esc(p.name)+'</h3>'+
       (p.nameTa?'<div style="color:#38bdf8;font-size:.8rem">'+esc(p.nameTa)+'</div>':'')+
@@ -1159,6 +1167,9 @@ function openEdit(id){
   fillDistricts(p.state || "");
   $("f-lat").value = p.lat + ", " + p.lng;
   syncCoord();
+  photoData = p.photo || "";
+  var pr = $("photo-preview");
+  if(photoData){ pr.src = photoData; pr.style.display = ""; }
   $("modal").classList.add("show");
   setTimeout(function(){
     initConfigMap();
@@ -1175,6 +1186,40 @@ var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov",
 var MONTHS_TA = ["ஜன","பிப்","மார்","ஏப்","மே","ஜூன்","ஜூலை","ஆக","செப்","அக்","நவ","டிச"];
 var MONTH_FULL = ["january","february","march","april","may","june","july","august","september","october","november","december"];
 var seasonSel = [];
+var photoData = "";
+
+function handlePhoto(file){
+  if(!file) return;
+  if(!/^image\//.test(file.type)){ toast(LANG==="ta"?"பட வடிவம் மட்டும் அனுமதிக்கப்படும்":"Only image files allowed"); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    compressImage(ev.target.result, function(resized){
+      photoData = resized || "";
+      var pr = $("photo-preview");
+      pr.src = photoData;
+      pr.style.display = photoData ? "" : "none";
+    });
+  };
+  reader.readAsDataURL(file);
+}
+function compressImage(dataUrl, cb){
+  var img = new Image();
+  img.onload = function(){
+    var MAX = 900;
+    var w = img.width, h = img.height;
+    if(w > h && w > MAX){ h = Math.round(h*MAX/w); w = MAX; }
+    else if(h > MAX){ w = Math.round(w*MAX/h); h = MAX; }
+    var canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+    var out = canvas.toDataURL("image/jpeg", 0.7);
+    if(out.length > 2000000){ out = canvas.toDataURL("image/jpeg", 0.4); }
+    cb(out);
+  };
+  img.onerror = function(){ cb(""); };
+  img.src = dataUrl;
+}
+$("f-photo").addEventListener("change", function(e){ handlePhoto(e.target.files && e.target.files[0]); });
 
 function renderSeasonChips(){
   var el = $("f-season");
@@ -1245,6 +1290,7 @@ function resetForm(){
   $("f-state").value = ""; fillDistricts("");
   $("f-district").value = "";
   $("f-lat").value = ""; picking = false; syncCoord();
+  photoData = ""; $("f-photo").value = ""; $("photo-preview").style.display = "none";
 }
 
 function populateStates(){
@@ -1300,6 +1346,7 @@ function saveNew(){
   var name = $("f-name").value.trim();
   var latlng = $("f-lat").value.trim();
   if(!name || !latlng){ toast(LANG==="ta"?"பெயரும் ஆயத்தொலைவும் தேவை":"Name & coordinates required"); return; }
+  if(editingId === null && !photoData){ toast(LANG==="ta"?"புகைப்படம் தேவை":"Photo is required"); return; }
   var parts = latlng.split(",").map(function(s){ return parseFloat(s.trim()); });
   if(parts.length<2 || isNaN(parts[0]) || isNaN(parts[1])){ toast(LANG==="ta"?"ஆயத்தொலைவுகள் சரியாக இல்லை":"Invalid coordinates"); return; }
   if(picking && tempMarker) parts = [tempMarker.getLatLng().lat, tempMarker.getLatLng().lng];
@@ -1308,6 +1355,7 @@ function saveNew(){
     nameTa: $("f-nameTa").value.trim(),
     category: $("f-cat").value,
     lat: parts[0], lng: parts[1],
+    photo: photoData,
     desc: $("f-desc").value.trim(),
     descTa: $("f-descTa").value.trim(),
     district: $("f-district").value.trim(),
@@ -1316,6 +1364,7 @@ function saveNew(){
   };
   if(editingId !== null){
     var old = places.find(function(x){ return x.id===editingId; });
+    if(!photoData && old) base.photo = old.photo || "";
     var ep = Object.assign({}, old, base, {id: editingId, createdBy: old ? old.createdBy : deviceId});
     places = places.map(function(x){ return x.id===editingId ? ep : x; });
     if(fbReady){ db.ref("places/"+editingId).set(ep); }
@@ -1443,6 +1492,7 @@ function setLang(l){
   $("l-desc").textContent = t.desc;
   $("l-descTa").textContent = t.descTa;
   $("l-district").textContent = t.district;
+  $("l-photo").textContent = t.photo;
   $("l-state").textContent = t.state;
   $("f-district").placeholder = t.districtPlaceholder;
   populateStates();
