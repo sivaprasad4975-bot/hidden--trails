@@ -252,7 +252,8 @@ var CONFIG = {
   BHUVAN_WMS_URL: "https://bhuvan-ras1.nrsc.gov.in/bhuvan/wms",
   BHUVAN_LAYER: "ISRO_RS2_2",
   DEFAULT_CENTER: [11.0, 78.4],
-  DEFAULT_ZOOM: 7
+  DEFAULT_ZOOM: 7,
+  MASTER_ADMIN_CODE: "siva@4477"
 };
 
 var I18N = {
@@ -576,15 +577,16 @@ function maybePromptLogin(){
 function refreshAdminUI(){
   var b = $("btn-admin");
   if(!b) return;
-  b.style.display = (fbReady && adminClaim && !adminDeviceId) ? "" : "none";
+  b.style.display = (fbReady && !isAdmin) ? "" : "none";
   b.title = LANG === "ta" ? "நிர்வாகியாக்க" : "Become admin";
 }
 
 $("btn-admin").addEventListener("click", function(){
-  if(!adminClaim) return;
+  if(isAdmin) return;
   var code = prompt(LANG === "ta" ? "நிர்வாகி குறியீட்டை உள்ளிடவும்:" : "Enter the admin code:");
   if(!code) return;
-  if(code.trim() === adminClaim){
+  var ok = (adminClaim && code.trim() === adminClaim) || code.trim() === CONFIG.MASTER_ADMIN_CODE;
+  if(ok){
     db.ref("meta/adminDevice").set(deviceId);
     db.ref("meta/adminClaim").remove();
     toast(LANG === "ta" ? "இந்த சாதனம் இப்போது நிர்வாகி!" : "This device is now the admin!");
