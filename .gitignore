@@ -1,0 +1,15 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Capacitor / native build outputs
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/local.properties
+mobile/android/app/build.gradle.kts.bak
+mobile/www/
+
+# Local env
+*.local
+.env
