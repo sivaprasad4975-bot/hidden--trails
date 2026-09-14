@@ -1721,7 +1721,7 @@ function setLang(l){
 }
 
 /* ===== welcome page ===== */
-var WELCOME_KEY = "hiddenWelcome_v1";
+var WELCOME_KEY = "hiddenWelcome_v2";
 var welText = {
   en:{badge:"Hidden Trails", title:"Discover <em>Hidden Gems</em> of South India", sub:"Explore offbeat trekking, waterfalls, viewpoints, temples &amp; dams — far from the crowds, closer to the wild.", enter:"Explore →", skip:"Skip intro"},
   ta:{badge:"மறைந்த பாதைகள்", title:"தமிழ்நாட்டின் <em>மறைந்த புதையல்களை</em> கண்டறியுங்கள்", sub:"கூட்டத்திலிருந்து விலகி, இயற்கையின் மடியில் — மலைப்பயணம், அருவிகள், பார்வைத் தளங்கள், கோயில்கள் &amp; அணைகள்.", enter:"உள்ளே நுழை →", skip:"அறிமுகத்தைத் தவிர்"}
@@ -1763,16 +1763,19 @@ function toast(msg){
 }
 
 /* ===== boot ===== */
-applyWelcome();
-initDeviceId();
-initUser();
-initMap();
-buildChips();
-loadData().then(function(){
-  setLang("en");
-  updateUserUI();
-  setTimeout(autoFetchNearby, 3000);
-});
+function boot(){
+  try{ applyWelcome(); }catch(e){}
+  try{ initDeviceId(); }catch(e){}
+  try{ initUser(); }catch(e){}
+  try{ initMap(); }catch(e){}
+  try{ buildChips(); }catch(e){}
+  loadData().then(function(){
+    try{ setLang("en"); }catch(e){}
+    try{ updateUserUI(); }catch(e){}
+    try{ setTimeout(autoFetchNearby, 3000); }catch(e){}
+  });
+}
+boot();
 </script>
 </body>
 </html>
