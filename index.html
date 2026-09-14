@@ -591,7 +591,6 @@ function updatePlaces(snap){
   places = list;
   recomputeMaxId();
   renderAll();
-  autoFetchNearby();
 }
 
 function updateRatings(snap){
@@ -1723,38 +1722,32 @@ function setLang(l){
 
 /* ===== welcome page ===== */
 var WELCOME_KEY = "hiddenWelcome_v1";
-var welText = LANG === "ta" ? {
-  badge:"மறைந்த பாதைகள்",
-  title:"தமிழ்நாட்டின் <em>மறைந்த புதையல்களை</em> கண்டறியுங்கள்",
-  sub:"கூட்டத்திலிருந்து விலகி, இயற்கையின் மடியில் - மலைப்பயணம், அருவிகள், பார்வைத் தளங்கள், கோயில்கள் & அணைகள்.",
-  enter:"உள்ளே நுழை →",
-  skip:"அறிமுகத்தைத் தவிர்"
-} : {
-  badge:"Hidden Trails",
-  title:"Discover <em>Hidden Gems</em> of South India",
-  sub:"Explore offbeat trekking, waterfalls, viewpoints, temples &amp; dams — far from the crowds, closer to the wild.",
-  enter:"Explore →",
-  skip:"Skip intro"
+var welText = {
+  en:{badge:"Hidden Trails", title:"Discover <em>Hidden Gems</em> of South India", sub:"Explore offbeat trekking, waterfalls, viewpoints, temples &amp; dams — far from the crowds, closer to the wild.", enter:"Explore →", skip:"Skip intro"},
+  ta:{badge:"மறைந்த பாதைகள்", title:"தமிழ்நாட்டின் <em>மறைந்த புதையல்களை</em> கண்டறியுங்கள்", sub:"கூட்டத்திலிருந்து விலகி, இயற்கையின் மடியில் — மலைப்பயணம், அருவிகள், பார்வைத் தளங்கள், கோயில்கள் &amp; அணைகள்.", enter:"உள்ளே நுழை →", skip:"அறிமுகத்தைத் தவிர்"}
 };
-
 function applyWelcome(){
   var w = $("welcome");
   if(!w) return;
-  if(welText[LANG]){
-    if(welText[LANG].badge) $("wel-badge").textContent = welText[LANG].badge;
-    if(welText[LANG].title) $("wel-title").innerHTML = welText[LANG].title;
-    if(welText[LANG].sub) $("wel-sub").innerHTML = welText[LANG].sub;
-    if(welText[LANG].enter) $("wel-enter").textContent = welText[LANG].enter;
-    if(welText[LANG].skip) $("wel-skip").textContent = welText[LANG].skip;
+  var lt = welText[LANG] || welText.en;
+  if(lt){
+    $("wel-badge").textContent = lt.badge;
+    $("wel-title").innerHTML = lt.title;
+    $("wel-sub").innerHTML = lt.sub;
+    $("wel-enter").textContent = lt.enter;
+    $("wel-skip").textContent = lt.skip;
   }
   var shown = false;
   try{ shown = localStorage.getItem(WELCOME_KEY) === "1"; }catch(e){}
-  if(shown) w.classList.add("hide");
+  if(shown){ w.style.display = "none"; }
 }
 function dismissWelcome(){
   var w = $("welcome");
-  if(w) w.classList.add("hide");
+  if(!w) return;
+  w.classList.add("hide");
   try{ localStorage.setItem(WELCOME_KEY, "1"); }catch(e){}
+  setTimeout(function(){ w.style.display = "none"; }, 700);
+  setTimeout(function(){ if(map) map.invalidateSize(); }, 800);
 }
 $("wel-enter").addEventListener("click", dismissWelcome);
 $("wel-skip").addEventListener("click", dismissWelcome);
@@ -1778,6 +1771,7 @@ buildChips();
 loadData().then(function(){
   setLang("en");
   updateUserUI();
+  setTimeout(autoFetchNearby, 3000);
 });
 </script>
 </body>
