@@ -100,9 +100,58 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--accent);padding:11px 18px;border-radius:10px;z-index:3000;transition:transform .3s;opacity:0;font-size:.9rem}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 @media(max-width:900px){.main{grid-template-columns:1fr;height:auto}#list{order:2;border-right:none;border-top:1px solid var(--border)}#map{height:55vh}}
+
+/* ===== welcome page ===== */
+#welcome{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%,#1c2331 0%,#0d1117 60%),#0d1117;overflow:hidden;transition:opacity .6s ease,visibility .6s ease}
+#welcome.hide{opacity:0;visibility:hidden;pointer-events:none}
+.wel-card{position:relative;z-index:2;text-align:center;max-width:560px;padding:24px;animation:welUp .8s cubic-bezier(.2,.9,.3,1) both}
+@keyframes welUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.wel-hill{position:absolute;bottom:0;left:0;right:0;z-index:1;pointer-events:none}
+.wel-hill svg{display:block;width:100%;height:34vh;animation:welDrift 6s ease-in-out infinite alternate}
+@keyframes welDrift{from{transform:translateX(-1.5%)}to{transform:translateX(1.5%)}}
+.wel-logo{font-size:3.4rem;line-height:1;margin-bottom:8px;animation:welFloat 3.4s ease-in-out infinite}
+@keyframes welFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.wel-badge{display:inline-block;background:var(--chip);border:1px solid var(--border);color:var(--muted);font-size:.78rem;letter-spacing:1.5px;padding:5px 14px;border-radius:20px;margin-bottom:14px;text-transform:uppercase}
+.wel-title{font-size:2.1rem;font-weight:800;letter-spacing:.3px;line-height:1.2}
+.wel-title em{font-style:normal;background:linear-gradient(90deg,#2f81f7,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wel-sub{color:var(--muted);margin:12px auto 26px;font-size:1rem;line-height:1.6;max-width:420px}
+.wel-cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:30px}
+.wel-cats span{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1px solid var(--border)}
+.wel-enter{border:none;cursor:pointer;font-weight:700;font-size:1rem;padding:14px 44px;border-radius:14px;color:#fff;background:linear-gradient(90deg,#2f81f7,#a78bfa);box-shadow:0 10px 30px rgba(47,129,247,.35);transition:transform .15s,box-shadow .15s}
+.wel-enter:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(47,129,247,.45)}
+.wel-skip{display:block;margin:14px auto 0;background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;text-decoration:underline}
+@keyframes welStreak{from{background-position:0}to{background-position:200%}}
+.wel-glow{position:absolute;width:420px;height:420px;border-radius:50%;filter:blur(90px);opacity:.22;animation:welGlow 8s ease-in-out infinite alternate}
+@keyframes welGlow{from{transform:translateY(-12px) scale(1)}to{transform:translateY(12px) scale(1.12)}}
 </style>
 </head>
 <body>
+
+<div id="welcome">
+  <div class="wel-glow" style="top:-60px;left:-60px;background:#2f81f7"></div>
+  <div class="wel-glow" style="bottom:-80px;right:-40px;background:#f472b6"></div>
+  <div class="wel-hill">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="#161b22" opacity=".55" d="M0,224L60,213.3C120,203,240,181,360,192C480,203,600,245,720,256C840,267,960,245,1080,224C1200,203,1320,181,1380,170.7L1440,160L1440,320L0,320Z"></path>
+      <path fill="#1c2331" opacity=".8" d="M0,256L60,261.3C120,267,240,277,360,272C480,267,600,245,720,240C840,235,960,245,1080,250.7C1200,256,1320,256,1380,256L1440,256L1440,320L0,320Z"></path>
+    </svg>
+  </div>
+  <div class="wel-card">
+    <div class="wel-logo">🏔️</div>
+    <div class="wel-badge" id="wel-badge">Hidden Trails</div>
+    <h1 class="wel-title" id="wel-title">Discover <em>Hidden Gems</em> of South India</h1>
+    <p class="wel-sub" id="wel-sub">Explore offbeat trekking, waterfalls, viewpoints, temples &amp; dams — far from the crowds, closer to the wild.</p>
+    <div class="wel-cats" id="wel-cats">
+      <span style="border-color:#f0883e;color:#f0883e">🥾 Trekking</span>
+      <span style="border-color:#38bdf8;color:#38bdf8">💦 Waterfalls</span>
+      <span style="border-color:#a78bfa;color:#a78bfa">🏞️ Viewpoints</span>
+      <span style="border-color:#f472b6;color:#f472b6">🛕 Temples</span>
+      <span style="border-color:#facc15;color:#facc15">🌊 Dams</span>
+    </div>
+    <button class="wel-enter" id="wel-enter">Explore →</button>
+    <button class="wel-skip" id="wel-skip">Skip intro</button>
+  </div>
+</div>
 
 <header>
   <div>
@@ -542,6 +591,7 @@ function updatePlaces(snap){
   places = list;
   recomputeMaxId();
   renderAll();
+  autoFetchNearby();
 }
 
 function updateRatings(snap){
@@ -1127,6 +1177,21 @@ function refreshNearbyFrom(p){
     renderAll();
   });
 }
+
+var nearbyQueue = false;
+function autoFetchNearby(){
+  if(nearbyQueue) return;
+  var missing = places.filter(function(p){ return !p.nearby && p.lat != null && p.lng != null; });
+  if(!missing.length) return;
+  nearbyQueue = true;
+  var i = 0;
+  (function next(){
+    if(i >= missing.length){ nearbyQueue = false; return; }
+    var p = missing[i++];
+    refreshNearbyFrom(p);
+    setTimeout(next, 2500);
+  })();
+}
 function nearbySection(p){
   var n=p.nearby;
   if(!n || !n.hotels || !n.hotels.length){
@@ -1513,15 +1578,6 @@ function saveNew(){
   refreshNearbyFrom(p);
   renderAll(); closeModal(); toast(t.saved);
 }
-function refreshNearbyFrom(p){
-  if(!hasPlacesKey()) return;
-  placesNearby(p).then(function(n){
-    p.nearby = n;
-    if(fbReady){ db.ref("places/"+p.id+"/nearby").set(n); }
-    else { saveLocalPlaces(); }
-    renderAll();
-  });
-}
 
 /* ===== comment modal ===== */
 var commentStar = 0;
@@ -1665,6 +1721,44 @@ function setLang(l){
   buildChips(); renderAll(); renderSeasonChips();
 }
 
+/* ===== welcome page ===== */
+var WELCOME_KEY = "hiddenWelcome_v1";
+var welText = LANG === "ta" ? {
+  badge:"மறைந்த பாதைகள்",
+  title:"தமிழ்நாட்டின் <em>மறைந்த புதையல்களை</em> கண்டறியுங்கள்",
+  sub:"கூட்டத்திலிருந்து விலகி, இயற்கையின் மடியில் - மலைப்பயணம், அருவிகள், பார்வைத் தளங்கள், கோயில்கள் & அணைகள்.",
+  enter:"உள்ளே நுழை →",
+  skip:"அறிமுகத்தைத் தவிர்"
+} : {
+  badge:"Hidden Trails",
+  title:"Discover <em>Hidden Gems</em> of South India",
+  sub:"Explore offbeat trekking, waterfalls, viewpoints, temples &amp; dams — far from the crowds, closer to the wild.",
+  enter:"Explore →",
+  skip:"Skip intro"
+};
+
+function applyWelcome(){
+  var w = $("welcome");
+  if(!w) return;
+  if(welText[LANG]){
+    if(welText[LANG].badge) $("wel-badge").textContent = welText[LANG].badge;
+    if(welText[LANG].title) $("wel-title").innerHTML = welText[LANG].title;
+    if(welText[LANG].sub) $("wel-sub").innerHTML = welText[LANG].sub;
+    if(welText[LANG].enter) $("wel-enter").textContent = welText[LANG].enter;
+    if(welText[LANG].skip) $("wel-skip").textContent = welText[LANG].skip;
+  }
+  var shown = false;
+  try{ shown = localStorage.getItem(WELCOME_KEY) === "1"; }catch(e){}
+  if(shown) w.classList.add("hide");
+}
+function dismissWelcome(){
+  var w = $("welcome");
+  if(w) w.classList.add("hide");
+  try{ localStorage.setItem(WELCOME_KEY, "1"); }catch(e){}
+}
+$("wel-enter").addEventListener("click", dismissWelcome);
+$("wel-skip").addEventListener("click", dismissWelcome);
+
 /* ===== toast ===== */
 var toastTimer;
 function toast(msg){
@@ -1676,6 +1770,7 @@ function toast(msg){
 }
 
 /* ===== boot ===== */
+applyWelcome();
 initDeviceId();
 initUser();
 initMap();
