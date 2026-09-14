@@ -266,7 +266,6 @@ var CONFIG = {
   BHUVAN_API_KEY: "PASTE_YOUR_BHUVAN_API_KEY_HERE",
   BHUVAN_WMS_URL: "https://bhuvan-ras1.nrsc.gov.in/bhuvan/wms",
   BHUVAN_LAYER: "ISRO_RS2_2",
-  GOOGLE_PLACES_KEY: "PASTE_YOUR_GOOGLE_PLACES_API_KEY_HERE",
   DEFAULT_CENTER: [11.0, 78.4],
   DEFAULT_ZOOM: 7
 };
@@ -297,7 +296,7 @@ var I18N = {
     nearestBus:"Nearest bus stand",
     nearestTrain:"Nearest railway station",
     nearestAirport:"Nearest airport",
-    noKey:"Set GOOGLE_PLACES_KEY in CONFIG to enable nearby hotels & transport.",
+    noKey:"Nearby data unavailable. Try again later.",
     drive:"Drive", transit:"Public transit", walk:"Walk",
     catTrek:"Trekking", catWater:"Waterfalls", catView:"Viewpoints", catTemple:"Temples", catDam:"Dams", catAll:"All",
     mapJoined:"OpenStreetMap + Bhuvan layers",
@@ -344,7 +343,7 @@ var I18N = {
     nearestBus:"அருகிலுள்ள பேருந்து நிலையம்",
     nearestTrain:"அருகிலுள்ள ரயில் நிலையம்",
     nearestAirport:"அருகிலுள்ள விமான நிலையம்",
-    noKey:"CONFIG-இல் GOOGLE_PLACES_KEY அமைக்கவும்.",
+    noKey:"அருகிலுள்ள தகவல் கிடைக்கவில்லை.",
     drive:"காரில்", transit:"பொது போக்குவரத்து", walk:"நடந்து",
     catTrek:"மலைப்பயணம்", catWater:"அருவிகள்", catView:"பார்வைத் தளம்", catTemple:"கோயில்", catDam:"அணைகள்", catAll:"அனைத்தும்",
     mapJoined:"OpenStreetMap + புவன்",
@@ -1051,69 +1050,74 @@ function geocodeText(q){
   }).catch(function(){ toast(t.notFound); });
 }
 
-/* ===== nearby hotels + transport ===== */
-function hasPlacesKey(){
-  return !!(CONFIG.GOOGLE_PLACES_KEY && CONFIG.GOOGLE_PLACES_KEY.indexOf("PASTE_")===-1 && CONFIG.GOOGLE_PLACES_KEY.length>10);
-}
+/* ===== nearby hotels + transport (Free: Overpass + Nominatim) ===== */
 function haversineKm(lat1,lng1,lat2,lng2){
   var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
   var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
   return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+function overpassQuery(q){
+  var url="https://overpass-api.de/api/interpreter?data="+encodeURIComponent("[out:json][timeout:10];"+q);
+  return fetch(url).then(function(r){ return r.json(); }).then(function(d){
+    return (d && d.elements) ? d.elements : [];
+  }).catch(function(){ return []; });
+}
 function placesNearby(place){
   return new Promise(function(resolve){
-    if(!hasPlacesKey()){ resolve({hotels:[], transport:{}}); return; }
-    var key=CONFIG.GOOGLE_PLACES_KEY;
-    var loc=place.lat+","+place.lng;
-    var hotelUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&radius=15000&type=lodging&key="+key;
-    var trainUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&rankby=distance&type=train_station&key="+key;
-    var busUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&rankby=distance&type=bus_station&key="+key;
-    var airUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&rankby=distance&type=airport&key="+key;
-    Promise.all([fetch(hotelUrl),fetch(trainUrl),fetch(busUrl),fetch(airUrl)]).then(function(rs){
-      return Promise.all(rs.map(function(r){ return r.json().catch(function(){ return {results:[]}; }); }));
-    }).then(function(ds){
-      var hotels=(ds[0].results||[]).slice(0,8).map(function(h){
+    var lat=place.lat, lng=place.lng;
+    var rHotels=15000, rTransport=25000;
+    var hotelQ='node["tourism"="hotel"](around:'+rHotels+','+lat+','+lng+');out body 12;';
+    var trainQ='node["railway"="station"]["usage"~"regional|main|suburban"](around:'+rTransport+','+lat+','+lng+');out body 4;';
+    var busQ='node["highway"="bus_stop"]["public_transport"="stop_position"](around:'+rTransport+','+lat+','+lng+');out body 4;';
+    var airQ='node["aeroway"="aerodrome"](around:'+rTransport+','+lat+','+lng+');out body 2;';
+
+    Promise.all([
+      overpassQuery(hotelQ),
+      overpassQuery(trainQ),
+      overpassQuery(busQ),
+      overpassQuery(airQ)
+    ]).then(function(res){
+      var hotels=res[0].map(function(h){
         return {
-          name:h.name||"Hotel",
-          rating:h.rating||0,
-          ratings:h.user_ratings_total||0,
-          price:h.price_level||0,
-          vic:h.vicinity||"",
-          dist:Math.round(haversineKm(place.lat,place.lng,h.geometry.location.lat,h.geometry.location.lng)*10)/10
+          name:h.tags && h.tags.name ? h.tags.name : "Hotel",
+          rating:h.tags && h.tags.stars ? parseInt(h.tags.stars) : 0,
+          price:h.tags && h.tags.charge ? h.tags.charge : "",
+          vic:h.tags && (h.tags["addr:street"] || h.tags["addr:city"] || "") ? (h.tags["addr:street"] || h.tags["addr:city"] || "") : "",
+          dist:Math.round(haversineKm(lat,lng,h.lat,h.lon)*10)/10,
+          lat:h.lat, lng:h.lon
         };
       });
+      hotels.sort(function(a,b){ return a.dist - b.dist; });
+      hotels=hotels.slice(0,10);
+
       var stations={"train":null,"bus":null,"air":null};
-      function first(r){ return r && r.results && r.results[0]; }
-      var tr=first(ds[1]), bs=first(ds[2]), ar=first(ds[3]);
-      if(tr){ stations.train={name:tr.name, dist:Math.round(haversineKm(place.lat,place.lng,tr.geometry.location.lat,tr.geometry.location.lng)*10)/10}; }
-      if(bs){ stations.bus={name:bs.name, dist:Math.round(haversineKm(place.lat,place.lng,bs.geometry.location.lat,bs.geometry.location.lng)*10)/10}; }
-      if(ar){ stations.air={name:ar.name, dist:Math.round(haversineKm(place.lat,place.lng,ar.geometry.location.lat,ar.geometry.location.lng)*10)/10}; }
+      if(res[1].length){ var t=res[1][0]; stations.train={name:t.tags.name||"Station", dist:Math.round(haversineKm(lat,lng,t.lat,t.lon)*10)/10}; }
+      if(res[2].length){ var b=res[2][0]; stations.bus={name:b.tags.name||b.tags.ref||"Bus Stop", dist:Math.round(haversineKm(lat,lng,b.lat,b.lon)*10)/10}; }
+      if(res[3].length){ var a=res[3][0]; stations.air={name:a.tags.name||"Airport", dist:Math.round(haversineKm(lat,lng,a.lat,a.lon)*10)/10}; }
+
       resolve({hotels:hotels, transport:stations});
     }).catch(function(){ resolve({hotels:[], transport:{}}); });
   });
 }
-function attachPlacesKey(p){
-  return db.ref("places/"+p.id+"/nearby").once("value").then(function(snap){
-    var old=snap.val();
-    if(old && old.hotels && old.hotels.length) return old;
-    return placesNearby(p).then(function(n){
-      db.ref("places/"+p.id+"/nearby").set(n);
-      return n;
-    });
-  }).catch(function(){ return {hotels:[], transport:{}}; });
+function refreshNearbyFrom(p){
+  placesNearby(p).then(function(n){
+    p.nearby = n;
+    if(fbReady){ db.ref("places/"+p.id+"/nearby").set(n); }
+    else { saveLocalPlaces(); }
+    renderAll();
+  });
 }
 function nearbySection(p){
   var n=p.nearby;
   if(!n || !n.hotels || !n.hotels.length){
-    if(hasPlacesKey()) return '';
-    return '<div class="nline2">⚠️ '+esc(t.noKey)+'</div>';
+    return '<div class="popn"><div class="phd">ℹ️ '+esc(t.nearbyTitle)+'</div><div class="nrow muted">'+esc(t.noHotels)+'</div></div>';
   }
   var out='<div class="popn">';
   out+='<div class="phd">🛏 '+esc(t.hotelsLabel)+'</div>';
-  n.hotels.slice(0,4).forEach(function(h){
-    var stars=h.rating ? '⭐ '+h.rating.toFixed(1)+' ('+h.ratings+')' : '';
-    var price = h.price ? ('$'.repeat(h.price)) : '';
-    out+='<div class="nrow">'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+' '+price+' · '+h.dist+' km</span></div>';
+  n.hotels.slice(0,5).forEach(function(h){
+    var stars=h.rating ? '⭐ '+h.rating+' ★' : '';
+    var price=h.price ? ' · '+h.price : '';
+    out+='<div class="nrow">'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+price+' · '+h.dist+' km</span></div>';
   });
   var st=n.transport||{};
   if(st.train || st.bus || st.air){
