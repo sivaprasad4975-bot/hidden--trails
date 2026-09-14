@@ -13,3 +13,7 @@ mobile/www/
 # Local env
 *.local
 .env
+
+# Temp files
+seed_payload.json
+photo_patch.json
