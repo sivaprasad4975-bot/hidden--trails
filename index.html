@@ -74,6 +74,13 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .pop .desc{color:var(--muted);font-size:.85rem}
 .pop .row{color:var(--muted);font-size:.8rem;margin-top:6px}
 .pop .link{display:inline-block;margin-top:8px;background:var(--accent);color:#fff;padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.8rem}
+.popn{margin-top:8px;border-top:1px solid var(--border);padding-top:6px}
+.popn .phd{font-size:.72rem;font-weight:700;letter-spacing:.4px;color:var(--muted);margin:6px 0 3px}
+.popn .nrow{font-size:.78rem;margin-top:3px}
+.popn .nrow .muted{color:var(--muted)}
+.popn .nline{display:inline-block;background:var(--accent);color:#fff;padding:4px 8px;border-radius:7px;text-decoration:none;font-size:.72rem;margin:6px 6px 0 0}
+.nline2{color:var(--muted);font-size:.75rem;margin-top:6px}
+.nline2 b{color:var(--text)}
 .badge{position:absolute;top:10px;left:50px;z-index:900;background:rgba(13,17,23,.8);border:1px solid var(--border);padding:6px 12px;border-radius:8px;font-size:.8rem;color:var(--muted);pointer-events:none}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center}
 .modal.show{display:flex;align-items:center;justify-content:center}
@@ -259,6 +266,7 @@ var CONFIG = {
   BHUVAN_API_KEY: "PASTE_YOUR_BHUVAN_API_KEY_HERE",
   BHUVAN_WMS_URL: "https://bhuvan-ras1.nrsc.gov.in/bhuvan/wms",
   BHUVAN_LAYER: "ISRO_RS2_2",
+  GOOGLE_PLACES_KEY: "PASTE_YOUR_GOOGLE_PLACES_API_KEY_HERE",
   DEFAULT_CENTER: [11.0, 78.4],
   DEFAULT_ZOOM: 7
 };
@@ -282,6 +290,15 @@ var I18N = {
     notFound:"Could not find that location.",
     saved:"Place added.", imported:"Places imported successfully.",
     popDirections:"Open in Google Maps",
+    nearbyTitle:"Nearby & How to Reach",
+    hotelsLabel:"Nearby Hotels",
+    noHotels:"No hotels found nearby.",
+    transportLabel:"How to Reach",
+    nearestBus:"Nearest bus stand",
+    nearestTrain:"Nearest railway station",
+    nearestAirport:"Nearest airport",
+    noKey:"Set GOOGLE_PLACES_KEY in CONFIG to enable nearby hotels & transport.",
+    drive:"Drive", transit:"Public transit", walk:"Walk",
     catTrek:"Trekking", catWater:"Waterfalls", catView:"Viewpoints", catTemple:"Temples", catDam:"Dams", catAll:"All",
     mapJoined:"OpenStreetMap + Bhuvan layers",
     noRatings:"Be the first to rate", rated:"Thanks for rating!",
@@ -320,6 +337,15 @@ var I18N = {
     notFound:"அந்த இருப்பிடம் கிடைக்கவில்லை.",
     saved:"இடம் சேர்க்கப்பட்டது.", imported:"இடங்கள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன.",
     popDirections:"Google வரைபடத்தில் திறக்க",
+    nearbyTitle:"அருகிலுள்ள & போக்குவரத்து",
+    hotelsLabel:"அருகிலுள்ள ஹோட்டல்கள்",
+    noHotels:"அருகில் ஹோட்டல்கள் இல்லை.",
+    transportLabel:"எப்படி செல்வது",
+    nearestBus:"அருகிலுள்ள பேருந்து நிலையம்",
+    nearestTrain:"அருகிலுள்ள ரயில் நிலையம்",
+    nearestAirport:"அருகிலுள்ள விமான நிலையம்",
+    noKey:"CONFIG-இல் GOOGLE_PLACES_KEY அமைக்கவும்.",
+    drive:"காரில்", transit:"பொது போக்குவரத்து", walk:"நடந்து",
     catTrek:"மலைப்பயணம்", catWater:"அருவிகள்", catView:"பார்வைத் தளம்", catTemple:"கோயில்", catDam:"அணைகள்", catAll:"அனைத்தும்",
     mapJoined:"OpenStreetMap + புவன்",
     noRatings:"முதலில் மதிப்பீடு செய்யுங்கள்", rated:"மதிப்பீடு சேமிக்கப்பட்டது!",
@@ -865,6 +891,7 @@ function popupHTML(p){
     '<div class="row">🗓 '+esc(clean(p,"season"))+'</div>'+
     '<div class="row">🧭 '+dms(p.lat, p.lng)+'</div>'+
     '<div class="row" style="color:#facc15">'+rl+'</div>'+
+    nearbySection(p)+
     '<a class="link" target="_blank" rel="noopener" href="'+urls+'">'+t.popDirections+' ↗</a>'+
   '</div>';
 }
@@ -901,6 +928,7 @@ function renderCards(list){
       (p.nameTa?'<div style="color:#38bdf8;font-size:.8rem">'+esc(p.nameTa)+'</div>':'')+
       '<div class="desc">'+esc(clean(p,"desc"))+'</div>'+
       '<div class="meta"><span>📍'+esc(locLabel(p))+'</span><span>🗓 '+esc(clean(p,"season"))+'</span></div>'+
+      (p.nearby && p.nearby.hotels ? '<div class="nline2">🛏 '+p.nearby.hotels.length+' '+(LANG==="ta"?"ஹோட்டல்கள்":"hotels")+(p.nearby.transport && p.nearby.transport.bus ? ' · 🚌 '+p.nearby.transport.bus.dist+' km' : '')+'</div>' : '')+
       '<div class="rate" data-pid="'+p.id+'">'+starsHTML(p.id)+'</div>'+
       '<button class="cbtn" data-cid="'+p.id+'">✎ '+t.comments+' ('+commentCount(p.id)+')</button>'+
       editBtn+delBtn+
@@ -1021,6 +1049,85 @@ function geocodeText(q){
     if(tempMarker) map.removeLayer(tempMarker);
     tempMarker = L.marker([d.lat, d.lon]).addTo(map).bindPopup("<b>"+esc(d.name)+"</b>").openPopup();
   }).catch(function(){ toast(t.notFound); });
+}
+
+/* ===== nearby hotels + transport ===== */
+function hasPlacesKey(){
+  return !!(CONFIG.GOOGLE_PLACES_KEY && CONFIG.GOOGLE_PLACES_KEY.indexOf("PASTE_")===-1 && CONFIG.GOOGLE_PLACES_KEY.length>10);
+}
+function haversineKm(lat1,lng1,lat2,lng2){
+  var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function placesNearby(place){
+  return new Promise(function(resolve){
+    if(!hasPlacesKey()){ resolve({hotels:[], transport:{}}); return; }
+    var key=CONFIG.GOOGLE_PLACES_KEY;
+    var loc=place.lat+","+place.lng;
+    var hotelUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&radius=15000&type=lodging&key="+key;
+    var trainUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&rankby=distance&type=train_station&key="+key;
+    var busUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&rankby=distance&type=bus_station&key="+key;
+    var airUrl="https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+loc+"&rankby=distance&type=airport&key="+key;
+    Promise.all([fetch(hotelUrl),fetch(trainUrl),fetch(busUrl),fetch(airUrl)]).then(function(rs){
+      return Promise.all(rs.map(function(r){ return r.json().catch(function(){ return {results:[]}; }); }));
+    }).then(function(ds){
+      var hotels=(ds[0].results||[]).slice(0,8).map(function(h){
+        return {
+          name:h.name||"Hotel",
+          rating:h.rating||0,
+          ratings:h.user_ratings_total||0,
+          price:h.price_level||0,
+          vic:h.vicinity||"",
+          dist:Math.round(haversineKm(place.lat,place.lng,h.geometry.location.lat,h.geometry.location.lng)*10)/10
+        };
+      });
+      var stations={"train":null,"bus":null,"air":null};
+      function first(r){ return r && r.results && r.results[0]; }
+      var tr=first(ds[1]), bs=first(ds[2]), ar=first(ds[3]);
+      if(tr){ stations.train={name:tr.name, dist:Math.round(haversineKm(place.lat,place.lng,tr.geometry.location.lat,tr.geometry.location.lng)*10)/10}; }
+      if(bs){ stations.bus={name:bs.name, dist:Math.round(haversineKm(place.lat,place.lng,bs.geometry.location.lat,bs.geometry.location.lng)*10)/10}; }
+      if(ar){ stations.air={name:ar.name, dist:Math.round(haversineKm(place.lat,place.lng,ar.geometry.location.lat,ar.geometry.location.lng)*10)/10}; }
+      resolve({hotels:hotels, transport:stations});
+    }).catch(function(){ resolve({hotels:[], transport:{}}); });
+  });
+}
+function attachPlacesKey(p){
+  return db.ref("places/"+p.id+"/nearby").once("value").then(function(snap){
+    var old=snap.val();
+    if(old && old.hotels && old.hotels.length) return old;
+    return placesNearby(p).then(function(n){
+      db.ref("places/"+p.id+"/nearby").set(n);
+      return n;
+    });
+  }).catch(function(){ return {hotels:[], transport:{}}; });
+}
+function nearbySection(p){
+  var n=p.nearby;
+  if(!n || !n.hotels || !n.hotels.length){
+    if(hasPlacesKey()) return '';
+    return '<div class="nline2">⚠️ '+esc(t.noKey)+'</div>';
+  }
+  var out='<div class="popn">';
+  out+='<div class="phd">🛏 '+esc(t.hotelsLabel)+'</div>';
+  n.hotels.slice(0,4).forEach(function(h){
+    var stars=h.rating ? '⭐ '+h.rating.toFixed(1)+' ('+h.ratings+')' : '';
+    var price = h.price ? ('$'.repeat(h.price)) : '';
+    out+='<div class="nrow">'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+' '+price+' · '+h.dist+' km</span></div>';
+  });
+  var st=n.transport||{};
+  if(st.train || st.bus || st.air){
+    out+='<div class="phd">🚌 '+esc(t.transportLabel)+'</div>';
+    if(st.train) out+='<div class="nrow">🚂 '+esc(t.nearestTrain)+': '+esc(st.train.name)+' ('+st.train.dist+' km)</div>';
+    if(st.bus)   out+='<div class="nrow">🚌 '+esc(t.nearestBus)+': '+esc(st.bus.name)+' ('+st.bus.dist+' km)</div>';
+    if(st.air)   out+='<div class="nrow">✈️ '+esc(t.nearestAirport)+': '+esc(st.air.name)+' ('+st.air.dist+' km)</div>';
+    var base="https://www.google.com/maps/dir/?api=1&destination="+p.lat+","+p.lng+"&travelmode=";
+    out+='<a class="nline" target="_blank" rel="noopener" href="'+base+'driving">🚗 '+esc(t.drive)+'</a>'+
+         '<a class="nline" target="_blank" rel="noopener" href="'+base+'transit">🚌 '+esc(t.transit)+'</a>'+
+         '<a class="nline" target="_blank" rel="noopener" href="'+base+'walking">🚶 '+esc(t.walk)+'</a>';
+  }
+  out+='</div>';
+  return out;
 }
 
 /* ===== chips ===== */
@@ -1367,8 +1474,8 @@ function saveNew(){
     if(!photoData && old) base.photo = old.photo || "";
     var ep = Object.assign({}, old, base, {id: editingId, createdBy: old ? old.createdBy : deviceId});
     places = places.map(function(x){ return x.id===editingId ? ep : x; });
-    if(fbReady){ db.ref("places/"+editingId).set(ep); }
-    else { saveLocalPlaces(); }
+    if(fbReady){ db.ref("places/"+editingId).set(ep); refreshNearbyFrom(ep); }
+    else { saveLocalPlaces(); refreshNearbyFrom(ep); }
     renderAll(); closeModal(); toast(t.edited);
     return;
   }
@@ -1379,7 +1486,17 @@ function saveNew(){
   } else {
     saveLocalPlaces();
   }
+  refreshNearbyFrom(p);
   renderAll(); closeModal(); toast(t.saved);
+}
+function refreshNearbyFrom(p){
+  if(!hasPlacesKey()) return;
+  placesNearby(p).then(function(n){
+    p.nearby = n;
+    if(fbReady){ db.ref("places/"+p.id+"/nearby").set(n); }
+    else { saveLocalPlaces(); }
+    renderAll();
+  });
 }
 
 /* ===== comment modal ===== */
