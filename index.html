@@ -578,13 +578,21 @@ function updateComments(snap){
   renderAll();
 }
 
+var SEED_VERSION = 1;
+
 function seedIfEmpty(){
-  db.ref("meta/initialized").once("value", function(snap){
-    if(snap.val()) return;
+  db.ref("meta/sampleVersion").once("value", function(snap){
+    if(snap.val() === SEED_VERSION) return;
     db.ref("places").once("value", function(ps){
-      if(ps.numChildren() > 0) return;
       var upd = {};
-      SAMPLE.forEach(function(p){ upd["places/"+p.id] = p; });
+      if(ps.numChildren() === 0){
+        SAMPLE.forEach(function(p){ upd["places/"+p.id] = p; });
+      } else {
+        var existing = {};
+        ps.forEach(function(ch){ existing[ch.key] = true; });
+        SAMPLE.forEach(function(p){ if(!existing[p.id]) upd["places/"+p.id] = p; });
+      }
+      upd["meta/sampleVersion"] = SEED_VERSION;
       upd["meta/initialized"] = true;
       db.ref().update(upd);
     });
