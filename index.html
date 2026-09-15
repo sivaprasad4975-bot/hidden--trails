@@ -283,6 +283,7 @@ var I18N = {
     popDirections:"Open in Google Maps",
     nearbyTitle:"Nearby & How to Reach",
     hotelsLabel:"Nearby Hotels",
+    restaurantsLabel:"Nearby Restaurants",
     noHotels:"No hotels found nearby.",
     transportLabel:"How to Reach",
     nearestBus:"Nearest bus stand",
@@ -330,6 +331,7 @@ var I18N = {
     popDirections:"Google வரைபடத்தில் திறக்க",
     nearbyTitle:"அருகிலுள்ள & போக்குவரத்து",
     hotelsLabel:"அருகிலுள்ள ஹோட்டல்கள்",
+    restaurantsLabel:"அருகிலுள்ள உணவகங்கள்",
     noHotels:"அருகில் ஹோட்டல்கள் இல்லை.",
     transportLabel:"எப்படி செல்வது",
     nearestBus:"அருகிலுள்ள பேருந்து நிலையம்",
@@ -1067,47 +1069,81 @@ function haversineKm(lat1,lng1,lat2,lng2){
   var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
   return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
-function overpassQuery(q){
-  var url="https://overpass-api.de/api/interpreter?data="+encodeURIComponent("[out:json][timeout:10];"+q);
-  return fetch(url).then(function(r){ return r.json(); }).then(function(d){
-    return (d && d.elements) ? d.elements : [];
-  }).catch(function(){ return []; });
+var OVERPASS_MIRRORS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.nchc.org.tw/api/interpreter"
+];
+function overpassFetch(url){
+  var ctrl = new AbortController();
+  var to = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 20000);
+  return fetch(url, { signal: ctrl.signal, headers: { "accept": "application/json", "user-agent": "roads-to-unseen/1.0" } }).then(function(r){
+    clearTimeout(to);
+    return r;
+  }, function(e){ clearTimeout(to); throw e; });
 }
+function overpassQuery(q){
+  var tries = 0;
+  function attempt(){
+    tries++;
+    var url = OVERPASS_MIRRORS[(tries-1) % OVERPASS_MIRRORS.length] + "?data=" + encodeURIComponent("[out:json][timeout:15];" + q);
+    return overpassFetch(url).then(function(r){
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function(d){ return (d && d.elements && d.elements.length) ? d.elements : []; }).catch(function(){
+      if(tries < OVERPASS_MIRRORS.length) return attempt();
+      return [];
+    });
+  }
+  return attempt();
+}
+function nearbyCenter(e){ return { lat: e.center ? e.center.lat : e.lat, lon: e.center ? e.center.lon : e.lon }; }
 function placesNearby(place){
   return new Promise(function(resolve){
     var lat=place.lat, lng=place.lng;
-    var rHotels=15000, rTransport=25000;
-    var hotelQ='node["tourism"="hotel"](around:'+rHotels+','+lat+','+lng+');out body 12;';
-    var trainQ='node["railway"="station"]["usage"~"regional|main|suburban"](around:'+rTransport+','+lat+','+lng+');out body 4;';
-    var busQ='node["highway"="bus_stop"]["public_transport"="stop_position"](around:'+rTransport+','+lat+','+lng+');out body 4;';
-    var airQ='node["aeroway"="aerodrome"](around:'+rTransport+','+lat+','+lng+');out body 2;';
+    var rSearch=25000, rTransport=25000;
+    var hotelQ='nwr["tourism"~"hotel|guest_house|hostel|motel"](around:'+rSearch+','+lat+','+lng+');out center 10;';
+    var foodQ='nwr["amenity"~"restaurant|fast_food|bar|cafe|food_court"](around:'+rSearch+','+lat+','+lng+');out center 10;';
+    var trainQ='nwr["railway"="station"]["usage"~"regional|main|suburban"](around:'+rTransport+','+lat+','+lng+');out center 4;';
+    var busQ='nwr["highway"="bus_stop"](around:'+rTransport+','+lat+','+lng+');out center 4;';
+    var airQ='nwr["aeroway"="aerodrome"](around:'+rTransport+','+lat+','+lng+');out center 2;';
 
     Promise.all([
       overpassQuery(hotelQ),
+      overpassQuery(foodQ),
       overpassQuery(trainQ),
       overpassQuery(busQ),
       overpassQuery(airQ)
     ]).then(function(res){
       var hotels=res[0].map(function(h){
+        var c=nearbyCenter(h);
         return {
           name:h.tags && h.tags.name ? h.tags.name : "Hotel",
           rating:h.tags && h.tags.stars ? parseInt(h.tags.stars) : 0,
           price:h.tags && h.tags.charge ? h.tags.charge : "",
           vic:h.tags && (h.tags["addr:street"] || h.tags["addr:city"] || "") ? (h.tags["addr:street"] || h.tags["addr:city"] || "") : "",
-          dist:Math.round(haversineKm(lat,lng,h.lat,h.lon)*10)/10,
-          lat:h.lat, lng:h.lon
+          dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10,
+          lat:c.lat, lng:c.lon
         };
       });
       hotels.sort(function(a,b){ return a.dist - b.dist; });
       hotels=hotels.slice(0,10);
 
-      var stations={"train":null,"bus":null,"air":null};
-      if(res[1].length){ var t=res[1][0]; stations.train={name:t.tags.name||"Station", dist:Math.round(haversineKm(lat,lng,t.lat,t.lon)*10)/10}; }
-      if(res[2].length){ var b=res[2][0]; stations.bus={name:b.tags.name||b.tags.ref||"Bus Stop", dist:Math.round(haversineKm(lat,lng,b.lat,b.lon)*10)/10}; }
-      if(res[3].length){ var a=res[3][0]; stations.air={name:a.tags.name||"Airport", dist:Math.round(haversineKm(lat,lng,a.lat,a.lon)*10)/10}; }
+      var foods=res[1].map(function(f){
+        var c=nearbyCenter(f);
+        return { name:f.tags && f.tags.name ? f.tags.name : (f.tags && f.tags.cuisine ? f.tags.cuisine : "Restaurant"), dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10 };
+      });
+      foods.sort(function(a,b){ return a.dist - b.dist; });
+      foods=foods.slice(0,8);
 
-      resolve({hotels:hotels, transport:stations});
-    }).catch(function(){ resolve({hotels:[], transport:{}}); });
+      var stations={"train":null,"bus":null,"air":null};
+      if(res[2].length){ var t=res[2][0]; var tc=nearbyCenter(t); stations.train={name:t.tags.name||"Station", dist:Math.round(haversineKm(lat,lng,tc.lat,tc.lon)*10)/10}; }
+      if(res[3].length){ var b=res[3][0]; var bc=nearbyCenter(b); stations.bus={name:b.tags.name||b.tags.ref||"Bus Stop", dist:Math.round(haversineKm(lat,lng,bc.lat,bc.lon)*10)/10}; }
+      if(res[4].length){ var a=res[4][0]; var ac=nearbyCenter(a); stations.air={name:a.tags.name||"Airport", dist:Math.round(haversineKm(lat,lng,ac.lat,ac.lon)*10)/10}; }
+
+      var withData = hotels.length || foods.length || stations.train || stations.bus || stations.air;
+      resolve({v:3, hotels:hotels, restaurants:foods, transport:stations});
+    }).catch(function(){ resolve({v:3, hotels:[], restaurants:[], transport:{}}); });
   });
 }
 function refreshNearbyFrom(p){
@@ -1122,7 +1158,11 @@ function refreshNearbyFrom(p){
 var nearbyQueue = false;
 function autoFetchNearby(){
   if(nearbyQueue) return;
-  var missing = places.filter(function(p){ return !p.nearby && p.lat != null && p.lng != null; });
+  var missing = places.filter(function(p){
+    if(p.lat == null || p.lng == null) return false;
+    if(!p.nearby) return true;
+    return p.nearby.v !== 3;
+  });
   if(!missing.length) return;
   nearbyQueue = true;
   var i = 0;
@@ -1135,16 +1175,25 @@ function autoFetchNearby(){
 }
 function nearbySection(p){
   var n=p.nearby;
-  if(!n || !n.hotels || !n.hotels.length){
+  var none = !n || ((!n.hotels||!n.hotels.length) && (!n.restaurants||!n.restaurants.length) && !((n.transport||{}).train || (n.transport||{}).bus || (n.transport||{}).air));
+  if(none){
     return '<div class="popn"><div class="phd">ℹ️ '+esc(t.nearbyTitle)+'</div><div class="nrow muted">'+esc(t.noHotels)+'</div></div>';
   }
   var out='<div class="popn">';
-  out+='<div class="phd">🛏 '+esc(t.hotelsLabel)+'</div>';
-  n.hotels.slice(0,5).forEach(function(h){
-    var stars=h.rating ? '⭐ '+h.rating+' ★' : '';
-    var price=h.price ? ' · '+h.price : '';
-    out+='<div class="nrow">'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+price+' · '+h.dist+' km</span></div>';
-  });
+  if(n.hotels && n.hotels.length){
+    out+='<div class="phd">🛏 '+esc(t.hotelsLabel)+'</div>';
+    n.hotels.slice(0,5).forEach(function(h){
+      var stars=h.rating ? '⭐ '+h.rating+' ★' : '';
+      var price=h.price ? ' · '+h.price : '';
+      out+='<div class="nrow">'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+price+' · '+h.dist+' km</span></div>';
+    });
+  }
+  if(n.restaurants && n.restaurants.length){
+    out+='<div class="phd">🍽 '+esc(t.restaurantsLabel)+'</div>';
+    n.restaurants.slice(0,5).forEach(function(f){
+      out+='<div class="nrow">'+(f.name?esc(f.name):'')+' <span class="muted">· '+f.dist+' km</span></div>';
+    });
+  }
   var st=n.transport||{};
   if(st.train || st.bus || st.air){
     out+='<div class="phd">🚌 '+esc(t.transportLabel)+'</div>';
