@@ -1092,7 +1092,7 @@ function overpassQuery(q){
       return r.json();
     }).then(function(d){ return (d && d.elements && d.elements.length) ? d.elements : []; }).catch(function(){
       if(tries < OVERPASS_MIRRORS.length) return attempt();
-      return [];
+      return null;
     });
   }
   return attempt();
@@ -1115,6 +1115,7 @@ function placesNearby(place){
       overpassQuery(busQ),
       overpassQuery(airQ)
     ]).then(function(res){
+      var ok = res.every(function(r){ return r !== null; });
       var hotels=res[0].map(function(h){
         var c=nearbyCenter(h);
         return {
@@ -1142,13 +1143,15 @@ function placesNearby(place){
       if(res[4].length){ var a=res[4][0]; var ac=nearbyCenter(a); stations.air={name:a.tags.name||"Airport", dist:Math.round(haversineKm(lat,lng,ac.lat,ac.lon)*10)/10}; }
 
       var withData = hotels.length || foods.length || stations.train || stations.bus || stations.air;
-      resolve({v:3, hotels:hotels, restaurants:foods, transport:stations});
-    }).catch(function(){ resolve({v:3, hotels:[], restaurants:[], transport:{}}); });
+      if(ok){ resolve({ok:true, v:3, hotels:hotels, restaurants:foods, transport:stations}); }
+      else { resolve({ok:false, hotels:hotels, restaurants:foods, transport:stations}); }
+    }).catch(function(){ resolve({ok:false, hotels:[], restaurants:[], transport:{}}); });
   });
 }
 function refreshNearbyFrom(p){
   placesNearby(p).then(function(n){
     p.nearby = n;
+    if(!n.ok){ renderAll(); return; }
     if(fbReady){ db.ref("places/"+p.id+"/nearby").set(n); }
     else { saveLocalPlaces(); }
     renderAll();
@@ -1161,6 +1164,8 @@ function autoFetchNearby(){
   var missing = places.filter(function(p){
     if(p.lat == null || p.lng == null) return false;
     if(!p.nearby) return true;
+    if(!('ok' in p.nearby)) return true;
+    if(p.nearby.ok === false) return true;
     return p.nearby.v !== 3;
   });
   if(!missing.length) return;
