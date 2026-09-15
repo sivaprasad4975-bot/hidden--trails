@@ -890,6 +890,7 @@ function showMarker(p){
   });
   var m = L.marker([p.lat,p.lng], {icon:icon}).addTo(map);
   m.bindPopup(popupHTML(p));
+  m.on("popupopen", function(){ ensureNearby(p); });
   markers[p.id] = m;
 }
 
@@ -1072,13 +1073,13 @@ function haversineKm(lat1,lng1,lat2,lng2){
   return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 var OVERPASS_MIRRORS = [
-  "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
   "https://overpass.nchc.org.tw/api/interpreter"
 ];
 function overpassFetch(url){
   var ctrl = new AbortController();
-  var to = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 20000);
+  var to = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 35000);
   return fetch(url, { signal: ctrl.signal, headers: { "accept": "application/json", "user-agent": "roads-to-unseen/1.0" } }).then(function(r){
     clearTimeout(to);
     return r;
@@ -1088,7 +1089,7 @@ function overpassQuery(q){
   var tries = 0;
   function attempt(){
     tries++;
-    var url = OVERPASS_MIRRORS[(tries-1) % OVERPASS_MIRRORS.length] + "?data=" + encodeURIComponent("[out:json][timeout:15];" + q);
+    var url = OVERPASS_MIRRORS[(tries-1) % OVERPASS_MIRRORS.length] + "?data=" + encodeURIComponent("[out:json][timeout:35];" + q);
     return overpassFetch(url).then(function(r){
       if(!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
@@ -1150,17 +1151,26 @@ function placesNearby(place){
     }).catch(function(){ resolve({ok:false, hotels:[], restaurants:[], transport:{}}); });
   });
 }
-function refreshNearbyFrom(p){
+function refreshNearbyFrom(p, done){
   placesNearby(p).then(function(n){
     p.nearby = n;
-    if(!n.ok){ renderAll(); return; }
+    renderAll();
+    if(done) done();
+    if(!n.ok){ return; }
     if(fbReady){ db.ref("places/"+p.id+"/nearby").set(n); }
     else { saveLocalPlaces(); }
-    renderAll();
   });
 }
 
 var nearbyQueue = false;
+function ensureNearby(p){
+  var n = p.nearby;
+  if(!n || !('ok' in n) || n.ok === false || n.v !== 3){
+    refreshNearbyFrom(p, function(){
+      if(markers[p.id]) markers[p.id].setPopupContent(popupHTML(p));
+    });
+  }
+}
 function autoFetchNearby(){
   if(nearbyQueue) return;
   var missing = places.filter(function(p){
