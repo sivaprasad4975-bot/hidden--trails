@@ -282,6 +282,7 @@ var I18N = {
     saved:"Place added.", imported:"Places imported successfully.",
     popDirections:"Open in Google Maps",
     nearbyTitle:"Nearby & How to Reach",
+    fastestRoute:"Fastest Route",
     hotelsLabel:"Nearby Hotels",
     restaurantsLabel:"Nearby Restaurants",
     noHotels:"No hotels found nearby.",
@@ -330,6 +331,7 @@ var I18N = {
     saved:"இடம் சேர்க்கப்பட்டது.", imported:"இடங்கள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன.",
     popDirections:"Google வரைபடத்தில் திறக்க",
     nearbyTitle:"அருகிலுள்ள & போக்குவரத்து",
+    fastestRoute:"விரைவு வழி",
     hotelsLabel:"அருகிலுள்ள ஹோட்டல்கள்",
     restaurantsLabel:"அருகிலுள்ள உணவகங்கள்",
     noHotels:"அருகில் ஹோட்டல்கள் இல்லை.",
@@ -1181,10 +1183,11 @@ function autoFetchNearby(){
 function nearbySection(p){
   var n=p.nearby;
   var none = !n || ((!n.hotels||!n.hotels.length) && (!n.restaurants||!n.restaurants.length) && !((n.transport||{}).train || (n.transport||{}).bus || (n.transport||{}).air));
-  if(none){
-    return '<div class="popn"><div class="phd">ℹ️ '+esc(t.nearbyTitle)+'</div><div class="nrow muted">'+esc(t.noHotels)+'</div></div>';
-  }
+  if(!n){ return ''; }
   var out='<div class="popn">';
+  if(none && n.hotels === undefined){
+    out+='<div class="phd">ℹ️ '+esc(t.nearbyTitle)+'</div><div class="nrow muted">'+esc(t.noHotels)+'</div>';
+  }
   if(n.hotels && n.hotels.length){
     out+='<div class="phd">🛏 '+esc(t.hotelsLabel)+'</div>';
     n.hotels.slice(0,5).forEach(function(h){
@@ -1205,11 +1208,12 @@ function nearbySection(p){
     if(st.train) out+='<div class="nrow">🚂 '+esc(t.nearestTrain)+': '+esc(st.train.name)+' ('+st.train.dist+' km)</div>';
     if(st.bus)   out+='<div class="nrow">🚌 '+esc(t.nearestBus)+': '+esc(st.bus.name)+' ('+st.bus.dist+' km)</div>';
     if(st.air)   out+='<div class="nrow">✈️ '+esc(t.nearestAirport)+': '+esc(st.air.name)+' ('+st.air.dist+' km)</div>';
-    var base="https://www.google.com/maps/dir/?api=1&destination="+p.lat+","+p.lng+"&travelmode=";
-    out+='<a class="nline" target="_blank" rel="noopener" href="'+base+'driving">🚗 '+esc(t.drive)+'</a>'+
-         '<a class="nline" target="_blank" rel="noopener" href="'+base+'transit">🚌 '+esc(t.transit)+'</a>'+
-         '<a class="nline" target="_blank" rel="noopener" href="'+base+'walking">🚶 '+esc(t.walk)+'</a>';
   }
+  out+='<div class="phd">🧭 '+esc(t.fastestRoute)+'</div>';
+  var base="https://www.google.com/maps/dir/?api=1&destination="+p.lat+","+p.lng+"&travelmode=";
+  out+='<a class="nline" target="_blank" rel="noopener" href="'+base+'driving">🚗 '+esc(t.drive)+'</a>'+
+       '<a class="nline" target="_blank" rel="noopener" href="'+base+'transit">🚌 '+esc(t.transit)+'</a>'+
+       '<a class="nline" target="_blank" rel="noopener" href="'+base+'walking">🚶 '+esc(t.walk)+'</a>';
   out+='</div>';
   return out;
 }
