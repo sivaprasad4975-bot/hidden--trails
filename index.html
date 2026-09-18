@@ -1104,6 +1104,7 @@ function haversineKm(lat1,lng1,lat2,lng2){
   return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 var OVERPASS_MIRRORS = [
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
   "https://overpass-api.de/api/interpreter",
   "https://overpass.nchc.org.tw/api/interpreter"
@@ -1149,8 +1150,8 @@ function placesNearby(place){
       overpassQuery(busQ),
       overpassQuery(airQ)
     ]).then(function(res){
-      var ok = res.every(function(r){ return r !== null; });
-      var hotels=res[0].map(function(h){
+      var ok = res[0] !== null && res[1] !== null;
+      var hotels=(res[0]||[]).map(function(h){
         var c=nearbyCenter(h);
         return {
           name:h.tags && h.tags.name ? h.tags.name : "Hotel",
@@ -1164,7 +1165,7 @@ function placesNearby(place){
       hotels.sort(function(a,b){ return a.dist - b.dist; });
       hotels=hotels.slice(0,10);
 
-      var foods=res[1].map(function(f){
+      var foods=(res[1]||[]).map(function(f){
         var c=nearbyCenter(f);
         return { name:f.tags && f.tags.name ? f.tags.name : (f.tags && f.tags.cuisine ? f.tags.cuisine : "Restaurant"), dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10 };
       });
@@ -1172,9 +1173,9 @@ function placesNearby(place){
       foods=foods.slice(0,8);
 
       var stations={"train":null,"bus":null,"air":null};
-      if(res[2].length){ var t=res[2][0]; var tc=nearbyCenter(t); stations.train={name:t.tags.name||"Station", dist:Math.round(haversineKm(lat,lng,tc.lat,tc.lon)*10)/10}; }
-      if(res[3].length){ var b=res[3][0]; var bc=nearbyCenter(b); stations.bus={name:b.tags.name||b.tags.ref||"Bus Stop", dist:Math.round(haversineKm(lat,lng,bc.lat,bc.lon)*10)/10}; }
-      if(res[4].length){ var a=res[4][0]; var ac=nearbyCenter(a); stations.air={name:a.tags.name||"Airport", dist:Math.round(haversineKm(lat,lng,ac.lat,ac.lon)*10)/10}; }
+      if(res[2] && res[2].length){ var t=res[2][0]; var tc=nearbyCenter(t); stations.train={name:t.tags.name||"Station", dist:Math.round(haversineKm(lat,lng,tc.lat,tc.lon)*10)/10}; }
+      if(res[3] && res[3].length){ var b=res[3][0]; var bc=nearbyCenter(b); stations.bus={name:b.tags.name||b.tags.ref||"Bus Stop", dist:Math.round(haversineKm(lat,lng,bc.lat,bc.lon)*10)/10}; }
+      if(res[4] && res[4].length){ var a=res[4][0]; var ac=nearbyCenter(a); stations.air={name:a.tags.name||"Airport", dist:Math.round(haversineKm(lat,lng,ac.lat,ac.lon)*10)/10}; }
 
       var withData = hotels.length || foods.length || stations.train || stations.bus || stations.air;
       if(ok){ resolve({ok:true, v:3, hotels:hotels, restaurants:foods, transport:stations}); }
