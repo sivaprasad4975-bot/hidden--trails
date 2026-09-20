@@ -929,9 +929,10 @@ function showMarker(p){
   m.bindPopup(popupHTML(p));
   m.on("popupopen", function(){ ensureNearby(p); });
   m.on("popupclose", function(){
-    clearNavNearby();
+    if(navGuard) return;
     clearNearbyMap(p.id);
     if(markers[p.id]) markers[p.id].setPopupContent(popupHTML(p));
+    clearNavNearby();
   });
   markers[p.id] = m;
 }
@@ -1207,6 +1208,7 @@ function refreshNearbyFrom(p, done){
 
 var nearbyQueue = false;
 var navMarker = null;
+var navGuard = false;
 function navNearby(id, kind, idx){
   var p = places.find(function(x){ return x.id===id; });
   if(!p || !p.nearby) return;
@@ -1219,6 +1221,7 @@ function navNearby(id, kind, idx){
   var dest = item.lat+","+item.lng;
   var base = "https://www.google.com/maps/dir/?api=1&destination="+dest+"&travelmode=";
   var navigate = "https://www.google.com/maps/dir/?api=1&destination="+dest;
+  navGuard = true;
   navMarker = L.marker([item.lat,item.lng], { icon: mkNearIcon(kind === "h" ? "#0ea5e9" : "#f97316", kind === "h" ? "🛏" : "🍽") }).addTo(map);
   navMarker.bindPopup(
     '<div class="pop"><h3>'+esc(item.name)+'</h3>'+
@@ -1229,6 +1232,7 @@ function navNearby(id, kind, idx){
     '<a class="link nnav" target="_blank" rel="noopener" href="'+navigate+'">🧭 '+esc(t.openMapsNav)+' ↗</a></div>'
   ).openPopup();
   map.flyTo([item.lat, item.lng], Math.max(map.getZoom(), 12));
+  setTimeout(function(){ navGuard = false; }, 50);
 }
 function clearNavNearby(){
   if(navMarker){ map.removeLayer(navMarker); navMarker = null; }
