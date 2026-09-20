@@ -291,6 +291,7 @@ var I18N = {
     nearestTrain:"Nearest railway station",
     nearestAirport:"Nearest airport",
     noKey:"Nearby data unavailable. Try again later.",
+    showMap:"Show on map", hideMap:"Hide from map",
     drive:"Drive", transit:"Public transit", walk:"Walk",
     catTrek:"Trekking", catWater:"Waterfalls", catView:"Viewpoints", catTemple:"Temples", catDam:"Dams", catAll:"All",
     mapJoined:"OpenStreetMap + Bhuvan layers",
@@ -340,6 +341,7 @@ var I18N = {
     nearestTrain:"அருகிலுள்ள ரயில் நிலையம்",
     nearestAirport:"அருகிலுள்ள விமான நிலையம்",
     noKey:"அருகிலுள்ள தகவல் கிடைக்கவில்லை.",
+    showMap:"வரைபடத்தில் காட்டு", hideMap:"வரைபடத்திலிருந்து மறை",
     drive:"காரில்", transit:"பொது போக்குவரத்து", walk:"நடந்து",
     catTrek:"மலைப்பயணம்", catWater:"அருவிகள்", catView:"பார்வைத் தளம்", catTemple:"கோயில்", catDam:"அணைகள்", catAll:"அனைத்தும்",
     mapJoined:"OpenStreetMap + புவன்",
@@ -1167,7 +1169,7 @@ function placesNearby(place){
 
       var foods=(res[1]||[]).map(function(f){
         var c=nearbyCenter(f);
-        return { name:f.tags && f.tags.name ? f.tags.name : (f.tags && f.tags.cuisine ? f.tags.cuisine : "Restaurant"), dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10 };
+        return { name:f.tags && f.tags.name ? f.tags.name : (f.tags && f.tags.cuisine ? f.tags.cuisine : "Restaurant"), dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10, lat:c.lat, lng:c.lon };
       });
       foods.sort(function(a,b){ return a.dist - b.dist; });
       foods=foods.slice(0,8);
@@ -1195,6 +1197,44 @@ function refreshNearbyFrom(p, done){
 }
 
 var nearbyQueue = false;
+var nearbyLayers = {};
+function mkNearIcon(color, sym){
+  return L.divIcon({
+    className:"",
+    html:'<div style="width:22px;height:22px;background:'+color+';border:2px solid #fff;border-radius:50%;text-align:center;line-height:18px;font-size:11px;color:#fff;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.5)">'+sym+'</div>',
+    iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-12]
+  });
+}
+function toggleNearbyMap(id){
+  var p = places.find(function(x){ return x.id===id; });
+  if(nearbyLayers[id]){ clearNearbyMap(id); }
+  else{
+    if(!p || !p.nearby) return;
+    loadNearbyMap(id, p);
+  }
+  if(markers[id]) markers[id].setPopupContent(popupHTML(p));
+}
+function clearNearbyMap(id){
+  if(nearbyLayers[id]){ map.removeLayer(nearbyLayers[id]); delete nearbyLayers[id]; }
+}
+function loadNearbyMap(id, p){
+  clearNearbyMap(id);
+  var g = L.layerGroup();
+  var n = p.nearby || {};
+  (n.hotels||[]).forEach(function(h){
+    if(h.lat==null || h.lng==null) return;
+    var m = L.marker([h.lat,h.lng], { icon: mkNearIcon("#0ea5e9","🛏") }).addTo(g);
+    m.bindPopup('<div class="pop"><h3>'+esc(h.name)+'</h3><div class="row">🛏 '+esc(t.hotelsLabel)+' · '+h.dist+' km</div><a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+h.lat+','+h.lng+'">'+esc(t.popDirections)+' ↗</a></div>');
+  });
+  (n.restaurants||[]).forEach(function(f){
+    if(f.lat==null || f.lng==null) return;
+    var m = L.marker([f.lat,f.lng], { icon: mkNearIcon("#f97316","🍽") }).addTo(g);
+    m.bindPopup('<div class="pop"><h3>'+esc(f.name)+'</h3><div class="row">🍽 '+esc(t.restaurantsLabel)+' · '+f.dist+' km</div><a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+f.lat+','+f.lng+'">'+esc(t.popDirections)+' ↗</a></div>');
+  });
+  if(!g.getLayers().length){ toast(t.noKey); return; }
+  nearbyLayers[id] = g;
+  g.addTo(map);
+}
 function ensureNearby(p){
   var n = p.nearby;
   if(!n || !('ok' in n) || n.ok === false || n.v !== 3){
@@ -1256,6 +1296,8 @@ function nearbySection(p){
   out+='<a class="nline" target="_blank" rel="noopener" href="'+base+'driving">🚗 '+esc(t.drive)+'</a>'+
        '<a class="nline" target="_blank" rel="noopener" href="'+base+'transit">🚌 '+esc(t.transit)+'</a>'+
        '<a class="nline" target="_blank" rel="noopener" href="'+base+'walking">🚶 '+esc(t.walk)+'</a>';
+  var apt = (p.id in nearbyLayers);
+  out+='<div class="phd"></div><button class="nline" onclick="toggleNearbyMap('+p.id+')">'+(apt?esc(t.hideMap):esc(t.showMap))+'</button>';
   out+='</div>';
   return out;
 }
