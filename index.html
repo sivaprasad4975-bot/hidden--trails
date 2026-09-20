@@ -73,6 +73,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .pop .desc{color:var(--muted);font-size:.85rem}
 .pop .row{color:var(--muted);font-size:.8rem;margin-top:6px}
 .pop .link{display:inline-block;margin-top:8px;background:var(--accent);color:#fff;padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.8rem}
+.pop .link.nnav{display:block;text-align:center;font-weight:700;margin-top:10px}
 .popn{margin-top:8px;border-top:1px solid var(--border);padding-top:6px}
 .popn .phd{font-size:.72rem;font-weight:700;letter-spacing:.4px;color:var(--muted);margin:6px 0 3px}
 .popn .nrow{font-size:.78rem;margin-top:3px;display:flex;align-items:center;gap:4px;justify-content:space-between}
@@ -293,6 +294,7 @@ var I18N = {
     nearestAirport:"Nearest airport",
     noKey:"Nearby data unavailable. Try again later.",
     showMap:"Show on map", hideMap:"Hide from map",
+    openMapsNav:"Open in Google Maps",
     drive:"Drive", transit:"Public transit", walk:"Walk",
     catTrek:"Trekking", catWater:"Waterfalls", catView:"Viewpoints", catTemple:"Temples", catDam:"Dams", catAll:"All",
     mapJoined:"OpenStreetMap + Bhuvan layers",
@@ -343,6 +345,7 @@ var I18N = {
     nearestAirport:"அருகிலுள்ள விமான நிலையம்",
     noKey:"அருகிலுள்ள தகவல் கிடைக்கவில்லை.",
     showMap:"வரைபடத்தில் காட்டு", hideMap:"வரைபடத்திலிருந்து மறை",
+    openMapsNav:"Google வரைபடத்தில் திறக்க",
     drive:"காரில்", transit:"பொது போக்குவரத்து", walk:"நடந்து",
     catTrek:"மலைப்பயணம்", catWater:"அருவிகள்", catView:"பார்வைத் தளம்", catTemple:"கோயில்", catDam:"அணைகள்", catAll:"அனைத்தும்",
     mapJoined:"OpenStreetMap + புவன்",
@@ -1213,7 +1216,9 @@ function navNearby(id, kind, idx){
   if(!item || item.lat == null || item.lng == null){ toast(t.noKey); return; }
   if(navMarker){ map.removeLayer(navMarker); navMarker = null; }
   var lbl = kind === "h" ? "🛏 "+esc(t.hotelsLabel) : "🍽 "+esc(t.restaurantsLabel);
-  var base = "https://www.google.com/maps/dir/?api=1&destination="+item.lat+","+item.lng+"&travelmode=";
+  var dest = item.lat+","+item.lng;
+  var base = "https://www.google.com/maps/dir/?api=1&destination="+dest+"&travelmode=";
+  var navigate = "https://www.google.com/maps/dir/?api=1&destination="+dest;
   navMarker = L.marker([item.lat,item.lng], { icon: mkNearIcon(kind === "h" ? "#0ea5e9" : "#f97316", kind === "h" ? "🛏" : "🍽") }).addTo(map);
   navMarker.bindPopup(
     '<div class="pop"><h3>'+esc(item.name)+'</h3>'+
@@ -1221,7 +1226,7 @@ function navNearby(id, kind, idx){
     '<a class="nline" target="_blank" rel="noopener" href="'+base+'driving">🚗 '+esc(t.drive)+'</a>'+
     '<a class="nline" target="_blank" rel="noopener" href="'+base+'transit">🚌 '+esc(t.transit)+'</a>'+
     '<a class="nline" target="_blank" rel="noopener" href="'+base+'walking">🚶 '+esc(t.walk)+'</a>'+
-    '<a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+item.lat+','+item.lng+'">'+esc(t.popDirections)+' ↗</a></div>'
+    '<a class="link nnav" target="_blank" rel="noopener" href="'+navigate+'">🧭 '+esc(t.openMapsNav)+' ↗</a></div>'
   ).openPopup();
   map.flyTo([item.lat, item.lng], Math.max(map.getZoom(), 12));
 }
@@ -1256,12 +1261,12 @@ function loadNearbyMap(id, p){
   (n.hotels||[]).forEach(function(h){
     if(h.lat==null || h.lng==null) return;
     var m = L.marker([h.lat,h.lng], { icon: mkNearIcon("#0ea5e9","🛏") }).addTo(g);
-    m.bindPopup('<div class="pop"><h3>'+esc(h.name)+'</h3><div class="row">🛏 '+esc(t.hotelsLabel)+' · '+h.dist+' km</div><a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+h.lat+','+h.lng+'">'+esc(t.popDirections)+' ↗</a></div>');
+    m.bindPopup('<div class="pop"><h3>'+esc(h.name)+'</h3><div class="row">🛏 '+esc(t.hotelsLabel)+' · '+h.dist+' km</div><a class="link nnav" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination='+h.lat+','+h.lng+'">🧭 '+esc(t.openMapsNav)+' ↗</a></div>');
   });
   (n.restaurants||[]).forEach(function(f){
     if(f.lat==null || f.lng==null) return;
     var m = L.marker([f.lat,f.lng], { icon: mkNearIcon("#f97316","🍽") }).addTo(g);
-    m.bindPopup('<div class="pop"><h3>'+esc(f.name)+'</h3><div class="row">🍽 '+esc(t.restaurantsLabel)+' · '+f.dist+' km</div><a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+f.lat+','+f.lng+'">'+esc(t.popDirections)+' ↗</a></div>');
+    m.bindPopup('<div class="pop"><h3>'+esc(f.name)+'</h3><div class="row">🍽 '+esc(t.restaurantsLabel)+' · '+f.dist+' km</div><a class="link nnav" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination='+f.lat+','+f.lng+'">🧭 '+esc(t.openMapsNav)+' ↗</a></div>');
   });
   if(!g.getLayers().length){ toast(t.noKey); return; }
   nearbyLayers[id] = g;
