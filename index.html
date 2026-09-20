@@ -75,8 +75,9 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .pop .link{display:inline-block;margin-top:8px;background:var(--accent);color:#fff;padding:5px 10px;border-radius:8px;text-decoration:none;font-size:.8rem}
 .popn{margin-top:8px;border-top:1px solid var(--border);padding-top:6px}
 .popn .phd{font-size:.72rem;font-weight:700;letter-spacing:.4px;color:var(--muted);margin:6px 0 3px}
-.popn .nrow{font-size:.78rem;margin-top:3px}
+.popn .nrow{font-size:.78rem;margin-top:3px;display:flex;align-items:center;gap:4px;justify-content:space-between}
 .popn .nrow .muted{color:var(--muted)}
+.popn .narrow{background:var(--accent);color:#fff;border:none;border-radius:6px;width:22px;height:22px;font-size:.8rem;cursor:pointer;flex:0 0 auto}
 .popn .nline{display:inline-block;background:var(--accent);color:#fff;padding:4px 8px;border-radius:7px;text-decoration:none;font-size:.72rem;margin:6px 6px 0 0}
 .nline2{color:var(--muted);font-size:.75rem;margin-top:6px}
 .nline2 b{color:var(--text)}
@@ -924,6 +925,11 @@ function showMarker(p){
   var m = L.marker([p.lat,p.lng], {icon:icon}).addTo(map);
   m.bindPopup(popupHTML(p));
   m.on("popupopen", function(){ ensureNearby(p); });
+  m.on("popupclose", function(){
+    clearNavNearby();
+    clearNearbyMap(p.id);
+    if(markers[p.id]) markers[p.id].setPopupContent(popupHTML(p));
+  });
   markers[p.id] = m;
 }
 
@@ -1197,6 +1203,31 @@ function refreshNearbyFrom(p, done){
 }
 
 var nearbyQueue = false;
+var navMarker = null;
+function navNearby(id, kind, idx){
+  var p = places.find(function(x){ return x.id===id; });
+  if(!p || !p.nearby) return;
+  var item;
+  if(kind === "h"){ item = (p.nearby.hotels||[])[idx]; }
+  else { item = (p.nearby.restaurants||[])[idx]; }
+  if(!item || item.lat == null || item.lng == null){ toast(t.noKey); return; }
+  if(navMarker){ map.removeLayer(navMarker); navMarker = null; }
+  var lbl = kind === "h" ? "🛏 "+esc(t.hotelsLabel) : "🍽 "+esc(t.restaurantsLabel);
+  var base = "https://www.google.com/maps/dir/?api=1&destination="+item.lat+","+item.lng+"&travelmode=";
+  navMarker = L.marker([item.lat,item.lng], { icon: mkNearIcon(kind === "h" ? "#0ea5e9" : "#f97316", kind === "h" ? "🛏" : "🍽") }).addTo(map);
+  navMarker.bindPopup(
+    '<div class="pop"><h3>'+esc(item.name)+'</h3>'+
+    '<div class="row">'+lbl+' · '+item.dist+' km</div>'+
+    '<a class="nline" target="_blank" rel="noopener" href="'+base+'driving">🚗 '+esc(t.drive)+'</a>'+
+    '<a class="nline" target="_blank" rel="noopener" href="'+base+'transit">🚌 '+esc(t.transit)+'</a>'+
+    '<a class="nline" target="_blank" rel="noopener" href="'+base+'walking">🚶 '+esc(t.walk)+'</a>'+
+    '<a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+item.lat+','+item.lng+'">'+esc(t.popDirections)+' ↗</a></div>'
+  ).openPopup();
+  map.flyTo([item.lat, item.lng], Math.max(map.getZoom(), 12));
+}
+function clearNavNearby(){
+  if(navMarker){ map.removeLayer(navMarker); navMarker = null; }
+}
 var nearbyLayers = {};
 function mkNearIcon(color, sym){
   return L.divIcon({
@@ -1210,6 +1241,7 @@ function toggleNearbyMap(id){
   if(nearbyLayers[id]){ clearNearbyMap(id); }
   else{
     if(!p || !p.nearby) return;
+    clearNavNearby();
     loadNearbyMap(id, p);
   }
   if(markers[id]) markers[id].setPopupContent(popupHTML(p));
@@ -1275,13 +1307,13 @@ function nearbySection(p){
     n.hotels.slice(0,5).forEach(function(h){
       var stars=h.rating ? '⭐ '+h.rating+' ★' : '';
       var price=h.price ? ' · '+h.price : '';
-      out+='<div class="nrow">'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+price+' · '+h.dist+' km</span></div>';
+      out+='<div class="nrow"><span>'+(h.name?esc(h.name):'')+' <span class="muted">'+stars+price+' · '+h.dist+' km</span></span><button class="narrow" onclick="navNearby('+p.id+',\'h\','+n.hotels.indexOf(h)+')" title="'+esc(t.showMap)+'">➜</button></div>';
     });
   }
   if(n.restaurants && n.restaurants.length){
     out+='<div class="phd">🍽 '+esc(t.restaurantsLabel)+'</div>';
     n.restaurants.slice(0,5).forEach(function(f){
-      out+='<div class="nrow">'+(f.name?esc(f.name):'')+' <span class="muted">· '+f.dist+' km</span></div>';
+      out+='<div class="nrow"><span>'+(f.name?esc(f.name):'')+' <span class="muted">· '+f.dist+' km</span></span><button class="narrow" onclick="navNearby('+p.id+',\'r\','+n.restaurants.indexOf(f)+')" title="'+esc(t.showMap)+'">➜</button></div>';
     });
   }
   var st=n.transport||{};
