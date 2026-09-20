@@ -1179,7 +1179,19 @@ function placesNearby(place){
 
       var foods=(res[1]||[]).map(function(f){
         var c=nearbyCenter(f);
-        return { name:f.tags && f.tags.name ? f.tags.name : (f.tags && f.tags.cuisine ? f.tags.cuisine : "Restaurant"), dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10, lat:c.lat, lng:c.lon };
+        var nm = f.tags && f.tags.name ? String(f.tags.name).trim() : "";
+        if(!nm){ nm = f.tags && f.tags.brand ? String(f.tags.brand).trim() : ""; }
+        if(!nm){ nm = f.tags && f.tags.operator ? String(f.tags.operator).trim() : ""; }
+        if(!nm){ nm = f.tags && f.tags.cuisine ? String(f.tags.cuisine).trim() : ""; }
+        if(!nm) return null;
+        return { name:nm, dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10, lat:c.lat, lng:c.lon };
+      }).filter(function(x){ return x !== null; });
+      var seenF = {};
+      foods = foods.filter(function(f){
+        var k = f.lat.toFixed(3)+","+f.lng.toFixed(3);
+        if(seenF[k]) return false;
+        seenF[k] = true;
+        return true;
       });
       foods.sort(function(a,b){ return a.dist - b.dist; });
       foods=foods.slice(0,8);
