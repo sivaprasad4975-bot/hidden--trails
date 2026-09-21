@@ -97,9 +97,31 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .ghost{background:var(--chip);color:var(--text)}
 .minimap{height:220px;width:100%;border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
 .hint{color:var(--muted);font-size:.78rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.row2{grid-template-columns:1fr}}
 .mode{position:absolute;top:10px;left:50px;z-index:900;font-size:.72rem;color:var(--muted);background:rgba(13,17,23,.8);border:1px solid var(--border);padding:6px 12px;border-radius:8px;pointer-events:none;display:none}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--accent);padding:11px 18px;border-radius:10px;z-index:3000;transition:transform .3s;opacity:0;font-size:.9rem}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:14px}
+.pcell{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer;text-align:center;transition:border-color .15s}
+.pcell:hover{border-color:var(--accent)}
+.pcell.vis{border-color:var(--accent);background:rgba(47,129,247,.08)}
+.pcell .pemo{font-size:1.3rem;display:block}
+.pcell .pn{font-size:.72rem;color:var(--muted);display:block;margin-top:4px;line-height:1.25;max-height:2.5em;overflow:hidden}
+.pcell.vis .pn{color:var(--text)}
+.pcell .pd{font-size:.62rem;color:#4ade80;display:block;margin-top:3px}
+.tripday{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:12px;margin-top:10px}
+.tripday h4{font-size:.85rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.tripday .troute{font-size:.75rem;color:var(--muted);margin-top:8px}
+.tripp{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--border)}
+.tripp:first-of-type{border-top:none}
+.tripp .tcat{flex:0 0 auto;font-size:.62rem;font-weight:700;padding:3px 7px;border-radius:10px;margin-top:3px}
+.tripp .tinfo{flex:1}
+.tripp .tname{font-size:.85rem}
+.tripp .tmeta{color:var(--muted);font-size:.72rem;margin-top:2px}
+.tripp .tsea{font-size:.7rem;margin-top:2px}
+.tripp .tsea.ok{color:#4ade80}
+.tripp .tsea.warn{color:#facc15}
 @media(max-width:900px){.main{grid-template-columns:1fr;height:auto}#list{order:2;border-right:none;border-top:1px solid var(--border)}#map{height:55vh}}
 </style>
 </head>
@@ -110,6 +132,8 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
     <div class="sub" id="t-sub">Discover offbeat trekking, waterfalls, viewpoints, temples &amp; dams</div>
   </div>
   <div class="lang">
+    <button id="btn-passport" title="Unseen Passport">🛂</button>
+    <button id="btn-trip" title="Trip Builder">🗺</button>
     <button id="btn-admin" title="Admin" style="display:none">🔑</button>
     <button id="btn-addadmin" title="Add admin" style="display:none">➕</button>
     <button id="btn-user" title="Login / Sign Up">👤</button>
@@ -245,6 +269,45 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 
 <div class="toast" id="toast"></div>
 
+<div class="modal" id="pmodal">
+  <div class="modalbox">
+    <h2 id="pm-title">🛂 Unseen Passport</h2>
+    <div id="pm-summary" class="hint" style="margin-bottom:6px"></div>
+    <div id="pm-stats" class="hint" style="margin-bottom:10px"></div>
+    <div class="actions" style="margin-top:0">
+      <button class="ghost" id="pm-share">📤 Share</button>
+      <button class="ghost" id="pm-close">Close</button>
+    </div>
+    <div id="pm-grid" class="pgrid"></div>
+  </div>
+</div>
+
+<div class="modal" id="tmodal">
+  <div class="modalbox">
+    <h2 id="tm-title">🗺 Trip Builder</h2>
+    <div class="row2">
+      <div class="field">
+        <label id="tl-state">State</label>
+        <select id="t-state"></select>
+      </div>
+      <div class="field">
+        <label id="tl-month">Month</label>
+        <select id="t-month"></select>
+      </div>
+      <div class="field">
+        <label id="tl-days">Days</label>
+        <select id="t-days"></select>
+      </div>
+    </div>
+    <div class="hint" id="t-hint"></div>
+    <div class="actions">
+      <button class="primary" id="t-build">Build Trip Route</button>
+      <button class="ghost" id="t-close">Close</button>
+    </div>
+    <div id="trip-out"></div>
+  </div>
+</div>
+
 <script>
 /* ===== CONFIG ===== */
 var CONFIG = {
@@ -314,7 +377,29 @@ var I18N = {
     uBadChars:"User ID: 3+ letters/numbers, - or _ only.", uShortPass:"Password must be at least 4 characters.",
     uNotFound:"User ID not found.", uWrongPass:"Wrong password.", uNoDb:"Database not connected.",
     uMismatch:"Passwords do not match.", uCreated:"Account created!", uLogged:"Logged in!", uLogout:"Logged out.",
-    uMyPrompt:"Not you? Press Close to stay logged out."
+    uMyPrompt:"Not you? Press Close to stay logged out.",
+    passport:"Unseen Passport", tripBuilder:"Trip Builder",
+    pmTitle:"🛂 Unseen Passport",
+    pmSummary:"Stamps are proof that you really stood at a hidden place. Be within ~1 km to stamp.",
+    pmStats:"Visited {v} of {n} places",
+    pmShare:"📤 Share", pmClose:"Close",
+    sharePassport:"My Unseen Passport — I've visited {v} of {n} hidden places! Which one's next?",
+    stampHere:"Stamp here 📌", stamped:"Stamped ✓", notStamped:"Not stamped yet",
+    stamping:"Locating you…", stampOk:"Passport stamped! 📌",
+    stampTooFar:"You are {d} km away. Get within ~1 km to stamp.",
+    stampNoGps:"Your location could not be found. Check GPS.",
+    alreadyStamped:"Already stamped!",
+    navigationTab:"Navigation",
+    pTitle:"🛂 Passport", tbTitle:"🗺 Trip Builder",
+    tlState:"State", tlMonth:"Month", tlDays:"Days",
+    monthsAll:"Any", statesAll:"All states",
+    buildTrip:"Build Trip Route", tripClose:"Close",
+    tripHint:"Pick a state, month and how many days. We'll route 2–3 hidden spots per day using each place's best season.",
+    dayLabel:"Day {n}",
+    noRoute:"Not enough places match those choices. Try another state or month.",
+    routeHeading:"Route", routeDriving:"Drive route",
+    inSeason:"In season", offSeason:"Off-season",
+    stayCount:"{h} hotels nearby", tripReason:"Matches your month"
   },
   ta:{
     title:"காணாத பாதைகள் – Offbeat Tourist Places",
@@ -365,7 +450,29 @@ var I18N = {
     uBadChars:"பயனர் ஐடி: 3+ எழுத்துகள், எண்கள், - அல்லது _ மட்டும்.", uShortPass:"கடவுச்சொல் குறைந்தது 4 எழுத்துகள் இருக்க வேண்டும்.",
     uNotFound:"பயனர் ஐடி இல்லை.", uWrongPass:"தவறான கடவுச்சொல்.", uNoDb:"தரவுத்தளம் இணைக்கப்படவில்லை.",
     uMismatch:"கடவுச்சொற்கள் பொருந்தவில்லை.", uCreated:"கணக்கு உருவாக்கப்பட்டது!", uLogged:"உள்நுழைந்தீர்கள்!", uLogout:"வெளியேறினீர்கள்.",
-    uMyPrompt:"நீங்களா இல்லையா? உள்நுழையாமல் இருக்க மூடு அழுத்தவும்."
+    uMyPrompt:"நீங்களா இல்லையா? உள்நுழையாமல் இருக்க மூடு அழுத்தவும்.",
+    passport:"மறைவான ஸ்டாம்புகள்", tripBuilder:"பயணத் திட்டம்",
+    pmTitle:"🛂 மறைவான ஸ்டாம்புகள்",
+    pmSummary:"சுமார் 1 கி.மீ. தொலைவில் இருந்தால் மட்டுமே ஸ்டாம்ப் போட முடியும் — அங்கு நீங்கள் உண்மையில் சென்றதற்கான சான்று.",
+    pmStats:"{n} இடங்களில் {v} இடங்கள் பார்வையிட்டீர்கள்",
+    pmShare:"📤 பகிர்", pmClose:"மூடு",
+    sharePassport:"என் மறைவான ஸ்டாம்புகள் — {n} இடங்களில் {v} இடங்களை பார்வையிட்டேன்! அடுத்தது எது?",
+    stampHere:"இங்கு ஸ்டாம்ப் 📌", stamped:"ஸ்டாம்ப் ஆனது ✓", notStamped:"இன்னும் ஸ்டாம்ப் இல்லை",
+    stamping:"உங்கள் இடம் கண்டறியப்படுகிறது…", stampOk:"ஸ்டாம்ப் சேமிக்கப்பட்டது! 📌",
+    stampTooFar:"நீங்கள் {d} கி.மீ. தொலைவில் உள்ளீர்கள். சுமார் 1 கி.மீ. அருகில் வந்து ஸ்டாம்ப் போடவும்.",
+    stampNoGps:"உங்கள் இடம் கிடைக்கவில்லை. GPS-ஐ சரிபார்க்கவும்.",
+    alreadyStamped:"ஏற்கனவே ஸ்டாம்ப்!",
+    navigationTab:"வழிகாட்டி",
+    pTitle:"🛂 ஸ்டாம்புகள்", tbTitle:"🗺 பயணத் திட்டம்",
+    tlState:"மாநிலம்", tlMonth:"மாதம்", tlDays:"நாட்கள்",
+    monthsAll:"ஏதேனும்", statesAll:"அனைத்து மாநிலங்கள்",
+    buildTrip:"பயண வழி உருவாக்கு", tripClose:"மூடு",
+    tripHint:"மாநிலம், மாதம், நாட்கள் தேர்வு செய்யவும். ஒவ்வொரு இடத்தின் சிறந்த பருவத்தை பயன்படுத்தி ஒரு நாளுக்கு 2–3 மறைவான இடங்களை வரிசைப்படுத்துகிறோம்.",
+    dayLabel:"நாள் {n}",
+    noRoute:"இந்த தேர்வுகளுக்கு போதுமான இடங்கள் இல்லை. வேறு மாநிலம் / மாதம் முயற்சிக்கவும்.",
+    routeHeading:"வழி", routeDriving:"கார் வழி",
+    inSeason:"சிறந்த பருவம்", offSeason:"பருவம் இல்லை",
+    stayCount:"{h} ஹோட்டல்கள் அருகில்", tripReason:"அனுசரிக்கும் மாதம்"
   }
 };
 
@@ -467,6 +574,8 @@ var adminUsers = {};
 var currentUser = "";
 var myOnly = false;
 var promptShown = false;
+var stampData = {};
+var STAMP_RADIUS_KM = 1.2;
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -611,6 +720,50 @@ function updateComments(snap){
   renderAll();
 }
 
+function updateStamps(snap){
+  stampData = {};
+  snap.forEach(function(whoChild){
+    var who = whoChild.key;
+    stampData[who] = {};
+    whoChild.forEach(function(placeChild){
+      stampData[who][parseInt(placeChild.key,10)] = placeChild.val().at || 0;
+    });
+  });
+  renderAll();
+}
+
+function stampKey(){ return (currentUser || deviceId) || "anon"; }
+function isStamped(pid){ return !!(stampData[stampKey()] && stampData[stampKey()][pid]); }
+function stampAt(pid){ return (stampData[stampKey()]||{})[pid] || 0; }
+function dateStr(ts){ return new Date(ts).toLocaleDateString(LANG==="ta" ? "ta-IN" : "en-GB"); }
+function loadLocalStamps(){
+  try{ var s = JSON.parse(localStorage.getItem("hiddenStamps_v1")); if(s && typeof s === "object") stampData = s; }catch(e){}
+}
+function saveLocalStamps(){
+  try{ localStorage.setItem("hiddenStamps_v1", JSON.stringify(stampData)); }catch(e){}
+}
+function stampHere(id){
+  var p = places.find(function(x){ return x.id===id; });
+  if(!p) return;
+  if(isStamped(id)){ toast(t.alreadyStamped); return; }
+  if(!navigator.geolocation){ toast(t.stampNoGps); return; }
+  toast(t.stamping);
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var d = haversineKm(p.lat, p.lng, pos.coords.latitude, pos.coords.longitude);
+    if(d > STAMP_RADIUS_KM){ toast(t.stampTooFar.replace("{d}", d.toFixed(1))); return; }
+    var key = stampKey();
+    if(fbReady){ db.ref("stamps/"+key+"/"+id).set({at: Date.now(), by: currentUser||""}); }
+    else {
+      stampData[key] = stampData[key]||{};
+      stampData[key][id] = Date.now();
+      saveLocalStamps();
+      renderAll();
+    }
+    toast(t.stampOk);
+    if(markers[id]) markers[id].setPopupContent(popupHTML(p));
+  }, function(){ toast(t.stampNoGps); }, {enableHighAccuracy:true, timeout:20000});
+}
+
 var SEED_VERSION = 2;
 
 function seedIfEmpty(){
@@ -636,6 +789,7 @@ function listenAll(){
   db.ref("places").on("value", updatePlaces);
   db.ref("ratings").on("value", updateRatings);
   db.ref("comments").on("value", updateComments);
+  db.ref("stamps").on("value", updateStamps);
 }
 
 function listenMeta(){
@@ -816,6 +970,7 @@ function loadLocal(){
       commentData[c.placeId]={list:[c],mine:c};
     });
   }catch(e){ commentData={}; }
+  loadLocalStamps();
   recomputeMaxId();
 }
 function saveLocalPlaces(){ localStorage.setItem("hiddenPlaces_v1", JSON.stringify(places)); }
@@ -918,14 +1073,25 @@ function renderAll(){
 }
 
 function showMarker(p){
-  if(markers[p.id]){ markers[p.id].setLatLng([p.lat,p.lng]); return; }
-  var c = CATS[p.category].color;
-  var icon = L.divIcon({
-    className:"",
-    html:'<div style="width:22px;height:22px;background:'+c+';border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>',
-    iconSize:[22,22], iconAnchor:[11,22], popupAnchor:[0,-18]
-  });
-  var m = L.marker([p.lat,p.lng], {icon:icon}).addTo(map);
+  var vis = isStamped(p.id);
+  function buildIcon(){
+    var c = CATS[p.category].color;
+    return L.divIcon({
+      className:"",
+      html:'<div style="position:relative;width:22px;height:22px"><div style="width:22px;height:22px;background:'+c+';border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>'+
+        (vis?'<div style="position:absolute;top:-5px;right:-6px;background:#0d1117;border:1px solid #2ea043;border-radius:8px;font-size:10px;padding:0 2px;line-height:14px">✅</div>':'')+
+      '</div>',
+      iconSize:[22,22], iconAnchor:[11,22], popupAnchor:[0,-18]
+    });
+  }
+  if(markers[p.id]){
+    markers[p.id].setLatLng([p.lat,p.lng]);
+    if(markers[p.id].__stamped !== vis){ markers[p.id].setIcon(buildIcon()); markers[p.id].setPopupContent(popupHTML(p)); }
+    markers[p.id].__stamped = vis;
+    return;
+  }
+  var m = L.marker([p.lat,p.lng], {icon:buildIcon()}).addTo(map);
+  m.__stamped = vis;
   m.bindPopup(popupHTML(p));
   m.on("popupopen", function(){ ensureNearby(p); });
   m.on("popupclose", function(){
@@ -950,6 +1116,9 @@ function popupHTML(p){
     '<div class="row">🗓 '+esc(clean(p,"season"))+'</div>'+
     '<div class="row">🧭 '+dms(p.lat, p.lng)+'</div>'+
     '<div class="row" style="color:#facc15">'+rl+'</div>'+
+    (isStamped(p.id)
+      ? '<div class="row" style="color:#4ade80">✅ '+esc(t.stamped)+' · '+dateStr(stampAt(p.id))+'</div>'
+      : '<button class="nline" onclick="stampHere('+p.id+')">📌 '+esc(t.stampHere)+'</button>')+
     nearbySection(p)+
     '<a class="link" target="_blank" rel="noopener" href="'+urls+'">'+t.popDirections+' ↗</a>'+
   '</div>';
@@ -982,6 +1151,7 @@ function renderCards(list){
     var editBtn = canEdit(p) ? '<button class="edit" data-edit="'+p.id+'">✏ '+t.edit+'</button>' : '';
     return '<div class="card" data-id="'+p.id+'">'+
       '<span class="cat" style="background:'+c.color+'22;color:'+c.color+'">'+c.label[LANG]+'</span>'+
+      (isStamped(p.id)?'<span style="background:#0d1117;border:1px solid #2ea043;border-radius:8px;font-size:.68rem;padding:2px 6px;margin-left:6px;color:#4ade80">✅ '+esc(t.stamped)+'</span>':'')+
       '<h3>'+esc(p.name)+'</h3>'+
       (p.nameTa?'<div style="color:#38bdf8;font-size:.8rem">'+esc(p.nameTa)+'</div>':'')+
       '<div class="desc">'+esc(clean(p,"desc"))+'</div>'+
@@ -1751,9 +1921,135 @@ $("cm-save").addEventListener("click", function(){
 $("cm-close").addEventListener("click", closeComment);
 $("cmodal").addEventListener("click", function(e){ if(e.target===this) closeComment(); });
 
+/* ===== passport ===== */
+function openPassport(){
+  renderPassport();
+  $("pmodal").classList.add("show");
+}
+function closePassport(){ $("pmodal").classList.remove("show"); }
+function renderPassport(){
+  var key = stampKey();
+  var mine = stampData[key] || {};
+  var visited = Object.keys(mine).filter(function(id){ return places.some(function(p){ return p.id === parseInt(id,10); }); }).length;
+  $("pm-summary").textContent = t.pmStats.replace("{v}", visited).replace("{n}", places.length);
+  var cards = places.map(function(p){
+    var vis = !!mine[p.id];
+    var at = mine[p.id] ? dateStr(mine[p.id]) : "";
+    return '<div class="pcell'+(vis?" vis":"")+'" data-id="'+p.id+'" title="'+esc(p.name)+'">'+
+      '<span class="pemo">'+(vis?"✅":"🔒")+'</span>'+
+      '<span class="pn">'+esc(p.name)+'</span>'+
+      (at?'<span class="pd">'+at+'</span>':'')+
+    '</div>';
+  }).join("");
+  $("pm-grid").innerHTML = cards;
+  $("pm-grid").querySelectorAll(".pcell").forEach(function(cell){
+    cell.addEventListener("click", function(){
+      closePassport();
+      focusPlace(parseInt(cell.getAttribute("data-id"),10));
+    });
+  });
+}
+function sharePassport(){
+  var key = stampKey();
+  var mine = stampData[key] || {};
+  var visited = Object.keys(mine).filter(function(id){ return places.some(function(p){ return p.id === parseInt(id,10); }); }).length;
+  var txt = t.sharePassport.replace("{v}", visited).replace("{n}", places.length);
+  var url = location.origin || location.href;
+  txt += " " + url;
+  if(navigator.share){ navigator.share({title: t.passport, text: txt}).catch(function(){}); }
+  else if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast(t.stampOk); });
+  } else {
+    toast(t.stampOk);
+  }
+}
+
+/* ===== trip builder ===== */
+var MONTH_PATTERNS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+function tripMonthName(i){ return MONTHS[i] || ""; }
+function seasonIncludesMonth(season, mi){
+  if(mi < 0) return true;
+  if(!season) return true;
+  if(/all/i.test(String(season).trim())) return true;
+  var arr = parseSeason(String(season));
+  if(!arr.length) return true;
+  if(arr.indexOf(MONTHS[mi]) !== -1) return true;
+  return arr.indexOf("All year") !== -1;
+}
+function openTrip(){
+  populateTripState();
+  populateTripMonth();
+  populateTripDays();
+  buildTrip();
+  $("tmodal").classList.add("show");
+}
+function closeTrip(){ $("tmodal").classList.remove("show"); }
+function populateTripState(){
+  var sel = $("t-state");
+  sel.innerHTML = '<option value="">'+esc(t.statesAll)+'</option>' + Object.keys(STATES).map(function(s){ return '<option value="'+esc(s)+'">'+esc(s)+'</option>'; }).join("");
+}
+function populateTripMonth(){
+  var sel = $("t-month");
+  sel.innerHTML = '<option value="-1">'+esc(t.monthsAll)+'</option>' + MONTHS.map(function(m,i){ return '<option value="'+i+'">'+(LANG==="ta"?MONTHS_TA[i]:m)+'</option>'; }).join("");
+}
+function populateTripDays(){
+  var sel = $("t-days");
+  sel.innerHTML = "";
+  for(var d=1; d<=7; d++){ sel.innerHTML += '<option value="'+d+'">'+d+'</option>'; }
+  sel.value = "2";
+}
+function buildTrip(){
+  var state = $("t-state").value;
+  var mi = parseInt($("t-month").value,10);
+  var days = parseInt($("t-days").value,10) || 2;
+  var pool = places.filter(function(p){
+    if(state && p.state !== state) return false;
+    return p.lat != null && p.lng != null;
+  });
+  var inSeason = pool.filter(function(p){ return seasonIncludesMonth(p.season, mi); });
+  if(inSeason.length >= 2) pool = inSeason;
+  if(pool.length < 2){ $("trip-out").innerHTML = '<div class="hint">'+esc(t.noRoute)+'</div>'; return; }
+
+  // cluster as spread-out day packs: simple geo-cluster by sorting on lat then chunk
+  pool = pool.slice().sort(function(a,b){ return String(a.state||"").localeCompare(String(b.state||"")) || String(a.district||"").localeCompare(String(b.district||"")) || (a.lat-b.lat); });
+  var perDay = Math.min(3, Math.max(2, Math.ceil(pool.length/days)));
+  var groups = [];
+  for(var i=0;i<pool.length;i+=perDay){ groups.push(pool.slice(i, i+perDay)); }
+  var html = groups.map(function(g, gi){
+    var stops = g.map(function(p,i){
+      var inc = seasonIncludesMonth(p.season, mi);
+      var catCol = CATS[p.category].color;
+      var nLine = '<div class="tripp"><span class="tcat" style="background:'+catCol+'22;color:'+catCol+'">'+CATS[p.category].label[LANG]+'</span>'+
+        '<div class="tinfo"><div class="tname">'+esc(p.name)+'</div>'+
+        '<div class="tmeta">📍 '+esc(locLabel(p))+' · 🗓 '+esc(clean(p,"season"))+'</div>'+
+        '<div class="tsea '+(inc?"ok":"warn")+'">'+(inc?(LANG==="ta"?"✓ ":"✓ ")+esc(t.inSeason):"⚠ "+esc(t.offSeason))+'</div>'+
+        (p.nearby && p.nearby.hotels && p.nearby.hotels.length ? '<div class="tmeta">🛏 '+t.stayCount.replace("{h}", p.nearby.hotels.length)+'</div>' : '')+
+        '</div><button class="narrow" onclick="closeTrip();focusPlace('+p.id+')" title="'+esc(t.showMap)+'">➜</button></div>';
+      return nLine;
+    }).join("");
+    var coords = g.map(function(p){ return p.lat+","+p.lng; }).join("/");
+    var drive = "https://www.google.com/maps/dir/"+coords;
+    return '<div class="tripday"><h4>🗓 '+esc(t.dayLabel.replace("{n}", gi+1))+'</h4>'+stops+
+      '<div class="troute"><a class="nline" target="_blank" rel="noopener" href="'+drive+'">🧭 '+esc(t.routeDriving)+' ↗</a></div></div>';
+  }).join("");
+  $("trip-out").innerHTML = html;
+  $("t-hint").textContent = t.tripHint;
+}
+
 /* ===== language ===== */
 $("btn-en").addEventListener("click", function(){ setLang("en"); });
 $("btn-ta").addEventListener("click", function(){ setLang("ta"); });
+$("btn-passport").addEventListener("click", openPassport);
+$("pm-close").addEventListener("click", closePassport);
+$("pmodal").addEventListener("click", function(e){ if(e.target===this) closePassport(); });
+$("pm-share").addEventListener("click", sharePassport);
+$("btn-trip").addEventListener("click", openTrip);
+$("t-close").addEventListener("click", closeTrip);
+$("tmodal").addEventListener("click", function(e){ if(e.target===this) closeTrip(); });
+$("t-build").addEventListener("click", buildTrip);
+$("t-state").addEventListener("change", buildTrip);
+$("t-month").addEventListener("change", buildTrip);
+$("t-days").addEventListener("change", buildTrip);
 
 function updateModeLabel(){
   var mode = $("modeLabel");
@@ -1811,6 +2107,23 @@ function setLang(l){
   $("cm-save").textContent = t.post;
   $("cm-list-title").textContent = t.comments;
   $("cm-close").textContent = t.close;
+  $("btn-passport").title = t.passport;
+  $("btn-trip").title = t.tripBuilder;
+  $("pm-title").textContent = t.pmTitle;
+  $("pm-share").textContent = t.pmShare;
+  $("pm-close").textContent = t.pmClose;
+  $("tm-title").textContent = t.tbTitle;
+  $("tl-state").textContent = t.tlState;
+  $("tl-month").textContent = t.tlMonth;
+  $("tl-days").textContent = t.tlDays;
+  $("t-build").textContent = t.buildTrip;
+  $("t-close").textContent = t.tripClose;
+  $("t-hint").textContent = t.tripHint;
+  populateTripState();
+  populateTripMonth();
+  populateTripDays();
+  if($("tmodal").classList.contains("show")){ buildTrip(); }
+  if($("pmodal").classList.contains("show")){ renderPassport(); }
   updateModeLabel();
   buildChips(); renderAll(); renderSeasonChips();
 }
