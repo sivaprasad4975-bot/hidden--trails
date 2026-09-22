@@ -139,6 +139,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
     <button id="btn-user" title="Login / Sign Up">👤</button>
     <button id="btn-en" class="active">English</button>
     <button id="btn-ta">தமிழ்</button>
+    <button id="btn-hi">हिन्दी</button>
   </div>
 </header>
 
@@ -174,6 +175,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
     <h2 id="m-title">Add New Place</h2>
     <div class="field"><label id="l-name">Place Name *</label><input id="f-name"></div>
     <div class="field"><label id="l-nameTa">Place Name (தமிழ்)</label><input id="f-nameTa"></div>
+    <div class="field"><label id="l-nameHi">Place Name (हिन्दी)</label><input id="f-nameHi"></div>
     <div class="field"><label id="l-cat">Category *</label>
       <select id="f-cat">
         <option value="trekking">Trekking</option>
@@ -185,6 +187,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
     </div>
     <div class="field"><label id="l-desc">Description</label><textarea id="f-desc" rows="3"></textarea></div>
     <div class="field"><label id="l-descTa">Description (தமிழ்)</label><textarea id="f-descTa" rows="3"></textarea></div>
+    <div class="field"><label id="l-descHi">Description (हिन्दी)</label><textarea id="f-descHi" rows="3"></textarea></div>
     <div class="row2">
       <div class="field">
         <label id="l-state">State</label>
@@ -335,8 +338,8 @@ var I18N = {
     places:"Places", add:"Add Place", total:"{n} places", noPlaces:"No places found for this search.",
     export:"Export", import:"Import", delete:"Delete",
     mTitle:"Add New Place",
-    name:"Place Name *", nameTa:"Place Name (தமிழ்)", cat:"Category *",
-    desc:"Description", descTa:"Description (தமிழ்)", district:"District",
+    name:"Place Name *", nameTa:"Place Name (தமிழ்)", nameHi:"Place Name (हिन्दी)", cat:"Category *",
+    desc:"Description", descTa:"Description (தமிழ்)", descHi:"Description (हिन्दी)", district:"District",
     season:"Best Season", address:"Address / Location name",
     state:"State", selectState:"Select state", districtPlaceholder:"Search or choose district…",
     coord:"Coordinates (lat, lng)",
@@ -473,93 +476,166 @@ var I18N = {
     routeHeading:"வழி", routeDriving:"கார் வழி",
     inSeason:"சிறந்த பருவம்", offSeason:"பருவம் இல்லை",
     stayCount:"{h} ஹோட்டல்கள் அருகில்", tripReason:"அனுசரிக்கும் மாதம்"
+  },
+  hi:{
+    title:"रेज़ड़ टू द अनसीन – ऑफ़बीट पर्यटन स्थल",
+    sub:"छुपे हुए ट्रैकिंग, झरने, दर्शनीय स्थल, मंदिर और बाँध खोजें",
+    search:"स्थान का नाम या लोकेशन खोजें…",
+    places:"स्थान", add:"स्थान जोड़ें", total:"{n} स्थान", noPlaces:"इस खोज के लिए कोई स्थान नहीं मिला।",
+    export:"निर्यात", import:"आयात", delete:"हटाएँ",
+    mTitle:"नया स्थान जोड़ें",
+    name:"स्थान का नाम *", nameTa:"स्थान का नाम (தமிழ்)", nameHi:"स्थान का नाम (हिन्दी)", cat:"श्रेणी *",
+    desc:"विवरण", descTa:"विवरण (தமிழ்)", descHi:"विवरण (हिन्दी)", district:"ज़िला",
+    season:"सबसे अच्छा मौसम", address:"पता / स्थान का नाम",
+    state:"राज्य", selectState:"राज्य चुनें", districtPlaceholder:"ज़िला खोजें या चुनें…",
+    coord:"निर्देशांक (अक्षांश, देशांतर)",
+    hGeo:"संकेत: नीचे नक़्शे पर कोई स्थान चुनें, या स्थान का नाम लिखकर लोकेशन पर क्लिक करें।",
+    cancel:"रद्द करें", save:"स्थान सहेजें", locate:"लोकेशन खोजें",
+    layerOsm:"नक़्शा (OpenStreetMap)", layerBhuvan:"भुवन सैटेलाइट (ISRO)",
+    notFound:"वह लोकेशन नहीं मिली।",
+    saved:"स्थान जोड़ दिया गया।", imported:"स्थान सफलतापूर्वक आयात हुए।",
+    popDirections:"Google Maps में खोलें",
+    nearbyTitle:"आस-पास और वहाँ कैसे पहुँचें",
+    fastestRoute:"सबसे तेज़ रास्ता",
+    hotelsLabel:"आस-पास के होटल",
+    restaurantsLabel:"आस-पास के रेस्तराँ",
+    noHotels:"आस-पास कोई होटल नहीं मिला।",
+    transportLabel:"वहाँ कैसे पहुँचें",
+    nearestBus:"सबसे नज़दीकी बस स्टैंड",
+    nearestTrain:"सबसे नज़दीकी रेलवे स्टेशन",
+    nearestAirport:"सबसे नज़दीकी हवाई अड्डा",
+    noKey:"आस-पास का डेटा उपलब्ध नहीं। बाद में फिर कोशिश करें।",
+    showMap:"नक़्शे पर दिखाएँ", hideMap:"नक़्शे से छिपाएँ",
+    openMapsNav:"Google Maps में खोलें",
+    drive:"गाड़ी से", transit:"सार्वजनिक परिवहन", walk:"पैदल",
+    catTrek:"ट्रैकिंग", catWater:"झरने", catView:"दर्शनीय स्थल", catTemple:"मंदिर", catDam:"बाँध", catAll:"सभी",
+    mapJoined:"OpenStreetMap + भुवन परतें",
+    noRatings:"सबसे पहले रेटिंग दें", rated:"रेटिंग के लिए धन्यवाद!",
+    comments:"टिप्पणियाँ", yourRating:"आपकी रेटिंग", writeExp:"अपना अनुभव लिखें",
+    post:"पोस्ट करें", close:"बंद करें", you:"आप", anonymous:"यात्री",
+    commentSaved:"टिप्पणी पोस्ट हुई!", noComments:"अभी कोई टिप्पणी नहीं। आप पहले लिखें!",
+    delCmt:"हटाएँ", confirmDelCmt:"यह टिप्पणी हटाएँ?", commentDeleted:"टिप्पणी हटा दी गई।",
+    noDelCmt:"इस टिप्पणी को केवल लेखक या एडमिन ही हटा सकता है।",
+    local:"ऑफ़लाइन मोड: डेटा इसी ब्राउज़र में संग्रहीत है।",
+    confirmDel:"यह स्थान हटाएँ?", deleted:"स्थान हटा दिया गया।", noDel:"इसे केवल एडमिन या जोड़ने वाला ही हटा सकता है।",
+    edit:"संपादित करें", editTitle:"स्थान संपादित करें", edited:"स्थान अपडेट हो गया।",
+    uTitle:"लॉगिन / साइन अप", uUser:"उपयोगकर्ता आईडी", uPass:"पासवर्ड", uPass2:"पासवर्ड की पुष्टि करें", uShow:"पासवर्ड दिखाएँ",
+    uLogin:"लॉगिन", uSignup:"खाता बनाएँ", uClose:"बंद करें", myPlaces:"मेरे स्थान",
+    userTitle:"लॉगिन / साइन अप", logoutTitle:"लॉगआउट",
+    uRequired:"यूज़र आईडी और पासवर्ड दर्ज करें।", uTaken:"यह आईडी पहले से है। दूसरी कोशिश करें।",
+    uBadChars:"आईडी: केवल 3+ अक्षर/अंक, - या _।", uShortPass:"पासवर्ड कम से कम 4 अक्षर का हो।",
+    uNotFound:"आईडी नहीं मिली।", uWrongPass:"गलत पासवर्ड।", uNoDb:"डेटाबेस कनेक्ट नहीं हुआ।",
+    uMismatch:"पासवर्ड मेल नहीं खाते।", uCreated:"खाता बन गया!", uLogged:"लॉगिन हुआ!", uLogout:"लॉगआउट हो गया।",
+    uMyPrompt:"आप नहीं? लॉगिन न रहने के लिए बंद करें दबाएँ।",
+    passport:"अनसीन पासपोर्ट", tripBuilder:"ट्रिप बिल्डर",
+    pmTitle:"🛂 अनसीन पासपोर्ट",
+    pmSummary:"स्टांप प्रमाण है कि आप सच में किसी छुपे स्थान पर पहुँचे। स्टांप के लिए ~1 किमी के अंदर रहें।",
+    pmStats:"{n} में से {v} स्थान देखे",
+    pmShare:"📤 शेयर करें", pmClose:"बंद करें",
+    sharePassport:"मेरा अनसीन पासपोर्ट — मैंने {n} में से {v} छुपे स्थान देखे! अगली यात्रा कौन सी हो?",
+    stampHere:"यहाँ स्टांप 📌", stamped:"स्टांप हो गया ✓", notStamped:"अभी स्टांप नहीं",
+    stamping:"आपकी लोकेशन मिल रही है…", stampOk:"पासपोर्ट स्टांप हो गया! 📌",
+    stampTooFar:"आप {d} किमी दूर हैं। स्टांप के लिए ~1 किमी के अंदर आएँ।",
+    stampNoGps:"आपकी लोकेशन नहीं मिल पाई। GPS जाँचें।",
+    alreadyStamped:"पहले से स्टांप हो चुका है!",
+    navigationTab:"नेविगेशन",
+    pTitle:"🛂 पासपोर्ट", tbTitle:"🗺 ट्रिप बिल्डर",
+    tlState:"राज्य", tlMonth:"महीना", tlDays:"दिन",
+    monthsAll:"कोई भी", statesAll:"सभी राज्य",
+    buildTrip:"ट्रिप रूट बनाएँ", tripClose:"बंद करें",
+    tripHint:"राज्य, महीना और दिन चुनें। प्रत्येक स्थान के सबसे अच्छे मौसम के आधार पर हम प्रति दिन 2–3 छुपे स्थानों का रूट बनाएँगे।",
+    dayLabel:"दिन {n}",
+    noRoute:"इन विकल्पों के लिए पर्याप्त स्थान नहीं। दूसरा राज्य या महीना आज़माएँ।",
+    routeHeading:"रूट", routeDriving:"गाड़ी का रूट",
+    inSeason:"मौसम में", offSeason:"मौसम से बाहर",
+    stayCount:"{h} होटल आस-पास", tripReason:"आपके महीने से मेल खाता है"
   }
 };
 
 var CATS = {
-  trekking:{color:"#f0883e", label:{en:"Trekking",ta:"மலைப்பயணம்"}},
-  waterfalls:{color:"#38bdf8", label:{en:"Waterfalls",ta:"அருவிகள்"}},
-  viewpoints:{color:"#a78bfa", label:{en:"Viewpoints",ta:"பார்வைத் தளம்"}},
-  temples:{color:"#f472b6", label:{en:"Temples",ta:"கோயில்"}},
-  dams:{color:"#facc15", label:{en:"Dams",ta:"அணைகள்"}}
+  trekking:{color:"#f0883e", label:{en:"Trekking",ta:"மலைப்பயணம்",hi:"ट्रैकिंग"}},
+  waterfalls:{color:"#38bdf8", label:{en:"Waterfalls",ta:"அருவிகள்",hi:"झरने"}},
+  viewpoints:{color:"#a78bfa", label:{en:"Viewpoints",ta:"பார்வைத் தளம்",hi:"दर्शनीय स्थल"}},
+  temples:{color:"#f472b6", label:{en:"Temples",ta:"கோயில்",hi:"मंदिर"}},
+  dams:{color:"#facc15", label:{en:"Dams",ta:"அணைகள்",hi:"बाँध"}}
 };
 
 var SAMPLE = [
-  {id:1,name:"Agaya Gangai Waterfalls",nameTa:"ஆகாய கங்கை அருவி",category:"waterfalls",lat:11.2581,lng:78.3474,district:"Namakkal",season:"Oct–Dec",desc:"A hidden waterfall at the foot of the Kolli Hills, reached by a long stone stairway of around 1200 steps.",descTa:"கொல்லிமலை அடிவாரத்தில் சுமார் 1200 படிக்கட்டுகள் வழியாக செல்லும் மறைவான அருவி."},
-  {id:2,name:"Suruli Falls",nameTa:"சுருளி அருவி",category:"waterfalls",lat:9.6607,lng:77.3872,district:"Theni",season:"Jun–Jan",desc:"Layered cascade near Theni fed by the Suruli river, often far less crowded than neighbouring falls.",descTa:"தேனி அருகே சுருளி ஆற்றில் இருந்து வரும் அடுக்கடுக்கான அருவி."},
-  {id:3,name:"Tadiyankudisai Falls",nameTa:"தடியன்குடிசை அருவி",category:"waterfalls",lat:10.3653,lng:77.3376,district:"Dindigul",season:"Sep–Dec",desc:"Hidden gem en route to Tadiyandamalai, through spice and coffee plantations.",descTa:"மிளகு மற்றும் காபி தோட்டங்கள் வழியே தடியன்மலையை நோக்கி செல்லும்போது காணும் மறைந்த அருவி."},
-  {id:4,name:"Meghamalai View Point",nameTa:"மேகமலை பார்வைத் தளம்",category:"viewpoints",lat:9.6862,lng:77.3453,district:"Theni",season:"Sep–Feb",desc:"Misty high-altitude viewpoint overlooking cardamom hills, waterfalls and tea estates.",descTa:"ஏலம் மலைகள், அருவிகள், தேயிலை தோட்டங்களை காணும் உயரமான பனிமூட்டமான பார்வைத் தளம்."},
-  {id:5,name:"Top Station",nameTa:"டாப் ஸ்டேஷன்",category:"viewpoints",lat:10.1351,lng:77.1127,district:"Theni",season:"Sep–Feb",desc:"Cloud-garden viewpoint above Munnar valley, accessible from the Tamil Nadu side.",descTa:"மூணாரை விட உயரத்தில் அமைந்த பார்வைத் தளம்."},
-  {id:6,name:"Leopards Valley Trek",nameTa:"லெப்பார்ட்ஸ் பள்ளத்தாக்கு",category:"trekking",lat:10.2182,lng:77.5345,district:"Dindigul",season:"Oct–Mar",desc:"Gentle rainforest trek in the Palani hills from Grizzled Squirrel Wildlife Sanctuary.",descTa:"பழநி மலையில் உள்ள அழகான காடு வழி மலைப்பயணம்."},
-  {id:7,name:"Velliangiri Hills",nameTa:"வெள்ளியங்கிரி மலை",category:"trekking",lat:10.9786,lng:76.7790,district:"Coimbatore",season:"Nov–Mar",desc:"Challenging 7-stage trek through shola forests and grasslands, spiritual summit atop Lord Shiva's abode.",descTa:"ஏழு கட்டங்களை கொண்ட கடினமான மலைப்பயணம்; சிவபெருமானின் தலமாக போற்றப்படுகிறது."},
-  {id:8,name:"Kodiveri Dam",nameTa:"கொடிவேரி அணை",category:"dams",lat:11.4547,lng:77.0380,district:"Erode",season:"All year",desc:"Scenic British-era dam on the Bhavani river with a garden and walkway.",descTa:"பவானி ஆற்றில் அமைந்த பழங்கால அணை; தோட்டம் மற்றும் நடைபாதையுடன்."},
-  {id:9,name:"Sathanur Dam",nameTa:"சத்தானூர் அணை",category:"dams",lat:12.1788,lng:78.8420,district:"Tiruvannamalai",season:"Mar–Sep",desc:"Quiet reservoir near Javadi hills with a fish farm and hill-view park.",descTa:"ஜவ்வாது மலை அருகே அமைதியான நீர்த்தேக்கம்."},
-  {id:10,name:"Thirumurthi Dam",nameTa:"திருமூர்த்தி அணை",category:"dams",lat:10.5924,lng:77.2399,district:"Tiruppur",season:"Sep–Jun",desc:"Hidden dam for wildlife-safari style exploration near the Amaravathi reservoir.",descTa:"அமராவதி நீர்த்தேக்கம் அருகே உள்ள மறைவான அணை."},
-  {id:11,name:"Vijayalaya Choleeswaram",nameTa:"விஜயாலய சோழீஸ்வரம்",category:"temples",lat:10.5196,lng:78.8776,district:"Pudukkottai",season:"All year",desc:"One of the oldest Chola temples hidden on Narthamalai hill, with stunning rock-cut sculptures.",descTa:"நார்த்தாமலை மலையில் மறைந்துள்ள பழமையான சோழர் கோயில்; அழகிய சிற்பங்களுடன்."},
-  {id:12,name:"Brahmapuriswarar Temple",nameTa:"பிரம்மபுரீஸ்வரர் கோயில்",category:"temples",lat:10.9616,lng:79.0141,district:"Thanjavur",season:"All year",desc:"Hidden gem of the Chola era at Pullamangai, famous for its exquisitely carved pillars.",descTa:"புல்லமங்கையில் மறைந்துள்ள சோழர் கால அற்புத சிற்ப வேலைப்பாடுகள் கொண்ட கோயில்."},
-  {id:13,name:"Konganagiri Murugan Temple",nameTa:"கொங்கணகிரி முருகன் கோயில்",category:"temples",lat:11.1104,lng:77.3151,district:"Tiruppur",state:"Tamil Nadu",season:"Oct–Mar",pluscode:"4868+53",desc:"A serene Murugan temple on Konganagiri hill near Tiruppur, known for scenic views and a peaceful climb.",descTa:"திருப்பூர் அருகே கொங்கணகிரி மலையில் அமைந்த அமைதியான முருகன் கோயில்; அழகிய காட்சிகளுக்கும் அமைதியான மலை ஏற்றத்திற்கும் பெயர் பெற்றது."},
-  {id:14,name:"Kolukkumalai Trek",nameTa:"கொளுக்குமலை மலைப்பயணம்",category:"trekking",lat:9.8533,lng:77.1892,district:"Theni",season:"Oct–Mar",desc:"Sunrise trek through the world's highest organic tea estate, winding along misty ridges with no tourist crowds.",descTa:"உலகின் மிக உயரமான கரிம தேயிலை தோட்டம் வழியாக சூரிய உதய மலைப்பயணம்; பனிமூட்ட மலை உச்சிகள், சுற்றுலா கூட்டம் இல்லாத அமைதிப் பாதை."},
-  {id:15,name:"Topslip Forest Trek",nameTa:"டாப்ஸ்லிப் காடு மலைப்பயணம்",category:"trekking",lat:10.3833,lng:76.8167,district:"Coimbatore",season:"Nov–Mar",desc:"Hidden forest trail deep inside Annamalai Tiger Reserve, with chances of spotting elephants and gaur along the way.",descTa:"அண்ணாமலை புலிகள் சரணாலயத்தின் ஆழமான காட்டுப் பாதை; யானைகள், காட்டெருமைகளை பார்க்கும் வாய்ப்புள்ள மறைவான மலைப்பயணம்."},
-  {id:16,name:"Bodinayakanur Hills Trek",nameTa:"போடிநாயக்கனூர் மலைப்பயணம்",category:"trekking",lat:9.9240,lng:77.3690,district:"Theni",season:"Oct–Feb",desc:"Quiet path through cardamom and pepper plantations on the eastern slopes of the Western Ghats.",descTa:"மேற்குத் தொடர்ச்சி மலையின் கிழக்கு சரிவுகளில் ஏலக்காய், மிளகு தோட்டங்கள் வழியே செல்லும் அமைதியான பாதை."},
-  {id:17,name:"Thalaiyar Falls",nameTa:"தலையாறு அருவி",category:"waterfalls",lat:10.1463,lng:77.5800,district:"Dindigul",season:"Sep–Jan",desc:"One of the tallest waterfalls in Tamil Nadu at over 300 feet, hidden in a remote gorge with almost no visitors.",descTa:"தமிழ்நாட்டின் மிக உயரமான அருவிகளில் ஒன்று, 300 அடிக்கும் மேல்; மறைவான பள்ளத்தாக்கில் அமைந்து பார்வையாளர்கள் கிடையாது."},
-  {id:18,name:"Vattparai Falls",nameTa:"வட்டப்பறை அருவி",category:"waterfalls",lat:9.8833,lng:77.3167,district:"Theni",season:"Jun–Dec",desc:"Secluded twin cascade hidden in a spice plantation valley, reached by a narrow dirt path through pepper vines.",descTa:"மசாலா தோட்ட பள்ளத்தாக்கில் மறைந்துள்ள இரட்டை அருவி; மிளகு கொடிகள் வழியே செல்லும் குறுகிய மண் பாதை."},
-  {id:19,name:"Kolukkumalai Viewpoint",nameTa:"கொளுக்குமலை பார்வைத் தளம்",category:"viewpoints",lat:9.8544,lng:77.1872,district:"Theni",season:"Oct–Feb",desc:"Panoramic valley view from the world's highest organic tea estate, above the clouds at dawn.",descTa:"உலகின் மிக உயரமான கரிம தேயிலை தோட்டத்திலிருந்து பள்ளத்தாக்கு காட்சி; விடியற்காலையில் மேகங்களுக்கு மேலே."},
-  {id:20,name:"Perumal Peak View",nameTa:"பெருமாள் மலை உச்சிக் காட்சி",category:"viewpoints",lat:10.1200,lng:77.4488,district:"Dindigul",season:"Sep–Feb",desc:"360-degree view from a remote Palani hills summit, overlooking plains, shola forests and distant windmills.",descTa:"பழநி மலையின் மறைவான உச்சியிலிருந்து 3360° காட்சி; சமவெளிகள், சோலா காடுகள், தொலைவில் காற்றாலைகள்."},
-  {id:21,name:"Ottamthulli Viewpoint",nameTa:"ஒட்டாம் துள்ளி பார்வைத் தளம்",category:"viewpoints",lat:9.8667,lng:77.2000,district:"Theni",season:"Oct–Feb",desc:"Quiet viewpoint above the cloud forest near Meghamalai, overlooking a remote valley with no road access.",descTa:"மேகமலை அருகே மேகக் காட்டிற்கு மேலே அமைதியான பார்வைத் தளம்; சாலை வசமில்லாத மறைவான பள்ளத்தாக்கு."},
-  {id:22,name:"Sothuparai Dam",nameTa:"சோதுபறை அணை",category:"dams",lat:10.0490,lng:77.3420,district:"Theni",season:"All year",desc:"Quiet reservoir tucked between hills near Periyakulam, popular with local anglers but unknown to tourists.",descTa:"பெரியகுளம் அருகே மலைகளுக்கு இடையே மறைந்துள்ள அமைதியான நீர்த்தேக்கம்; மீன் பிடிப்பவர்களுக்கு பிடித்தமான இடம்."},
-  {id:23,name:"Shanmuganadhi Dam",nameTa:"ஷண்முகநதி அணை",category:"dams",lat:10.1190,lng:77.2568,district:"Dindigul",season:"Sep–Jun",desc:"Remote dam on the Thamirabarani headwaters, surrounded by dense forest with very few visitors.",descTa:"தாமிரபரணி ஆற்றின் மூலத்தில் அமைந்த தொலைவான அணை; அடர்ந்த காட்டால் சூழப்பட்டு மிகக் குறைவான பார்வையாளர்கள்."},
-  {id:24,name:"Thirukkurungudi Nambi Rayar Temple",nameTa:"திருக்குறுங்குடி நம்பி ராயர் கோயில்",category:"temples",lat:8.8160,lng:77.3720,district:"Tirunelveli",season:"All year",desc:"Ancient Vishnu temple hidden in the Nambiyandar Nambi hills, carved into rock with a forest stream nearby.",descTa:"நம்பியாண்டார் நம்பி மலையில் மறைந்துள்ள பழமையான விஷ்ணு கோயில்; பாறையில் செதுக்கப்பட்டு, காட்டு ஓடை அருகில்."},
-  {id:25,name:"Vellankuli Murugan Temple",nameTa:"வெள்ளாங்குளி முருகன் கோயில்",category:"temples",lat:10.0550,lng:77.6330,district:"Madurai",season:"Oct–Mar",desc:"Tiny hilltop Murugan shrine with panoramic views of the Varaha river valley, almost unknown outside the village.",descTa:"வராக ஆற்று பள்ளத்தாக்கின் அழகிய காட்சிகளுடன் கூடிய சிறிய மலை உச்சி முருகன் கோயில்; கிராமத்திற்கு வெளியே யாரும் அறியாத இடம்."},
-  {id:26,name:"Pangot Birding Village",nameTa:"பங்கோட் பறவைக் கிராமம்",category:"viewpoints",lat:29.3562,lng:79.4448,district:"Nainital",state:"Uttarakhand",season:"Mar–Jun",desc:"A quiet forest hamlet above Nainital famous as an offbeat birding spot, with jungle trails and Himalayan glimpses, away from tourist crowds.",descTa:"நைனிடால் மேலே அமைதியான காட்டு கிராமம்; பறவைகளை காண புகழ்பெற்ற இடம், கூட்ட நெரிசல் இல்லாத பாதைகள்."},
-  {id:27,name:"Kausani Himalayan View",nameTa:"கௌசானி இமயக் காட்சி",category:"viewpoints",lat:29.8447,lng:79.6040,district:"Bageshwar",state:"Uttarakhand",season:"Sep–May",desc:"A serene hill overlooking Trishul and Nanda Devi peaks through pine forests, quieter than Nainital and famous for a 300 km canvas of snow peaks.",descTa:"பைன் காடுகள் வழியே திரிசூல், நந்தாதேவி சிகரங்களை காணும் அமைதியான மலை நிலை."},
-  {id:28,name:"Binsar Wildlife Sanctuary",nameTa:"பின்சார் வனவிலங்கு சரணாலயம்",category:"viewpoints",lat:29.6758,lng:79.7390,district:"Almora",state:"Uttarakhand",season:"Apr–Jun, Sep–Dec",desc:"A remote oak and rhododendron sanctuary with sunrise views over the Himalaya, hidden trek paths and hardly any visitors.",descTa:"ஓக் மற்றும் ரோடோடென்ட்ரான் காடுகளை கொண்ட தொலைவான சரணாலயம்; இமயமலை சூரிய உதய காட்சி, யாரும் வராத பாதைகள்."},
-  {id:29,name:"Barot Hidden Valley",nameTa:"பரோட் மறைவான பள்ளத்தாக்கு",category:"viewpoints",lat:31.9796,lng:76.7686,district:"Mandi",state:"Himachal Pradesh",season:"Apr–Jun, Oct–Nov",desc:"A former hydropower village planted by pine forests and the Uhl river, with trout fishing, a suspension bridge and mountain trails unknown to most travellers.",descTa:"பைன் காடுகளும் உஹல் நதியும் சூழ்ந்த பழைய நீர்மின் கிராமம்; ட்ரவுட் மீன் பிடிப்பு, தொங்கு பாலம், மலையாத்திரை பாதைகள்."},
-  {id:30,name:"Jibhi Gharat Valley",nameTa:"ஜிபி கரத் பள்ளத்தாக்கு",category:"viewpoints",lat:31.4896,lng:77.3231,district:"Kullu",state:"Himachal Pradesh",season:"Mar–Jun, Sep–Nov",desc:"A slow riverside village in the Tirthan valley with old wooden watermills, cedar forests and cottage stays, still off the mainstream backpacker trail.",descTa:"தீர்த்தன் பள்ளத்தாக்கில் பழைய மர ஆலைகள், சிடார் காடுகளுடன் அமைதியான நதியோர கிராமம்."},
-  {id:31,name:"Ziro Pine Valley",nameTa:"ஜீரோ பைன் பள்ளத்தாக்கு",category:"viewpoints",lat:27.5940,lng:93.8348,district:"Lower Subansiri",state:"Arunachal Pradesh",season:"Mar–Oct",desc:"A misty highland valley of the Apatani tribe, ringed by pine hills and rice fields, famed for a quiet pace of life, music festival and unique tribal culture.",descTa:"அபதானி பழங்குடியினரின் மூடுபனி மலை பள்ளத்தாக்கு; பைன் மலைகளும் நெல் வயல்களும் சூழ்ந்த இடம்."},
-  {id:32,name:"Mechuka Hidden Valley",nameTa:"மெச்சுகா மறைவான பள்ளத்தாக்கு",category:"viewpoints",lat:28.5939,lng:94.2184,district:"West Siang",state:"Arunachal Pradesh",season:"Oct–Mar",desc:"A remote Buddhist valley on the Tibet border, crossed by an old suspension bridge and dotted with monasteries, reached only by mountain road from Along.",descTa:"டிபெட் எல்லையில் மறைந்துள்ள பௌத்த பள்ளத்தாக்கு; தொங்கு பாலம், ஆலயங்கள், மலை கொட்டகைகள்."},
-  {id:33,name:"Loktak Floating Lake",nameTa:"லோக்தாக் மிதக்கும் ஏரி",category:"dams",lat:24.5011,lng:93.7931,district:"Bishnupur",state:"Manipur",season:"Nov–Mar",desc:"The world's largest floating lake of phumdis, with the only floating national park on earth, viewed through quiet fishing villages and bamboo walkways.",descTa:"உலகின் மிகப்பெரிய மிதக்கும் ஏரியான பூம்டிஸ்; மிதக்கும் தேசியப் பூங்கா, அமைதியான மீனவ கிராமங்கள்."},
-  {id:34,name:"Dzükou Valley of Flowers",nameTa:"ஜூகோ மலர் பள்ளத்தாக்கு",category:"trekking",lat:25.6741,lng:94.1266,district:"Kohima",state:"Nagaland",season:"Jun–Sep",desc:"A grassy highland bowl flanked by cliffs that blazes with seasonal flowers, reached by a steep trek from Viswema, with almost no one on the trail.",descTa:"பாறைகளுக்கு இடையே மலர்கள் மலரும் புல்வெளி பள்ளத்தாக்கு; விஸ்வேமாவிலிருந்து கடின ஏறுபாதை வழியாக."},
-  {id:35,name:"Mawlynnong Cleanish Village",nameTa:"மவ்லின்நாங் கிராமம்",category:"viewpoints",lat:25.2813,lng:92.0190,district:"East Khasi Hills",state:"Meghalaya",season:"Oct–Apr",desc:"A pristine Khasi village called Asia's cleanest, wrapped in living-root structures and a skywalk through the rainforest canopy.",descTa:"ஆசியாவின் தூய்மையான கிராமம்; வேர்ப்பாலங்கள், மழைக்காடு விதான வழியே நடை."},
-  {id:36,name:"Dawki Umngot River",nameTa:"டாவ்கி உம்ங்காட் நதி",category:"waterfalls",lat:25.1825,lng:92.0202,district:"West Jaintia Hills",state:"Meghalaya",season:"Oct–Apr",desc:"A crystal-clear riverbed at the Bangladesh border where boats appear to float on glass, framed by limestone hills and still little known outside the northeast.",descTa:"வங்கதேச எல்லையில் கண்ணாடி போல தெளிவான ஆற்றுப் படுகை; படகுகள் மிதப்பது போல் தோன்றும் அதிசய நதி."},
-  {id:37,name:"Gandikota Canyon",nameTa:"கந்திகோட்டா பள்ளத்தாக்கு",category:"viewpoints",lat:14.8014,lng:78.2896,district:"YSR Kadapa",state:"Andhra Pradesh",season:"Oct–Feb",desc:"A striking gorge where the Pennar river cut a canyon through quartzite, with a hilltop fort and granaries, often called India's Grand Canyon yet barely visited.",descTa:"பென்னார் நதி செதுக்கிய பாறை பள்ளத்தாக்கு; மலை உச்சி கோட்டை, இந்தியாவின் கிராண்ட் கேன்யன்."},
-  {id:38,name:"Lambasingi Snowpoint",nameTa:"லம்பசிங்கி பனிப்புள்ளி",category:"viewpoints",lat:17.8530,lng:82.2157,district:"Alluri Sitharama Raju",state:"Andhra Pradesh",season:"Nov–Mar",desc:"A tiny high-altitude tribal village in the Eastern Ghats where temperatures drop near freezing, with coffee estates and star-filled skies, off the usual Andhra map.",descTa:"கிழக்குத் தொடர்ச்சி மலையில் குளிர் மிகுந்த பழங்குடி கிராமம்; காபி தோட்டங்களும் விண்மீன் நிறைந்த வானமும்."},
-  {id:39,name:"Agumbe Rainforest",nameTa:"அகும்பே மழைக்காடு",category:"trekking",lat:13.5088,lng:75.0968,district:"Shivamogga",state:"Karnataka",season:"Jun–Feb",desc:"Often called the Cherrapunji of the South, this rainforest stronghold hides waterfalls, king cobra habitats and misty ridge walks far from tourist trails.",descTa:"தென்னிந்தியாவின் செர்ராபுஞ்சி; அருவிகள், காடு மலைப்பாதைகள், மூடுபனி சிகரங்கள்."},
-  {id:40,name:"Gavi Forest Eco-Trail",nameTa:"கவி காடு சூழல் பாதை",category:"trekking",lat:9.3830,lng:77.1670,district:"Pathanamthitta",state:"Kerala",season:"Oct–Mar",desc:"A reserved forest clearing reachable only by Kerala forest jeep, beside a still lake with wild elephant signs, tree-house stays and guided night walks.",descTa:"கேரள வனத் துறை ஜீப்பில் மட்டுமே செல்லக்கூடிய காடு; அமைதியான ஏரி, மர வீடு தங்குமிடம், இரவு நடை."},
-  {id:41,name:"Bhedaghat Marble Rocks",nameTa:"பேதாகாட் பளிங்கு பாறைகள்",category:"waterfalls",lat:23.1404,lng:79.8243,district:"Jabalpur",state:"Madhya Pradesh",season:"Oct–Mar",desc:"A marble gorge on the Narmada where coracle rides glide between 100-foot white cliffs, with the Dhuandhar falls thundering at the exit — magnificent yet offbeat.",descTa:"நர்மதையில் வெள்ளை பளிங்கு பாறைகளுக்கு இடையே படகு சவாரி; வெளியேறுமிடத்தில் துவாந்தர் அருவி."},
-  {id:42,name:"Tirathgarh Falls",nameTa:"தீரத்கர் அருவி",category:"waterfalls",lat:18.8137,lng:81.8800,district:"Bastar",state:"Chhattisgarh",season:"Jul–Dec",desc:"A stair-stepped cascade in the Kanger Valley whose green pools split into many streams over rock ledges, reached through dense sal forest by a tribal village.",descTa:"கங்கர் பள்ளத்தாக்கில் படிக்கட்டு அருவி; பச்சை குளங்களுடன் அடர்ந்த காட்டில் மறைந்துள்ளது."},
-  {id:43,name:"Khandadhar Waterfall",nameTa:"கந்ததார் அருவி",category:"waterfalls",lat:22.4328,lng:84.8661,district:"Sundargarh",state:"Odisha",season:"Jun–Dec",desc:"One of India's tallest uninterrupted falls, plunging in a single sheet from forested cliffs into a hidden pool, accessible by a short jungle trek.",descTa:"இந்தியாவின் மிக உயரமான அருவிகளில் ஒன்று; காட்டு மலை உச்சியிலிருந்து ஒரே தட்டாக விழுந்து மறைந்த குளத்தில் வீழும்."},
-  {id:44,name:"Amboli Ghat",nameTa:"அம்போலி மலைப்பாதை",category:"waterfalls",lat:15.9603,lng:73.7778,district:"Sindhudurg",state:"Maharashtra",season:"Jun–Feb",desc:"A misty Western Ghats village on the Goa border with roadside waterfalls, cobra-lily valleys and dense forest walks, far less known than Mahabaleshwar.",descTa:"கோவா எல்லையில் மூடுபனி மலை கிராமம்; சாலையோர அருவிகள், அடர்ந்த காடு வழி பாதைகள்."},
-  {id:45,name:"Polo Ancient Forest",nameTa:"போலோ பழமைக் காடு",category:"temples",lat:23.3439,lng:73.1350,district:"Sabarkantha",state:"Gujarat",season:"Oct–Mar",desc:"A silent forest valley on the Gujarat-Rajasthan edge sheltering ruined sun temples, stepwells and carved shrines, crossed by a dirt path few travellers take.",descTa:"குஜராத்-ராஜஸ்தான் எல்லைக்காட்டில் மறைந்த சூரியன் கோயில், படிக்கட்டு கிணறுகள், சிற்பங்கள் கொண்ட அமைதியான பள்ளத்தாக்கு."},
-  {id:46,name:"Sandakphu Trek",nameTa:"சந்தக்பு மலைப்பயணம்",category:"trekking",lat:27.1050,lng:88.0010,district:"Darjeeling",state:"West Bengal",season:"Oct–Apr",desc:"The highest point of West Bengal on the Singalila ridge, with a clear panorama of Kanchanjunga, Everest, Lhotse and Makalu from a trail lined with rhododendron forests.",descTa:"சிங்காலிலா மலைத்தொடரில் மேற்கு வங்கத்தின் மிக உயரமான இடம்; ரோடோடென்ட்ரான் காடுகள் நிறைந்த பாதையிலிருந்து கஞ்சன்ஜங்கா, எவரெஸ்ட் உள்ளிட்ட சிகரங்களை காணலாம்."},
-  {id:47,name:"Lava Lolegaon View",nameTa:"லாவா-லோலேகான் காட்சி",category:"viewpoints",lat:27.0960,lng:88.6600,district:"Kalimpong",state:"West Bengal",season:"Oct–Apr",desc:"Twin quiet hamlets wrapped in pine and rhododendron forests, offering sunrise views over the Himalaya from a watchtower above the clouds.",descTa:"பைன் மற்றும் ரோடோடென்ட்ரான் காடுகள் சூழ்ந்த இரட்டை அமைதியான கிராமங்கள்; மேகங்களுக்கு மேலே இமயமலை சூரிய உதயக் காட்சி."},
-  {id:48,name:"Khecheopalri Lake",nameTa:"கேச்செஓபல்ரி ஏரி",category:"viewpoints",lat:27.3670,lng:88.1550,district:"Gyalshing",state:"Sikkim",season:"Mar–Jun, Oct–Dec",desc:"A sacred oval lake near Pelling ringed by prayer flags, held holy by both Buddhists and locals as a wishing lake, with a jungle walk from Khecheopalri village.",descTa:"பெல்லிங் அருகே பிரார்த்தனைக் கொடிகள் சூழ்ந்த புனித ஏரி; பௌத்தர்களுக்கும் உள்ளூர் மக்களுக்கும் நம்பிக்கை தரும் குளமாக போற்றப்படுகிறது."},
-  {id:49,name:"Gurudongmar Lake",nameTa:"குருதோங்மார் ஏரி",category:"viewpoints",lat:28.0300,lng:88.7100,district:"Mangan",state:"Sikkim",season:"May–Oct",desc:"One of the highest lakes on earth at over 17,000 feet, its turquoise water frozen at the edges even in summer and framed by snow peaks near the Tibetan border.",descTa:"17,000 அடிக்கு மேல் உயரத்தில் உள்ள உலகின் உயரமான ஏரிகளில் ஒன்று; டிபெட் எல்லையில் பனி சிகரங்கள் சூழ்ந்த நீலநிறக் குளம்."},
-  {id:50,name:"Majuli River Island",nameTa:"மஜுலி ஆற்றுத் தீவு",category:"viewpoints",lat:26.9400,lng:94.1600,district:"Majuli",state:"Assam",season:"Nov–Mar",desc:"The world's largest river island in the Brahmaputra, a quiet land of satras (monasteries), weavers, waterbirds and ferry rides, still untouched by commercial tourism.",descTa:"பிரம்மபுத்திரா நதியில் உலகின் மிகப்பெரிய ஆற்றுத் தீவு; மடங்கள், நெசவாளர்கள், நீர் பறவைகள், படகு சவாரியுடன் கூட்டம் இல்லாத அமைதியான இடம்."},
-  {id:51,name:"Haflong Lake",nameTa:"ஹாஃப்லாங் ஏரி",category:"dams",lat:25.1600,lng:93.0200,district:"Dima Hasao",state:"Assam",season:"Oct–Mar",desc:"A calm artificial lake at Assam's only hill station, ringed by hills and dotted with paddle boats, far below the tourist radar of the state.",descTa:"அசாமின் ஒரே மலைவாழிடத்தில் அமைந்த அமைதியான ஏரி; மலைகள் சூழ்ந்து படகு சவாரிக்கான இடம், சுற்றுலா கூட்டம் இல்லாதது."},
-  {id:52,name:"Krang Shuri Falls",nameTa:"க்ரங் சூரி அருவி",category:"waterfalls",lat:25.2800,lng:92.2800,district:"West Jaintia Hills",state:"Meghalaya",season:"Sep–Feb",desc:"A limestone cliff fall pouring into an emerald pool below a jungle trail, far quieter than the famous falls of the state and reached partly by a zip line.",descTa:"சுண்ணாம்புப் பாறையிலிருந்து மரகதப் பச்சை குளத்தில் விழும் அருவி; புகழ்பெற்ற அருவிகளை விட அமைதியானது."},
-  {id:53,name:"Unakoti Rock Carvings",nameTa:"உனகோடி பாறை சிற்பங்கள்",category:"temples",lat:24.3380,lng:92.1050,district:"Unakoti",state:"Tripura",season:"Oct–Mar",desc:"A hillside covered with thousands of ancient rock-cut images of gods in a remote forest, built over centuries as a Shaivite pilgrimage site, visited by almost no one.",descTa:"தொலைதூர காட்டில் ஆயிரக்கணக்கான பழமையான பாறை தெய்வச் சிற்பங்கள்; சிவ வழிபாட்டுத் தலமாக பல நூற்றாண்டுகளாக உருவான அதிசய இடம்."},
-  {id:54,name:"Vantawng Falls",nameTa:"வான்த்வாங் அருவி",category:"waterfalls",lat:23.3300,lng:92.7700,district:"Serchhip",state:"Mizoram",season:"Jun–Dec",desc:"The tallest waterfall in Mizoram, a white curtain of water hidden in dense bamboo forest and reached by a short walk from a village on the Thenzawl road.",descTa:"மிசோரமின் மிக உயரமான அருவி; அடர்ந்த மூங்கில் காட்டில் மறைந்துள்ள வெண்ணிற நீர்வீழ்ச்சி."},
-  {id:55,name:"Kuntala Waterfall",nameTa:"குந்தள அருவி",category:"waterfalls",lat:19.3170,lng:78.4080,district:"Komaram Bheem",state:"Telangana",season:"Jun–Dec",desc:"The tallest waterfall in Telangana, tumbling over a rocky ledge on the Kadam river in three tiers, reached through forest near the Maharashtra border.",descTa:"தெலங்கானாவின் மிக உயரமான அருவி; மகாராஷ்டிர எல்லைக்கு அருகே காடு வழியாக மூன்று அடுக்குகளில் விழுகிறது."},
-  {id:56,name:"Bogatha Waterfall",nameTa:"போகதா அருவி",category:"waterfalls",lat:17.7300,lng:80.3500,district:"Khammam",state:"Telangana",season:"Jul–Dec",desc:"A chalk-white cascade into a turquoise pool in the Papikonda forests, called the 'Niagara of Telangana' by locals but still almost unknown to outside travelers.",descTa:"பாபிகொண்டா காடுகளில் நீலப் பச்சை குளத்தில் விழும் வெண்ணிற அருவி; உள்ளூரில் 'தெலங்கானாவின் நயாகரா' என்று அழைக்கப்படுகிறது."},
-  {id:57,name:"Bhairavakona Falls",nameTa:"பைரவகோனா அருவி",category:"waterfalls",lat:15.4200,lng:78.8200,district:"Nandyal",state:"Andhra Pradesh",season:"Jun–Feb",desc:"A two-stage rock-cut waterfall near a Shaivite shrine carved into the cliff, accessed by a stairway through the gorge, largely missed by tourist routes.",descTa:"பாறையில் செதுக்கப்பட்ட சிவன் கோயில் அருகே இரண்டு நிலை அருவி; பள்ளத்தாக்கு படிக்கட்டு வழியாக செல்லலாம், சுற்றுலா பாதையில் இல்லாத இடம்."},
-  {id:58,name:"Daringbadi Green Valley",nameTa:"டேரிங்பாடி பசுமை பள்ளத்தாக்கு",category:"viewpoints",lat:19.8900,lng:84.0900,district:"Kandhamal",state:"Odisha",season:"Oct–Mar",desc:"Called the 'Kashmir of Odisha', a highland of pepper gardens, coffee groves and pine lines in the Eastern Ghats with cool mists and empty roads.",descTa:"'ஒடிசாவின் காஷ்மீர்' என்று அழைக்கப்படும் உயர்நிலம்; மிளகு, காபி தோட்டங்கள், பைன் மர வரிசைகள், குளிர்ந்த மூடுபனி சூழ்ந்த அமைதியான பாதைகள்."},
-  {id:59,name:"Mainpat Mini Tibet",nameTa:"மெயின்பாட் சிறு டிபெட்",category:"viewpoints",lat:22.5300,lng:83.3000,district:"Surguja",state:"Chhattisgarh",season:"Oct–Mar",desc:"A tableland in the hills peopled by Tibetan refugees, with monasteries, a trout stream and cliff-edge views over endless forest, barely on any travel route.",descTa:"டிபெட் அகதிகள் வாழும் மேட்டு நிலம்; மடங்கள், மீன் ஓடை, காட்டு மலை உச்சிகளின் காட்சிகள், சுற்றுலா பாதையில் இல்லாத இடம்."},
-  {id:60,name:"Pachmarhi Bee Falls",nameTa:"பச்ச்மர்கி பீ அருவி",category:"waterfalls",lat:22.4600,lng:78.4200,district:"Hoshangabad",state:"Madhya Pradesh",season:"Jul–Feb",desc:"A tall cascade in the Satpura hills below Pachmarhi, reached by a trail through a forest canyon, quieter than the nearby hill station's main sights.",descTa:"சத்புரா மலைகளில் பச்ச்மர்கியின் கீழே அமைந்த உயர்ந்த அருவி; காட்டு பள்ளத்தாக்கு வழியாக செல்லும் பாதை."},
-  {id:61,name:"Lonar Crater Lake",nameTa:"லோனார் எரிமலை ஏரி",category:"dams",lat:19.9770,lng:76.5110,district:"Buldhana",state:"Maharashtra",season:"All year",desc:"India's only hyper-velocity impact crater, now a saline lake ringed by ancient temples, with a unique ecosystem and almost no visitors outside winter weekends.",descTa:"இந்தியாவின் ஒரே விண்கல் மோதி உருவான பள்ளம்; உப்பு நிறைந்த ஏரி, பழமையான கோயில்கள் சூழ்ந்த தனித்த சுற்றுச்சூழல்."},
-  {id:62,name:"Dudhsagar Falls",nameTa:"துத்சாகர் அருவி",category:"waterfalls",lat:15.3130,lng:74.3140,district:"South Goa",state:"Goa",season:"Jul–Feb",desc:"A mighty four-tier waterfall on the Mandovi where the border of Goa and Karnataka meet, best seen from the rail trestle approach through dense jungle.",descTa:"கோவா-கர்நாடக எல்லையில் மாண்டவி நதியில் விழும் வலுவான நான்கு அடுக்கு அருவி; அடர்ந்த காடு வழியாக ரயில் பாலத்தில் இருந்து சிறந்த காட்சி."},
-  {id:63,name:"Salim Ali Bird Sanctuary",nameTa:"சலீம் அலி பறவை சரணாலயம்",category:"viewpoints",lat:15.5000,lng:73.8900,district:"North Goa",state:"Goa",season:"Nov–Mar",desc:"A mangrove island sanctuary in the Mandovi estuary, reached only by boat and home to kingfishers, herons and muddy creeks, a hidden corner of otherwise touristy Goa.",descTa:"மாண்டவி கழிமுகத்தில் படகில் மட்டுமே செல்லும் மரக்காடு தீவு சரணாலயம்; மீன்கொத்தி, நாரைகள், சேற்று ஓடைகள் நிறைந்த அமைதியான இடம்."},
-  {id:64,name:"Chand Baori Stepwell",nameTa:"சாந்த் பாவ்ரி படிக்கிணறு",category:"temples",lat:27.0070,lng:76.6060,district:"Dausa",state:"Rajasthan",season:"All year",desc:"One of the deepest stepwells in India, with thousands of symmetrical steps descending into darkness in the Abhaneri village, hidden among fields off the Jaipur–Agra road.",descTa:"இந்தியாவின் ஆழமான படிக்கிணறுகளில் ஒன்று; அபானேரி கிராமத்தில் ஆயிரக்கணக்கான சமச்சீர் படிகள் இருளில் இறங்குகின்றன."},
-  {id:65,name:"Menal Waterfall Temples",nameTa:"மேனல் அருவி கோயில்கள்",category:"temples",lat:25.1500,lng:74.4300,district:"Chittorgarh",state:"Rajasthan",season:"All year",desc:"Ancient Shiva temples and a monsoon waterfall hidden on a forested stretch of the old Chittorgarh road, with medieval sculptures carved against the cliff.",descTa:"பழைய சித்தோர்கர் சாலையில் மறைந்துள்ள சிவன் கோயில்களும் மழைக்கால அருவியும்; பாறையில் செதுக்கப்பட்ட இடைக்கால சிற்பங்கள்."},
-  {id:66,name:"Ropar Wetland",nameTa:"ரோபார் ஈரநிலம்",category:"dams",lat:30.9800,lng:76.5100,district:"Rupnagar",state:"Punjab",season:"Nov–Mar",desc:"A quiet reservoir on the Sutlej strung with migratory ducks and waders, near the ancient Harappan mound of Rupnagar, capital of the old Bhavanigarh fort area.",descTa:"சட்லஜ் நதியில் அமைந்த அமைதியான நீர்த்தேக்கம்; வலசை வாத்துகள் நிறைந்த இடம், பண்டைய சிந்துவெளி திட்டு அருகே."},
-  {id:67,name:"Kanjli Wetland",nameTa:"காஞ்சிலி ஈரநிலம்",category:"dams",lat:31.3710,lng:75.3610,district:"Kapurthala",state:"Punjab",season:"Nov–Mar",desc:"A small seasonal lake where the Beas floodwaters pause, ringed by a paved path and popular with winter birds murmuring in the reeds.",descTa:"பியாஸ் நதி நீர் தங்கும் பருவ ஏரி; நடைபாதை சூழ்ந்து மூங்கில் காட்டில் குளிர்காலப் பறவைகள் கூடும் இடம்."},
-  {id:68,name:"Sultanpur Bird Sanctuary",nameTa:"சுல்தான்பூர் பறவை சரணாலயம்",category:"viewpoints",lat:28.4600,lng:76.8900,district:"Gurugram",state:"Haryana",season:"Nov–Mar",desc:"A compact wetland on the Delhi-Haryana edge that attracts hundreds of migratory birds in winter, dismissed by many yet a serene escape of hides and boardwalks.",descTa:"டெல்லி-ஹரியானா எல்லையில் அமைந்த சிறிய ஈரநிலம்; குளிர்காலத்தில் நூற்றுக்கணக்கான வலசைப் பறவைகள் கூடும் அமைதியான இடம்."},
-  {id:69,name:"Chambal River Sanctuary",nameTa:"சம்பல் நதி சரணாலயம்",category:"viewpoints",lat:26.8100,lng:79.0300,district:"Etawah",state:"Uttar Pradesh",season:"Nov–Mar",desc:"A raw river gorge where gharials, dolphins and river birds gather in the last un-dammed reaches of the Chambal, navigated by silent boat from shore villages.",descTa:"சம்பல் நதியின் இறுதிப் பகுதியில் முதலைகள், ஓங்கில்கள், நதிப் பறவைகள் கூடும் கடினமான பள்ளத்தாக்கு; அமைதியான படகு சவாரி."},
-  {id:70,name:"Dudhwa Tiger Reserve",nameTa:"துத்வா புலிகள் சரணாலயம்",category:"trekking",lat:28.4700,lng:80.6000,district:"Lakhimpur Kheri",state:"Uttar Pradesh",season:"Nov–Jun",desc:"Terai grasslands and sal forests near the Nepal border, where swamp deer, rhinos and tigers live on sandy riverine plains, explored by jeep through open meadows.",descTa:"நேபாள எல்லையில் சதுப்பு மான்கள், காண்டாமிருகங்கள், புலிகள் வாழும் புல்வெளி காடு; ஜீப்பில் மேய்ச்சல் நிலங்கள் வழியாக ஆராயலாம்."},
-  {id:71,name:"Valmiki Tiger Reserve",nameTa:"வால்மீகி புலிகள் சரணாலயம்",category:"trekking",lat:27.3800,lng:84.0300,district:"West Champaran",state:"Bihar",season:"Nov–Jun",desc:"Bihar's only tiger reserve on the Nepal border, a vast stretch of grassland and sal forest where elephants wander the riverside, almost entirely off tourist radar.",descTa:"நேபாள எல்லையில் பீகாரின் ஒரே புலிகள் சரணாலயம்; யானைகள் நடமாடும் புல்வெளி மற்றும் காடு, சுற்றுலா பாதைக்கு வெளியே."},
-  {id:72,name:"Dassam Falls",nameTa:"தசம் அருவி",category:"waterfalls",lat:23.1100,lng:86.0900,district:"Ranchi",state:"Jharkhand",season:"Jul–Feb",desc:"A broad waterfall where the Kanchi river leaps across a gorge near Ranchi, hidden by sal forest on the Tata–Ranchi road and quieter than its peekable approach suggests.",descTa:"ராஞ்சி அருகே காஞ்சி நதி பள்ளத்தாக்கில் விழும் அகலமான அருவி; சால் காடுகளால் சூழப்பட்ட அமைதியான இடம்."},
-  {id:73,name:"Yusmarg Meadows",nameTa:"யூஸ்மார்க் புல்வெளி",category:"viewpoints",lat:33.8000,lng:74.6800,district:"Budgam",state:"Jammu and Kashmir",season:"Apr–Oct",desc:"A grassy forest basin in the Pir Panjal, ringed by pines and dwarf willows, still less trodden than Gulmarg, with pony rides to the snow-fed Doodh Ganga stream.",descTa:"பிர் பஞ்சால் மலைகளில் பைன் காடுகள் சூழ்ந்த புல்வெளி; குல்மார்க்கை விட அமைதியானது, குதிரை சவாரி வசதி உண்டு."},
-  {id:74,name:"Tso Moriri Lake",nameTa:"சோ மொரீரி ஏரி",category:"viewpoints",lat:32.9100,lng:78.3100,district:"Leh",state:"Ladakh",season:"Jun–Sep",desc:"A high-altitude lake of changing blues in the Changthang plateau, ringed by nomadic camps and wild kiang, one of the remotest lakes on the Ladakh loop.",descTa:"சாங்தாங் மேட்டுநிலத்தில் நீல நிறம் மாறும் உயரமலை ஏரி; நாடோடி முகாம்கள், காட்டு குதிரைகள் சூழ்ந்த தொலைதூர ஏரி."},
-  {id:75,name:"Asola-Bhatti Sanctuary",nameTa:"அசோலா-பாட்டி சரணாலயம்",category:"viewpoints",lat:28.4400,lng:77.2000,district:"South Delhi",state:"Delhi",season:"Oct–Mar",desc:"A rugged ridge forest on the Delhi-Haryana border, laced with mine-scarred hills and hidden waterholes, where nilgai and jackals roam within sight of the city.",descTa:"டெல்லி-ஹரியானா எல்லையில் பள்ளங்கள் நிறைந்த மலைக் காடு; நீர்க் குட்டைகளில் மரமான், நரி நடமாடும், நகருக்கு அருகே மறைந்திருக்கும் இடம்."}
+  {id:1,name:"Agaya Gangai Waterfalls",nameTa:"ஆகாய கங்கை அருவி",nameHi:"आगया गंगाई झरना",descHi:"कोल्ली पहाड़ियों की तलहटी में छिपा झरना, जो करीब 1200 सीढ़ियों की लंबी पत्थर की सीढ़ी से पहुँचा जाता है।",category:"waterfalls",lat:11.2581,lng:78.3474,district:"Namakkal",season:"Oct–Dec",desc:"A hidden waterfall at the foot of the Kolli Hills, reached by a long stone stairway of around 1200 steps.",descTa:"கொல்லிமலை அடிவாரத்தில் சுமார் 1200 படிக்கட்டுகள் வழியாக செல்லும் மறைவான அருவி."},
+  {id:2,name:"Suruli Falls",nameTa:"சுருளி அருவி",nameHi:"सुरुली झरना",descHi:"थेनी के पास सुरुली नदी से बनने वाला बहुस्तरीय झरना, आस-पास के झरनों से कम भीड़भाड़ वाला।",category:"waterfalls",lat:9.6607,lng:77.3872,district:"Theni",season:"Jun–Jan",desc:"Layered cascade near Theni fed by the Suruli river, often far less crowded than neighbouring falls.",descTa:"தேனி அருகே சுருளி ஆற்றில் இருந்து வரும் அடுக்கடுக்கான அருவி."},
+  {id:3,name:"Tadiyankudisai Falls",nameTa:"தடியன்குடிசை அருவி",nameHi:"तड़ियानकुडिसाई झरना",descHi:"तड़ियानदामलाई जाते हुए मसालों और कॉफ़ी के बागानों के बीच मिलने वाला छुपा हुआ झरना।",category:"waterfalls",lat:10.3653,lng:77.3376,district:"Dindigul",season:"Sep–Dec",desc:"Hidden gem en route to Tadiyandamalai, through spice and coffee plantations.",descTa:"மிளகு மற்றும் காபி தோட்டங்கள் வழியே தடியன்மலையை நோக்கி செல்லும்போது காணும் மறைந்த அருவி."},
+  {id:4,name:"Meghamalai View Point",nameTa:"மேகமலை பார்வைத் தளம்",nameHi:"मेघमलाई दृश्य स्थल",descHi:"इलायची की पहाड़ियों, झरनों और चाय बागानों को देखने वाला ऊँचाई पर बना धुंधला दृश्य स्थल।",category:"viewpoints",lat:9.6862,lng:77.3453,district:"Theni",season:"Sep–Feb",desc:"Misty high-altitude viewpoint overlooking cardamom hills, waterfalls and tea estates.",descTa:"ஏலம் மலைகள், அருவிகள், தேயிலை தோட்டங்களை காணும் உயரமான பனிமூட்டமான பார்வைத் தளம்."},
+  {id:5,name:"Top Station",nameTa:"டாப் ஸ்டேஷன்",nameHi:"टॉप स्टेशन",descHi:"मूनार घाटी से ऊपर बादलों के बाग-दृश्य वाला स्थल, तमिलनाडु की तरफ़ से पहुँचा जा सकता है।",category:"viewpoints",lat:10.1351,lng:77.1127,district:"Theni",season:"Sep–Feb",desc:"Cloud-garden viewpoint above Munnar valley, accessible from the Tamil Nadu side.",descTa:"மூணாரை விட உயரத்தில் அமைந்த பார்வைத் தளம்."},
+  {id:6,name:"Leopards Valley Trek",nameTa:"லெப்பார்ட்ஸ் பள்ளத்தாக்கு",nameHi:"लेपर्ड्स वैली ट्रेक",descHi:"ग्रिज़ल्ड स्क्विरल वन्यजीव अभयारण्य से पलानी पहाड़ियों में कोमल वर्षावन ट्रेक।",category:"trekking",lat:10.2182,lng:77.5345,district:"Dindigul",season:"Oct–Mar",desc:"Gentle rainforest trek in the Palani hills from Grizzled Squirrel Wildlife Sanctuary.",descTa:"பழநி மலையில் உள்ள அழகான காடு வழி மலைப்பயணம்."},
+  {id:7,name:"Velliangiri Hills",nameTa:"வெள்ளியங்கிரி மலை",nameHi:"वेल्लियांगिरि पहाड़ियाँ",descHi:"सोला वनों और घास के मैदानों वाला सात चरणों का चुनौतीपूर्ण ट्रेक; भगवान शिव का आवास माना जाता है।",category:"trekking",lat:10.9786,lng:76.7790,district:"Coimbatore",season:"Nov–Mar",desc:"Challenging 7-stage trek through shola forests and grasslands, spiritual summit atop Lord Shiva's abode.",descTa:"ஏழு கட்டங்களை கொண்ட கடினமான மலைப்பயணம்; சிவபெருமானின் தலமாக போற்றப்படுகிறது."},
+  {id:8,name:"Kodiveri Dam",nameTa:"கொடிவேரி அணை",nameHi:"कोडिवेरी बाँध",descHi:"भवानी नदी पर बना बगीचे और पैदल मार्ग वाला ऐतिहासिक ब्रिटिश काल का बाँध।",category:"dams",lat:11.4547,lng:77.0380,district:"Erode",season:"All year",desc:"Scenic British-era dam on the Bhavani river with a garden and walkway.",descTa:"பவானி ஆற்றில் அமைந்த பழங்கால அணை; தோட்டம் மற்றும் நடைபாதையுடன்."},
+  {id:9,name:"Sathanur Dam",nameTa:"சத்தானூர் அணை",nameHi:"सत्तनूर बाँध",descHi:"जवादु पहाड़ियों के पास मछली फार्म और पहाड़ी दृश्य वाला शांत जलाशय।",category:"dams",lat:12.1788,lng:78.8420,district:"Tiruvannamalai",season:"Mar–Sep",desc:"Quiet reservoir near Javadi hills with a fish farm and hill-view park.",descTa:"ஜவ்வாது மலை அருகே அமைதியான நீர்த்தேக்கம்."},
+  {id:10,name:"Thirumurthi Dam",nameTa:"திருமூர்த்தி அணை",nameHi:"तिरुमूर्ति बाँध",descHi:"अमरावती जलाशय के पास वन्यजीव-सफारी जैसे अनुभव वाला छुपा हुआ बाँध।",category:"dams",lat:10.5924,lng:77.2399,district:"Tiruppur",season:"Sep–Jun",desc:"Hidden dam for wildlife-safari style exploration near the Amaravathi reservoir.",descTa:"அமராவதி நீர்த்தேக்கம் அருகே உள்ள மறைவான அணை."},
+  {id:11,name:"Vijayalaya Choleeswaram",nameTa:"விஜயாலய சோழீஸ்வரம்",nameHi:"विजयालय चोलेश्वरम",descHi:"नर्तमलाई पहाड़ी पर छिपा चोल युग का सबसे पुराना मंदिर, अद्भुत शिला मूर्तियों के साथ।",category:"temples",lat:10.5196,lng:78.8776,district:"Pudukkottai",season:"All year",desc:"One of the oldest Chola temples hidden on Narthamalai hill, with stunning rock-cut sculptures.",descTa:"நார்த்தாமலை மலையில் மறைந்துள்ள பழமையான சோழர் கோயில்; அழகிய சிற்பங்களுடன்."},
+  {id:12,name:"Brahmapuriswarar Temple",nameTa:"பிரம்மபுரீஸ்வரர் கோயில்",nameHi:"ब्रह्मपुरीश्वर मंदिर",descHi:"पुल्लमंगई में छिपा चोल युग का खूबसूरती से तराशे गए स्तंभों वाला मंदिर।",category:"temples",lat:10.9616,lng:79.0141,district:"Thanjavur",season:"All year",desc:"Hidden gem of the Chola era at Pullamangai, famous for its exquisitely carved pillars.",descTa:"புல்லமங்கையில் மறைந்துள்ள சோழர் கால அற்புத சிற்ப வேலைப்பாடுகள் கொண்ட கோயில்."},
+  {id:13,name:"Konganagiri Murugan Temple",nameTa:"கொங்கணகிரி முருகன் கோயில்",nameHi:"कोनगनगिरि मुरुगन मंदिर",descHi:"तिरुपुर के पास कोनगनगिरि पहाड़ी पर शांत मुरुगन मंदिर; सुंदर दृश्य और शांत चढ़ाई।",category:"temples",lat:11.1104,lng:77.3151,district:"Tiruppur",state:"Tamil Nadu",season:"Oct–Mar",pluscode:"4868+53",desc:"A serene Murugan temple on Konganagiri hill near Tiruppur, known for scenic views and a peaceful climb.",descTa:"திருப்பூர் அருகே கொங்கணகிரி மலையில் அமைந்த அமைதியான முருகன் கோயில்; அழகிய காட்சிகளுக்கும் அமைதியான மலை ஏற்றத்திற்கும் பெயர் பெற்றது."},
+  {id:14,name:"Kolukkumalai Trek",nameTa:"கொளுக்குமலை மலைப்பயணம்",nameHi:"कोलुक्कुमलाई ट्रेक",descHi:"दुनिया के सबसे ऊँचे ऑर्गेनिक चाय बागान से होकर जाता सूर्योदय ट्रेक; कोहरे भरी चोटियाँ।",category:"trekking",lat:9.8533,lng:77.1892,district:"Theni",season:"Oct–Mar",desc:"Sunrise trek through the world's highest organic tea estate, winding along misty ridges with no tourist crowds.",descTa:"உலகின் மிக உயரமான கரிம தேயிலை தோட்டம் வழியாக சூரிய உதய மலைப்பயணம்; பனிமூட்ட மலை உச்சிகள், சுற்றுலா கூட்டம் இல்லாத அமைதிப் பாதை."},
+  {id:15,name:"Topslip Forest Trek",nameTa:"டாப்ஸ்லிப் காடு மலைப்பயணம்",nameHi:"टॉपस्लिप वन ट्रेक",descHi:"अन्नामलाई टाइगर रिज़र्व के भीतर छिपा वन मार्ग; रास्ते में हाथी और गौर देखने का मौका।",category:"trekking",lat:10.3833,lng:76.8167,district:"Coimbatore",season:"Nov–Mar",desc:"Hidden forest trail deep inside Annamalai Tiger Reserve, with chances of spotting elephants and gaur along the way.",descTa:"அண்ணாமலை புலிகள் சரணாலயத்தின் ஆழமான காட்டுப் பாதை; யானைகள், காட்டெருமைகளை பார்க்கும் வாய்ப்புள்ள மறைவான மலைப்பயணம்."},
+  {id:16,name:"Bodinayakanur Hills Trek",nameTa:"போடிநாயக்கனூர் மலைப்பயணம்",nameHi:"बोदिनायकनूर पहाड़ी ट्रेक",descHi:"पश्चिमी घाट की पूर्वी ढलानों पर इलायची और काली मिर्च के बागानों से गुज़रता शांत रास्ता।",category:"trekking",lat:9.9240,lng:77.3690,district:"Theni",season:"Oct–Feb",desc:"Quiet path through cardamom and pepper plantations on the eastern slopes of the Western Ghats.",descTa:"மேற்குத் தொடர்ச்சி மலையின் கிழக்கு சரிவுகளில் ஏலக்காய், மிளகு தோட்டங்கள் வழியே செல்லும் அமைதியான பாதை."},
+  {id:17,name:"Thalaiyar Falls",nameTa:"தலையாறு அருவி",nameHi:"तलैयार झरना",descHi:"तमिलनाडु के सबसे ऊँचे झरनों में से एक, 300 फीट से अधिक; सुनसान घाटी में छिपा है।",category:"waterfalls",lat:10.1463,lng:77.5800,district:"Dindigul",season:"Sep–Jan",desc:"One of the tallest waterfalls in Tamil Nadu at over 300 feet, hidden in a remote gorge with almost no visitors.",descTa:"தமிழ்நாட்டின் மிக உயரமான அருவிகளில் ஒன்று, 300 அடிக்கும் மேல்; மறைவான பள்ளத்தாக்கில் அமைந்து பார்வையாளர்கள் கிடையாது."},
+  {id:18,name:"Vattparai Falls",nameTa:"வட்டப்பறை அருவி",nameHi:"वट्टपरै झरना",descHi:"मसाला बागान घाटी में छिपा जुड़वाँ झरना, काली मिर्च की लताओं से गुज़रते संकरी मिट्टी की पगडंडी से।",category:"waterfalls",lat:9.8833,lng:77.3167,district:"Theni",season:"Jun–Dec",desc:"Secluded twin cascade hidden in a spice plantation valley, reached by a narrow dirt path through pepper vines.",descTa:"மசாலா தோட்ட பள்ளத்தாக்கில் மறைந்துள்ள இரட்டை அருவி; மிளகு கொடிகள் வழியே செல்லும் குறுகிய மண் பாதை."},
+  {id:19,name:"Kolukkumalai Viewpoint",nameTa:"கொளுக்குமலை பார்வைத் தளம்",nameHi:"कोलुक्कुमलाई दृश्य स्थल",descHi:"दुनिया के सबसे ऊँचे ऑर्गेनिक चाय बागान से भोर में बादलों के ऊपर घाटी का मनोरम दृश्य।",category:"viewpoints",lat:9.8544,lng:77.1872,district:"Theni",season:"Oct–Feb",desc:"Panoramic valley view from the world's highest organic tea estate, above the clouds at dawn.",descTa:"உலகின் மிக உயரமான கரிம தேயிலை தோட்டத்திலிருந்து பள்ளத்தாக்கு காட்சி; விடியற்காலையில் மேகங்களுக்கு மேலே."},
+  {id:20,name:"Perumal Peak View",nameTa:"பெருமாள் மலை உச்சிக் காட்சி",nameHi:"पेरुमल पीक दृश्य",descHi:"दूरस्थ पलानी चोटी से 360° दृश्य; मैदान, सोला वन और दूर पवनचक्कियाँ।",category:"viewpoints",lat:10.1200,lng:77.4488,district:"Dindigul",season:"Sep–Feb",desc:"360-degree view from a remote Palani hills summit, overlooking plains, shola forests and distant windmills.",descTa:"பழநி மலையின் மறைவான உச்சியிலிருந்து 3360° காட்சி; சமவெளிகள், சோலா காடுகள், தொலைவில் காற்றாலைகள்."},
+  {id:21,name:"Ottamthulli Viewpoint",nameTa:"ஒட்டாம் துள்ளி பார்வைத் தளம்",nameHi:"ओट्टमतुल्ली दृश्य स्थल",descHi:"मेघमलाई के पास बादल-वन के ऊपर शांत दृश्य स्थल; बिना सड़क वाली सुनसान घाटी।",category:"viewpoints",lat:9.8667,lng:77.2000,district:"Theni",season:"Oct–Feb",desc:"Quiet viewpoint above the cloud forest near Meghamalai, overlooking a remote valley with no road access.",descTa:"மேகமலை அருகே மேகக் காட்டிற்கு மேலே அமைதியான பார்வைத் தளம்; சாலை வசமில்லாத மறைவான பள்ளத்தாக்கு."},
+  {id:22,name:"Sothuparai Dam",nameTa:"சோதுபறை அணை",nameHi:"सोतुपरै बाँध",descHi:"पेरियाकुलम के पास पहाड़ियों के बीच छिपा शांत जलाशय; मछुआरों को प्रिय पर्यटन से दूर।",category:"dams",lat:10.0490,lng:77.3420,district:"Theni",season:"All year",desc:"Quiet reservoir tucked between hills near Periyakulam, popular with local anglers but unknown to tourists.",descTa:"பெரியகுளம் அருகே மலைகளுக்கு இடையே மறைந்துள்ள அமைதியான நீர்த்தேக்கம்; மீன் பிடிப்பவர்களுக்கு பிடித்தமான இடம்."},
+  {id:23,name:"Shanmuganadhi Dam",nameTa:"ஷண்முகநதி அணை",nameHi:"षण्मुगनदी बाँध",descHi:"तामिराबरणी नदी के उद्गम पर दूरस्थ बाँध; घने जंगल से घिरा और बहुत कम आगंतुक।",category:"dams",lat:10.1190,lng:77.2568,district:"Dindigul",season:"Sep–Jun",desc:"Remote dam on the Thamirabarani headwaters, surrounded by dense forest with very few visitors.",descTa:"தாமிரபரணி ஆற்றின் மூலத்தில் அமைந்த தொலைவான அணை; அடர்ந்த காட்டால் சூழப்பட்டு மிகக் குறைவான பார்வையாளர்கள்."},
+  {id:24,name:"Thirukkurungudi Nambi Rayar Temple",nameTa:"திருக்குறுங்குடி நம்பி ராயர் கோயில்",nameHi:"तिरुक्कुरुंगुडी नंबी रायर मंदिर",descHi:"नंबियांदार नंबी पहाड़ियों में छिपा प्राचीन विष्णु मंदिर; चट्टान में तराशा गया, पास में वन जलधारा।",category:"temples",lat:8.8160,lng:77.3720,district:"Tirunelveli",season:"All year",desc:"Ancient Vishnu temple hidden in the Nambiyandar Nambi hills, carved into rock with a forest stream nearby.",descTa:"நம்பியாண்டார் நம்பி மலையில் மறைந்துள்ள பழமையான விஷ்ணு கோயில்; பாறையில் செதுக்கப்பட்டு, காட்டு ஓடை அருகில்."},
+  {id:25,name:"Vellankuli Murugan Temple",nameTa:"வெள்ளாங்குளி முருகன் கோயில்",nameHi:"वेल्लांकुली मुरुगन मंदिर",descHi:"वराहा नदी घाटी के मनोरम दृश्यों वाला छोटा पहाड़ी मुरुगन मंदिर; गाँव से बाहर लगभग अज्ञात।",category:"temples",lat:10.0550,lng:77.6330,district:"Madurai",season:"Oct–Mar",desc:"Tiny hilltop Murugan shrine with panoramic views of the Varaha river valley, almost unknown outside the village.",descTa:"வராக ஆற்று பள்ளத்தாக்கின் அழகிய காட்சிகளுடன் கூடிய சிறிய மலை உச்சி முருகன் கோயில்; கிராமத்திற்கு வெளியே யாரும் அறியாத இடம்."},
+  {id:26,name:"Pangot Birding Village",nameTa:"பங்கோட் பறவைக் கிராமம்",nameHi:"पंगोट पक्षी गाँव",descHi:"नैनीताल के ऊपर शांत वन गाँव; पक्षी-दर्शन के लिए प्रसिद्ध, जंगल पथ और हिमालय दृश्य।",category:"viewpoints",lat:29.3562,lng:79.4448,district:"Nainital",state:"Uttarakhand",season:"Mar–Jun",desc:"A quiet forest hamlet above Nainital famous as an offbeat birding spot, with jungle trails and Himalayan glimpses, away from tourist crowds.",descTa:"நைனிடால் மேலே அமைதியான காட்டு கிராமம்; பறவைகளை காண புகழ்பெற்ற இடம், கூட்ட நெரிசல் இல்லாத பாதைகள்."},
+  {id:27,name:"Kausani Himalayan View",nameTa:"கௌசானி இமயக் காட்சி",nameHi:"कौसानी हिमालय दृश्य",descHi:"चीड़ वनों से होकर त्रिशूल और नंदादेवी की चोटियों को देखता शांत पहाड़ी स्थल; 300 किमी बर्फ़ चोटियों का दृश्य।",category:"viewpoints",lat:29.8447,lng:79.6040,district:"Bageshwar",state:"Uttarakhand",season:"Sep–May",desc:"A serene hill overlooking Trishul and Nanda Devi peaks through pine forests, quieter than Nainital and famous for a 300 km canvas of snow peaks.",descTa:"பைன் காடுகள் வழியே திரிசூல், நந்தாதேவி சிகரங்களை காணும் அமைதியான மலை நிலை."},
+  {id:28,name:"Binsar Wildlife Sanctuary",nameTa:"பின்சார் வனவிலங்கு சரணாலயம்",nameHi:"बिनसार वन्यजीव अभयारण्य",descHi:"ओक और रोडोडेंड्रोन वाला दूरस्थ अभयारण्य; हिमालय पर सूर्योदय दृश्य, छुपे ट्रेक पथ, लगभग कोई आगंतुक नहीं।",category:"viewpoints",lat:29.6758,lng:79.7390,district:"Almora",state:"Uttarakhand",season:"Apr–Jun, Sep–Dec",desc:"A remote oak and rhododendron sanctuary with sunrise views over the Himalaya, hidden trek paths and hardly any visitors.",descTa:"ஓக் மற்றும் ரோடோடென்ட்ரான் காடுகளை கொண்ட தொலைவான சரணாலயம்; இமயமலை சூரிய உதய காட்சி, யாரும் வராத பாதைகள்."},
+  {id:29,name:"Barot Hidden Valley",nameTa:"பரோட் மறைவான பள்ளத்தாக்கு",nameHi:"बारोट छुपी घाटी",descHi:"चीड़ वनों और उहल नदी से घिरा पूर्व जलविद्युत गाँव; ट्राउट मछली पकड़ना, झूला पुल, पहाड़ी पगडंडियाँ।",category:"viewpoints",lat:31.9796,lng:76.7686,district:"Mandi",state:"Himachal Pradesh",season:"Apr–Jun, Oct–Nov",desc:"A former hydropower village planted by pine forests and the Uhl river, with trout fishing, a suspension bridge and mountain trails unknown to most travellers.",descTa:"பைன் காடுகளும் உஹல் நதியும் சூழ்ந்த பழைய நீர்மின் கிராமம்; ட்ரவுட் மீன் பிடிப்பு, தொங்கு பாலம், மலையாத்திரை பாதைகள்."},
+  {id:30,name:"Jibhi Gharat Valley",nameTa:"ஜிபி கரத் பள்ளத்தாக்கு",nameHi:"जिभी घरठ घाटी",descHi:"तीर्थन घाटी में पुरानी लकड़ी की चक्कियों और देवदार वनों वाला धीमा नदी-किनारे का गाँव।",category:"viewpoints",lat:31.4896,lng:77.3231,district:"Kullu",state:"Himachal Pradesh",season:"Mar–Jun, Sep–Nov",desc:"A slow riverside village in the Tirthan valley with old wooden watermills, cedar forests and cottage stays, still off the mainstream backpacker trail.",descTa:"தீர்த்தன் பள்ளத்தாக்கில் பழைய மர ஆலைகள், சிடார் காடுகளுடன் அமைதியான நதியோர கிராமம்."},
+  {id:31,name:"Ziro Pine Valley",nameTa:"ஜீரோ பைன் பள்ளத்தாக்கு",nameHi:"ज़िरो पाइन घाटी",descHi:"अपतानी जनजाति की धुंधली उच्च भूमि घाटी; चीड़ पहाड़ियों और धान के खेतों से घिरी, शांत जीवन और संगीत महोत्सव।",category:"viewpoints",lat:27.5940,lng:93.8348,district:"Lower Subansiri",state:"Arunachal Pradesh",season:"Mar–Oct",desc:"A misty highland valley of the Apatani tribe, ringed by pine hills and rice fields, famed for a quiet pace of life, music festival and unique tribal culture.",descTa:"அபதானி பழங்குடியினரின் மூடுபனி மலை பள்ளத்தாக்கு; பைன் மலைகளும் நெல் வயல்களும் சூழ்ந்த இடம்."},
+  {id:32,name:"Mechuka Hidden Valley",nameTa:"மெச்சுகா மறைவான பள்ளத்தாக்கு",nameHi:"मेचुका छुपी घाटी",descHi:"तिब्बत सीमा पर दूरस्थ बौद्ध घाटी; पुराना झूला पुल और मठ; अलोंग से पहाड़ी सड़क से पहुँचे।",category:"viewpoints",lat:28.5939,lng:94.2184,district:"West Siang",state:"Arunachal Pradesh",season:"Oct–Mar",desc:"A remote Buddhist valley on the Tibet border, crossed by an old suspension bridge and dotted with monasteries, reached only by mountain road from Along.",descTa:"டிபெட் எல்லையில் மறைந்துள்ள பௌத்த பள்ளத்தாக்கு; தொங்கு பாலம், ஆலயங்கள், மலை கொட்டகைகள்."},
+  {id:33,name:"Loktak Floating Lake",nameTa:"லோக்தாக் மிதக்கும் ஏரி",nameHi:"लोकतक तैरती झील",descHi:"दुनिया की सबसे बड़ी तैरती झील, फुमदी पर बना एकमात्र तैरता राष्ट्रीय उद्यान; शांत मछली पकड़ने वाले गाँव।",category:"dams",lat:24.5011,lng:93.7931,district:"Bishnupur",state:"Manipur",season:"Nov–Mar",desc:"The world's largest floating lake of phumdis, with the only floating national park on earth, viewed through quiet fishing villages and bamboo walkways.",descTa:"உலகின் மிகப்பெரிய மிதக்கும் ஏரியான பூம்டிஸ்; மிதக்கும் தேசியப் பூங்கா, அமைதியான மீனவ கிராமங்கள்."},
+  {id:34,name:"Dzükou Valley of Flowers",nameTa:"ஜூகோ மலர் பள்ளத்தாக்கு",nameHi:"ज़ुकू फूलों की घाटी",descHi:"चट्टानों से घिरी घास की उच्च भूमि जो मौसमी फूलों से खिल उठती है; विसवेमा से खड़ी चढ़ाई।",category:"trekking",lat:25.6741,lng:94.1266,district:"Kohima",state:"Nagaland",season:"Jun–Sep",desc:"A grassy highland bowl flanked by cliffs that blazes with seasonal flowers, reached by a steep trek from Viswema, with almost no one on the trail.",descTa:"பாறைகளுக்கு இடையே மலர்கள் மலரும் புல்வெளி பள்ளத்தாக்கு; விஸ்வேமாவிலிருந்து கடின ஏறுபாதை வழியாக."},
+  {id:35,name:"Mawlynnong Cleanish Village",nameTa:"மவ்லின்நாங் கிராமம்",nameHi:"मावलिन्नोंग गाँव",descHi:"एशिया का सबसे स्वच्छ खासी गाँव; जीवित जड़ों के ढाँचे और वर्षावन छत्र पथ।",category:"viewpoints",lat:25.2813,lng:92.0190,district:"East Khasi Hills",state:"Meghalaya",season:"Oct–Apr",desc:"A pristine Khasi village called Asia's cleanest, wrapped in living-root structures and a skywalk through the rainforest canopy.",descTa:"ஆசியாவின் தூய்மையான கிராமம்; வேர்ப்பாலங்கள், மழைக்காடு விதான வழியே நடை."},
+  {id:36,name:"Dawki Umngot River",nameTa:"டாவ்கி உம்ங்காட் நதி",nameHi:"डावकी उमंगोट नदी",descHi:"बांग्लादेश सीमा पर क्रिस्टल-साफ़ नदी जहाँ नावें काँच पर तैरती लगती हैं; चूना-पत्थर पहाड़ियों से घिरी।",category:"waterfalls",lat:25.1825,lng:92.0202,district:"West Jaintia Hills",state:"Meghalaya",season:"Oct–Apr",desc:"A crystal-clear riverbed at the Bangladesh border where boats appear to float on glass, framed by limestone hills and still little known outside the northeast.",descTa:"வங்கதேச எல்லையில் கண்ணாடி போல தெளிவான ஆற்றுப் படுகை; படகுகள் மிதப்பது போல் தோன்றும் அதிசய நதி."},
+  {id:37,name:"Gandikota Canyon",nameTa:"கந்திகோட்டா பள்ளத்தாக்கு",nameHi:"गंडीकोटा घाटी",descHi:"पेन्नार नदी द्वारा क्वार्टजाइट में काटी गई प्रभावशाली घाटी; पहाड़ी किला; 'भारत का ग्रांड कैन्यन'।",category:"viewpoints",lat:14.8014,lng:78.2896,district:"YSR Kadapa",state:"Andhra Pradesh",season:"Oct–Feb",desc:"A striking gorge where the Pennar river cut a canyon through quartzite, with a hilltop fort and granaries, often called India's Grand Canyon yet barely visited.",descTa:"பென்னார் நதி செதுக்கிய பாறை பள்ளத்தாக்கு; மலை உச்சி கோட்டை, இந்தியாவின் கிராண்ட் கேன்யன்."},
+  {id:38,name:"Lambasingi Snowpoint",nameTa:"லம்பசிங்கி பனிப்புள்ளி",nameHi:"लंबासिंगी बर्फ बिंदु",descHi:"पूर्वी घाट का छोटा ऊँचाई वाला जनजातीय गाँव; ठंड निकट शून्य, कॉफ़ी बागान, तारों भरा आसमान।",category:"viewpoints",lat:17.8530,lng:82.2157,district:"Alluri Sitharama Raju",state:"Andhra Pradesh",season:"Nov–Mar",desc:"A tiny high-altitude tribal village in the Eastern Ghats where temperatures drop near freezing, with coffee estates and star-filled skies, off the usual Andhra map.",descTa:"கிழக்குத் தொடர்ச்சி மலையில் குளிர் மிகுந்த பழங்குடி கிராமம்; காபி தோட்டங்களும் விண்மீன் நிறைந்த வானமும்."},
+  {id:39,name:"Agumbe Rainforest",nameTa:"அகும்பே மழைக்காடு",nameHi:"अगुम्बे वर्षावन",descHi:"दक्षिण का 'चेरापूंजी'; झरनों, किंग कोबरा और धुंधली चोटी की सैर वाला वर्षावन।",category:"trekking",lat:13.5088,lng:75.0968,district:"Shivamogga",state:"Karnataka",season:"Jun–Feb",desc:"Often called the Cherrapunji of the South, this rainforest stronghold hides waterfalls, king cobra habitats and misty ridge walks far from tourist trails.",descTa:"தென்னிந்தியாவின் செர்ராபுஞ்சி; அருவிகள், காடு மலைப்பாதைகள், மூடுபனி சிகரங்கள்."},
+  {id:40,name:"Gavi Forest Eco-Trail",nameTa:"கவி காடு சூழல் பாதை",nameHi:"गवी वन इको-ट्रेल",descHi:"केवल केरल के वन जीप से पहुँचने वाला वन समाशोधन; जंगली हाथियों के संकेत, वृक्ष-गृह, रात्रि सैर।",category:"trekking",lat:9.3830,lng:77.1670,district:"Pathanamthitta",state:"Kerala",season:"Oct–Mar",desc:"A reserved forest clearing reachable only by Kerala forest jeep, beside a still lake with wild elephant signs, tree-house stays and guided night walks.",descTa:"கேரள வனத் துறை ஜீப்பில் மட்டுமே செல்லக்கூடிய காடு; அமைதியான ஏரி, மர வீடு தங்குமிடம், இரவு நடை."},
+  {id:41,name:"Bhedaghat Marble Rocks",nameTa:"பேதாகாட் பளிங்கு பாறைகள்",nameHi:"भेड़ाघाट संगमरमर चट्टानें",descHi:"नर्मदा पर संगमरमर घाटी जहाँ 100 फीट की सफ़ेद चट्टानों के बीच नावें चलती हैं; बाहर धुँआधार झरना।",category:"waterfalls",lat:23.1404,lng:79.8243,district:"Jabalpur",state:"Madhya Pradesh",season:"Oct–Mar",desc:"A marble gorge on the Narmada where coracle rides glide between 100-foot white cliffs, with the Dhuandhar falls thundering at the exit — magnificent yet offbeat.",descTa:"நர்மதையில் வெள்ளை பளிங்கு பாறைகளுக்கு இடையே படகு சவாரி; வெளியேறுமிடத்தில் துவாந்தர் அருவி."},
+  {id:42,name:"Tirathgarh Falls",nameTa:"தீரத்கர் அருவி",nameHi:"तीरथगढ़ झरना",descHi:"कांगेर घाटी में सीढ़ीनुमा झरना; हरे पोखर चट्टानों से अनेक धाराओं में बँट जाते हैं।",category:"waterfalls",lat:18.8137,lng:81.8800,district:"Bastar",state:"Chhattisgarh",season:"Jul–Dec",desc:"A stair-stepped cascade in the Kanger Valley whose green pools split into many streams over rock ledges, reached through dense sal forest by a tribal village.",descTa:"கங்கர் பள்ளத்தாக்கில் படிக்கட்டு அருவி; பச்சை குளங்களுடன் அடர்ந்த காட்டில் மறைந்துள்ளது."},
+  {id:43,name:"Khandadhar Waterfall",nameTa:"கந்ததார் அருவி",nameHi:"खंडाधार झरना",descHi:"भारत के सबसे ऊँचे अखंड झरनों में से एक; वन चट्टानों से सीधा छिपे पोखर में गिरता है।",category:"waterfalls",lat:22.4328,lng:84.8661,district:"Sundargarh",state:"Odisha",season:"Jun–Dec",desc:"One of India's tallest uninterrupted falls, plunging in a single sheet from forested cliffs into a hidden pool, accessible by a short jungle trek.",descTa:"இந்தியாவின் மிக உயரமான அருவிகளில் ஒன்று; காட்டு மலை உச்சியிலிருந்து ஒரே தட்டாக விழுந்து மறைந்த குளத்தில் வீழும்."},
+  {id:44,name:"Amboli Ghat",nameTa:"அம்போலி மலைப்பாதை",nameHi:"अंबोली घाट",descHi:"गोवा सीमा का धुंधला पश्चिमी घाट गाँव; सड़क किनारे झरने और घने वन पथ।",category:"waterfalls",lat:15.9603,lng:73.7778,district:"Sindhudurg",state:"Maharashtra",season:"Jun–Feb",desc:"A misty Western Ghats village on the Goa border with roadside waterfalls, cobra-lily valleys and dense forest walks, far less known than Mahabaleshwar.",descTa:"கோவா எல்லையில் மூடுபனி மலை கிராமம்; சாலையோர அருவிகள், அடர்ந்த காடு வழி பாதைகள்."},
+  {id:45,name:"Polo Ancient Forest",nameTa:"போலோ பழமைக் காடு",nameHi:"पोलो प्राचीन वन",descHi:"गुजरात-राजस्थान किनारे का शांत वन घाटी; खंडहर हो चुके सूर्य मंदिर, बावड़ियाँ और नक्काशीदार मंदिर।",category:"temples",lat:23.3439,lng:73.1350,district:"Sabarkantha",state:"Gujarat",season:"Oct–Mar",desc:"A silent forest valley on the Gujarat-Rajasthan edge sheltering ruined sun temples, stepwells and carved shrines, crossed by a dirt path few travellers take.",descTa:"குஜராத்-ராஜஸ்தான் எல்லைக்காட்டில் மறைந்த சூரியன் கோயில், படிக்கட்டு கிணறுகள், சிற்பங்கள் கொண்ட அமைதியான பள்ளத்தாக்கு."},
+  {id:46,name:"Sandakphu Trek",nameTa:"சந்தக்பு மலைப்பயணம்",nameHi:"संदक्फू ट्रेक",descHi:"सिंगालिला चोटी पर पश्चिम बंगाल का सबसे ऊँचा स्थान; रोडोडेंड्रोन वनों से कंचनजंगा, एवरेस्ट और मकालू के दृश्य।",category:"trekking",lat:27.1050,lng:88.0010,district:"Darjeeling",state:"West Bengal",season:"Oct–Apr",desc:"The highest point of West Bengal on the Singalila ridge, with a clear panorama of Kanchanjunga, Everest, Lhotse and Makalu from a trail lined with rhododendron forests.",descTa:"சிங்காலிலா மலைத்தொடரில் மேற்கு வங்கத்தின் மிக உயரமான இடம்; ரோடோடென்ட்ரான் காடுகள் நிறைந்த பாதையிலிருந்து கஞ்சன்ஜங்கா, எவரெஸ்ட் உள்ளிட்ட சிகரங்களை காணலாம்."},
+  {id:47,name:"Lava Lolegaon View",nameTa:"லாவா-லோலேகான் காட்சி",nameHi:"लावा लोलेगाँव दृश्य",descHi:"चीड़ और रोडोडेंड्रोन वनों में बसे शांत जुड़वाँ गाँव; बादलों के ऊपर से हिमालय सूर्योदय दृश्य।",category:"viewpoints",lat:27.0960,lng:88.6600,district:"Kalimpong",state:"West Bengal",season:"Oct–Apr",desc:"Twin quiet hamlets wrapped in pine and rhododendron forests, offering sunrise views over the Himalaya from a watchtower above the clouds.",descTa:"பைன் மற்றும் ரோடோடென்ட்ரான் காடுகள் சூழ்ந்த இரட்டை அமைதியான கிராமங்கள்; மேகங்களுக்கு மேலே இமயமலை சூரிய உதயக் காட்சி."},
+  {id:48,name:"Khecheopalri Lake",nameTa:"கேச்செஓபல்ரி ஏரி",nameHi:"खेचियोपालरी झील",descHi:"पेलिंग के पास प्रार्थना झंडों से घिरी पवित्र अंडाकार झील; बौद्धों और स्थानीयों की इच्छा-पूर्ति झील।",category:"viewpoints",lat:27.3670,lng:88.1550,district:"Gyalshing",state:"Sikkim",season:"Mar–Jun, Oct–Dec",desc:"A sacred oval lake near Pelling ringed by prayer flags, held holy by both Buddhists and locals as a wishing lake, with a jungle walk from Khecheopalri village.",descTa:"பெல்லிங் அருகே பிரார்த்தனைக் கொடிகள் சூழ்ந்த புனித ஏரி; பௌத்தர்களுக்கும் உள்ளூர் மக்களுக்கும் நம்பிக்கை தரும் குளமாக போற்றப்படுகிறது."},
+  {id:49,name:"Gurudongmar Lake",nameTa:"குருதோங்மார் ஏரி",nameHi:"गुरुडोंगमार झील",descHi:"पृथ्वी की सबसे ऊँची झीलों में से एक, 17,000 फीट से अधिक; तिब्बती सीमा पर बर्फ़ चोटियों से घिरी।",category:"viewpoints",lat:28.0300,lng:88.7100,district:"Mangan",state:"Sikkim",season:"May–Oct",desc:"One of the highest lakes on earth at over 17,000 feet, its turquoise water frozen at the edges even in summer and framed by snow peaks near the Tibetan border.",descTa:"17,000 அடிக்கு மேல் உயரத்தில் உள்ள உலகின் உயரமான ஏரிகளில் ஒன்று; டிபெட் எல்லையில் பனி சிகரங்கள் சூழ்ந்த நீலநிறக் குளம்."},
+  {id:50,name:"Majuli River Island",nameTa:"மஜுலி ஆற்றுத் தீவு",nameHi:"माजुली नदी द्वीप",descHi:"ब्रह्मपुत्र में दुनिया का सबसे बड़ा नदी द्वीप; मठ, बुनकर, जल पक्षी और नाव की सवारी; पर्यटन से दूर।",category:"viewpoints",lat:26.9400,lng:94.1600,district:"Majuli",state:"Assam",season:"Nov–Mar",desc:"The world's largest river island in the Brahmaputra, a quiet land of satras (monasteries), weavers, waterbirds and ferry rides, still untouched by commercial tourism.",descTa:"பிரம்மபுத்திரா நதியில் உலகின் மிகப்பெரிய ஆற்றுத் தீவு; மடங்கள், நெசவாளர்கள், நீர் பறவைகள், படகு சவாரியுடன் கூட்டம் இல்லாத அமைதியான இடம்."},
+  {id:51,name:"Haflong Lake",nameTa:"ஹாஃப்லாங் ஏரி",nameHi:"हाफलोंग झील",descHi:"असम के एकमात्र हिल स्टेशन की शांत कृत्रिम झील; पहाड़ियों से घिरी, पैडल बोट वाली।",category:"dams",lat:25.1600,lng:93.0200,district:"Dima Hasao",state:"Assam",season:"Oct–Mar",desc:"A calm artificial lake at Assam's only hill station, ringed by hills and dotted with paddle boats, far below the tourist radar of the state.",descTa:"அசாமின் ஒரே மலைவாழிடத்தில் அமைந்த அமைதியான ஏரி; மலைகள் சூழ்ந்து படகு சவாரிக்கான இடம், சுற்றுலா கூட்டம் இல்லாதது."},
+  {id:52,name:"Krang Shuri Falls",nameTa:"க்ரங் சூரி அருவி",nameHi:"क्रांग शूरी झरना",descHi:"चूना-पत्थर की चट्टान से नीले पोखर में गिरता झरना; राज्य के प्रसिद्ध झरनों से ज़्यादा शांत।",category:"waterfalls",lat:25.2800,lng:92.2800,district:"West Jaintia Hills",state:"Meghalaya",season:"Sep–Feb",desc:"A limestone cliff fall pouring into an emerald pool below a jungle trail, far quieter than the famous falls of the state and reached partly by a zip line.",descTa:"சுண்ணாம்புப் பாறையிலிருந்து மரகதப் பச்சை குளத்தில் விழும் அருவி; புகழ்பெற்ற அருவிகளை விட அமைதியானது."},
+  {id:53,name:"Unakoti Rock Carvings",nameTa:"உனகோடி பாறை சிற்பங்கள்",nameHi:"उनाकोटि शिला मूर्तियाँ",descHi:"दूरस्थ वन में हज़ारों प्राचीन शिला मूर्तियों वाली पहाड़ी; शैव तीर्थ स्थल, लेकिन लगभग अज्ञात।",category:"temples",lat:24.3380,lng:92.1050,district:"Unakoti",state:"Tripura",season:"Oct–Mar",desc:"A hillside covered with thousands of ancient rock-cut images of gods in a remote forest, built over centuries as a Shaivite pilgrimage site, visited by almost no one.",descTa:"தொலைதூர காட்டில் ஆயிரக்கணக்கான பழமையான பாறை தெய்வச் சிற்பங்கள்; சிவ வழிபாட்டுத் தலமாக பல நூற்றாண்டுகளாக உருவான அதிசய இடம்."},
+  {id:54,name:"Vantawng Falls",nameTa:"வான்த்வாங் அருவி",nameHi:"वानथावंग झरना",descHi:"मिज़ोरम का सबसे ऊँचा झरना; घने बाँस वन में छिपा सफ़ेद नीर का पर्दा।",category:"waterfalls",lat:23.3300,lng:92.7700,district:"Serchhip",state:"Mizoram",season:"Jun–Dec",desc:"The tallest waterfall in Mizoram, a white curtain of water hidden in dense bamboo forest and reached by a short walk from a village on the Thenzawl road.",descTa:"மிசோரமின் மிக உயரமான அருவி; அடர்ந்த மூங்கில் காட்டில் மறைந்துள்ள வெண்ணிற நீர்வீழ்ச்சி."},
+  {id:55,name:"Kuntala Waterfall",nameTa:"குந்தள அருவி",nameHi:"कुंतला झरना",descHi:"तेलंगाना का सबसे ऊँचा झरना; कदम नदी पर तीन स्तरों में, महाराष्ट्र सीमा के पास वन से होकर।",category:"waterfalls",lat:19.3170,lng:78.4080,district:"Komaram Bheem",state:"Telangana",season:"Jun–Dec",desc:"The tallest waterfall in Telangana, tumbling over a rocky ledge on the Kadam river in three tiers, reached through forest near the Maharashtra border.",descTa:"தெலங்கானாவின் மிக உயரமான அருவி; மகாராஷ்டிர எல்லைக்கு அருகே காடு வழியாக மூன்று அடுக்குகளில் விழுகிறது."},
+  {id:56,name:"Bogatha Waterfall",nameTa:"போகதா அருவி",nameHi:"बोगाथा झरना",descHi:"पापीकोंडा वन में नीले पोखर में गिरता चाक-सफ़ेद झरना; स्थानीय 'तेलंगाना का नियाग्रा'।",category:"waterfalls",lat:17.7300,lng:80.3500,district:"Khammam",state:"Telangana",season:"Jul–Dec",desc:"A chalk-white cascade into a turquoise pool in the Papikonda forests, called the 'Niagara of Telangana' by locals but still almost unknown to outside travelers.",descTa:"பாபிகொண்டா காடுகளில் நீலப் பச்சை குளத்தில் விழும் வெண்ணிற அருவி; உள்ளூரில் 'தெலங்கானாவின் நயாகரா' என்று அழைக்கப்படுகிறது."},
+  {id:57,name:"Bhairavakona Falls",nameTa:"பைரவகோனா அருவி",nameHi:"भैरवकोना झरना",descHi:"चट्टान पर बने शैव मंदिर के पास दो स्तरीय झरना; घाटी सीढ़ियों से पहुँचा जाता है।",category:"waterfalls",lat:15.4200,lng:78.8200,district:"Nandyal",state:"Andhra Pradesh",season:"Jun–Feb",desc:"A two-stage rock-cut waterfall near a Shaivite shrine carved into the cliff, accessed by a stairway through the gorge, largely missed by tourist routes.",descTa:"பாறையில் செதுக்கப்பட்ட சிவன் கோயில் அருகே இரண்டு நிலை அருவி; பள்ளத்தாக்கு படிக்கட்டு வழியாக செல்லலாம், சுற்றுலா பாதையில் இல்லாத இடம்."},
+  {id:58,name:"Daringbadi Green Valley",nameTa:"டேரிங்பாடி பசுமை பள்ளத்தாக்கு",nameHi:"डेरिंगबाड़ी हरी घाटी",descHi:"'उड़ीसा का कश्मीर'; पश्चिमी घाट में काली मिर्च के बाग, कॉफ़ी और चीड़; सर्द धुंध और सूनी सड़कें।",category:"viewpoints",lat:19.8900,lng:84.0900,district:"Kandhamal",state:"Odisha",season:"Oct–Mar",desc:"Called the 'Kashmir of Odisha', a highland of pepper gardens, coffee groves and pine lines in the Eastern Ghats with cool mists and empty roads.",descTa:"'ஒடிசாவின் காஷ்மீர்' என்று அழைக்கப்படும் உயர்நிலம்; மிளகு, காபி தோட்டங்கள், பைன் மர வரிசைகள், குளிர்ந்த மூடுபனி சூழ்ந்த அமைதியான பாதைகள்."},
+  {id:59,name:"Mainpat Mini Tibet",nameTa:"மெயின்பாட் சிறு டிபெட்",nameHi:"मेंपत मिनी तिब्बत",descHi:"तिब्बती शरणार्थियों वाला पठार; मठ, ट्राउट जलधारा, घने वन पर चट्टान किनारे के दृश्य।",category:"viewpoints",lat:22.5300,lng:83.3000,district:"Surguja",state:"Chhattisgarh",season:"Oct–Mar",desc:"A tableland in the hills peopled by Tibetan refugees, with monasteries, a trout stream and cliff-edge views over endless forest, barely on any travel route.",descTa:"டிபெட் அகதிகள் வாழும் மேட்டு நிலம்; மடங்கள், மீன் ஓடை, காட்டு மலை உச்சிகளின் காட்சிகள், சுற்றுலா பாதையில் இல்லாத இடம்."},
+  {id:60,name:"Pachmarhi Bee Falls",nameTa:"பச்ச்மர்கி பீ அருவி",nameHi:"पचमढ़ी बी झरना",descHi:"पचमढ़ी के नीचे सतपुड़ा पहाड़ियों में वन घाटी के रास्ते पहुँचने वाला ऊँचा झरना।",category:"waterfalls",lat:22.4600,lng:78.4200,district:"Hoshangabad",state:"Madhya Pradesh",season:"Jul–Feb",desc:"A tall cascade in the Satpura hills below Pachmarhi, reached by a trail through a forest canyon, quieter than the nearby hill station's main sights.",descTa:"சத்புரா மலைகளில் பச்ச்மர்கியின் கீழே அமைந்த உயர்ந்த அருவி; காட்டு பள்ளத்தாக்கு வழியாக செல்லும் பாதை."},
+  {id:61,name:"Lonar Crater Lake",nameTa:"லோனார் எரிமலை ஏரி",nameHi:"लोनार क्रेटर झील",descHi:"भारत का एकमात्र ऊँची-गति प्रभाव वाला क्रेटर; प्राचीन मंदिरों से घिरी खारी झील, अनोखा पारिस्थितिक तंत्र।",category:"dams",lat:19.9770,lng:76.5110,district:"Buldhana",state:"Maharashtra",season:"All year",desc:"India's only hyper-velocity impact crater, now a saline lake ringed by ancient temples, with a unique ecosystem and almost no visitors outside winter weekends.",descTa:"இந்தியாவின் ஒரே விண்கல் மோதி உருவான பள்ளம்; உப்பு நிறைந்த ஏரி, பழமையான கோயில்கள் சூழ்ந்த தனித்த சுற்றுச்சூழல்."},
+  {id:62,name:"Dudhsagar Falls",nameTa:"துத்சாகர் அருவி",nameHi:"दूधसागर झरना",descHi:"मांडवी नदी पर गोवा-कर्नाटक सीमा का चार-स्तरीय झरना; घने जंगल से रेल पुल से श्रेष्ठ दृश्य।",category:"waterfalls",lat:15.3130,lng:74.3140,district:"South Goa",state:"Goa",season:"Jul–Feb",desc:"A mighty four-tier waterfall on the Mandovi where the border of Goa and Karnataka meet, best seen from the rail trestle approach through dense jungle.",descTa:"கோவா-கர்நாடக எல்லையில் மாண்டவி நதியில் விழும் வலுவான நான்கு அடுக்கு அருவி; அடர்ந்த காடு வழியாக ரயில் பாலத்தில் இருந்து சிறந்த காட்சி."},
+  {id:63,name:"Salim Ali Bird Sanctuary",nameTa:"சலீம் அலி பறவை சரணாலயம்",nameHi:"सलीम अली पक्षी अभयारण्य",descHi:"मांडवी मुहाना पर केवल नौका से पहुँचने वाला मैंग्रोव अभयारण्य; किंगफ़िशर, बगुले और कीचड़ भरी नालियाँ।",category:"viewpoints",lat:15.5000,lng:73.8900,district:"North Goa",state:"Goa",season:"Nov–Mar",desc:"A mangrove island sanctuary in the Mandovi estuary, reached only by boat and home to kingfishers, herons and muddy creeks, a hidden corner of otherwise touristy Goa.",descTa:"மாண்டவி கழிமுகத்தில் படகில் மட்டுமே செல்லும் மரக்காடு தீவு சரணாலயம்; மீன்கொத்தி, நாரைகள், சேற்று ஓடைகள் நிறைந்த அமைதியான இடம்."},
+  {id:64,name:"Chand Baori Stepwell",nameTa:"சாந்த் பாவ்ரி படிக்கிணறு",nameHi:"चाँद बावड़ी",descHi:"भारत की सबसे गहरी बावड़ियों में से एक; अभानेरी में हज़ारों सममित सीढ़ियाँ अंधेरे में उतरतीं।",category:"temples",lat:27.0070,lng:76.6060,district:"Dausa",state:"Rajasthan",season:"All year",desc:"One of the deepest stepwells in India, with thousands of symmetrical steps descending into darkness in the Abhaneri village, hidden among fields off the Jaipur–Agra road.",descTa:"இந்தியாவின் ஆழமான படிக்கிணறுகளில் ஒன்று; அபானேரி கிராமத்தில் ஆயிரக்கணக்கான சமச்சீர் படிகள் இருளில் இறங்குகின்றன."},
+  {id:65,name:"Menal Waterfall Temples",nameTa:"மேனல் அருவி கோயில்கள்",nameHi:"मेनाल झरना मंदिर",descHi:"पुरानी चित्तौड़गढ़ सड़क पर छिपे प्राचीन शिव मंदिर और मानसून झरना; चट्टान पर मध्यकालीन मूर्तियाँ।",category:"temples",lat:25.1500,lng:74.4300,district:"Chittorgarh",state:"Rajasthan",season:"All year",desc:"Ancient Shiva temples and a monsoon waterfall hidden on a forested stretch of the old Chittorgarh road, with medieval sculptures carved against the cliff.",descTa:"பழைய சித்தோர்கர் சாலையில் மறைந்துள்ள சிவன் கோயில்களும் மழைக்கால அருவியும்; பாறையில் செதுக்கப்பட்ட இடைக்கால சிற்பங்கள்."},
+  {id:66,name:"Ropar Wetland",nameTa:"ரோபார் ஈரநிலம்",nameHi:"रोपड़ आर्द्रभूमि",descHi:"सतलुज पर प्रवासी बत्तखों वाला शांत जलाशय; रोपड़ के हड़प्पा टीले के पास।",category:"dams",lat:30.9800,lng:76.5100,district:"Rupnagar",state:"Punjab",season:"Nov–Mar",desc:"A quiet reservoir on the Sutlej strung with migratory ducks and waders, near the ancient Harappan mound of Rupnagar, capital of the old Bhavanigarh fort area.",descTa:"சட்லஜ் நதியில் அமைந்த அமைதியான நீர்த்தேக்கம்; வலசை வாத்துகள் நிறைந்த இடம், பண்டைய சிந்துவெளி திட்டு அருகே."},
+  {id:67,name:"Kanjli Wetland",nameTa:"காஞ்சிலி ஈரநிலம்",nameHi:"कांजली आर्द्रभूमि",descHi:"ब्यास की बाढ़ का पानी थमने वाली छोटी मौसमी झील; पक्का मार्ग, सर्दी में कई पक्षी।",category:"dams",lat:31.3710,lng:75.3610,district:"Kapurthala",state:"Punjab",season:"Nov–Mar",desc:"A small seasonal lake where the Beas floodwaters pause, ringed by a paved path and popular with winter birds murmuring in the reeds.",descTa:"பியாஸ் நதி நீர் தங்கும் பருவ ஏரி; நடைபாதை சூழ்ந்து மூங்கில் காட்டில் குளிர்காலப் பறவைகள் கூடும் இடம்."},
+  {id:68,name:"Sultanpur Bird Sanctuary",nameTa:"சுல்தான்பூர் பறவை சரணாலயம்",nameHi:"सुल्तानपुर पक्षी अभयारण्य",descHi:"दिल्ली-हरियाणा किनारे का छोटा आर्द्रभूमि; सर्दी में सैकड़ों प्रवासी पक्षी; छिपने के स्थान और बोर्डवॉक।",category:"viewpoints",lat:28.4600,lng:76.8900,district:"Gurugram",state:"Haryana",season:"Nov–Mar",desc:"A compact wetland on the Delhi-Haryana edge that attracts hundreds of migratory birds in winter, dismissed by many yet a serene escape of hides and boardwalks.",descTa:"டெல்லி-ஹரியானா எல்லையில் அமைந்த சிறிய ஈரநிலம்; குளிர்காலத்தில் நூற்றுக்கணக்கான வலசைப் பறவைகள் கூடும் அமைதியான இடம்."},
+  {id:69,name:"Chambal River Sanctuary",nameTa:"சம்பல் நதி சரணாலயம்",nameHi:"चंबल नदी अभयारण्य",descHi:"चंबल के आखिरी अबाँध भाग में घड़ियाल, डॉल्फ़िन और नदी पक्षियों वाली घाटी; गाँव से शांत नाव।",category:"viewpoints",lat:26.8100,lng:79.0300,district:"Etawah",state:"Uttar Pradesh",season:"Nov–Mar",desc:"A raw river gorge where gharials, dolphins and river birds gather in the last un-dammed reaches of the Chambal, navigated by silent boat from shore villages.",descTa:"சம்பல் நதியின் இறுதிப் பகுதியில் முதலைகள், ஓங்கில்கள், நதிப் பறவைகள் கூடும் கடினமான பள்ளத்தாக்கு; அமைதியான படகு சவாரி."},
+  {id:70,name:"Dudhwa Tiger Reserve",nameTa:"துத்வா புலிகள் சரணாலயம்",nameHi:"दुधवा टाइगर रिज़र्व",descHi:"नेपाल सीमा पर तराई घास के मैदान और साल वन; दलदली हिरन, गैंडे और बाघ; जीप से घास मैदानों की सैर।",category:"trekking",lat:28.4700,lng:80.6000,district:"Lakhimpur Kheri",state:"Uttar Pradesh",season:"Nov–Jun",desc:"Terai grasslands and sal forests near the Nepal border, where swamp deer, rhinos and tigers live on sandy riverine plains, explored by jeep through open meadows.",descTa:"நேபாள எல்லையில் சதுப்பு மான்கள், காண்டாமிருகங்கள், புலிகள் வாழும் புல்வெளி காடு; ஜீப்பில் மேய்ச்சல் நிலங்கள் வழியாக ஆராயலாம்."},
+  {id:71,name:"Valmiki Tiger Reserve",nameTa:"வால்மீகி புலிகள் சரணாலயம்",nameHi:"वाल्मीकि टाइगर रिज़र्व",descHi:"नेपाल सीमा पर बिहार का एकमात्र टाइगर रिज़र्व; नदी किनारे घूमते हाथी, लगभग पर्यटन से दूर।",category:"trekking",lat:27.3800,lng:84.0300,district:"West Champaran",state:"Bihar",season:"Nov–Jun",desc:"Bihar's only tiger reserve on the Nepal border, a vast stretch of grassland and sal forest where elephants wander the riverside, almost entirely off tourist radar.",descTa:"நேபாள எல்லையில் பீகாரின் ஒரே புலிகள் சரணாலயம்; யானைகள் நடமாடும் புல்வெளி மற்றும் காடு, சுற்றுலா பாதைக்கு வெளியே."},
+  {id:72,name:"Dassam Falls",nameTa:"தசம் அருவி",nameHi:"दसम झरना",descHi:"राँची के पास कंची नदी का चौड़ा झरना; टाटा-राँची सड़क पर साल वन में छिपा हुआ।",category:"waterfalls",lat:23.1100,lng:86.0900,district:"Ranchi",state:"Jharkhand",season:"Jul–Feb",desc:"A broad waterfall where the Kanchi river leaps across a gorge near Ranchi, hidden by sal forest on the Tata–Ranchi road and quieter than its peekable approach suggests.",descTa:"ராஞ்சி அருகே காஞ்சி நதி பள்ளத்தாக்கில் விழும் அகலமான அருவி; சால் காடுகளால் சூழப்பட்ட அமைதியான இடம்."},
+  {id:73,name:"Yusmarg Meadows",nameTa:"யூஸ்மார்க் புல்வெளி",nameHi:"युसमर्ग घास के मैदान",descHi:"पीर पंजाल में चीड़ वनों से घिरी घास की घाटी; गुलमर्ग से कम भीड़; ठंडे जल वाली धारा तक घुड़सवारी।",category:"viewpoints",lat:33.8000,lng:74.6800,district:"Budgam",state:"Jammu and Kashmir",season:"Apr–Oct",desc:"A grassy forest basin in the Pir Panjal, ringed by pines and dwarf willows, still less trodden than Gulmarg, with pony rides to the snow-fed Doodh Ganga stream.",descTa:"பிர் பஞ்சால் மலைகளில் பைன் காடுகள் சூழ்ந்த புல்வெளி; குல்மார்க்கை விட அமைதியானது, குதிரை சவாரி வசதி உண்டு."},
+  {id:74,name:"Tso Moriri Lake",nameTa:"சோ மொரீரி ஏரி",nameHi:"त्सो मोरेरी झील",descHi:"चांगथांग पठार पर बदलते नीले रंग की उच्च ऊँचाई वाली झील; खानाबदोश शिविर और जंगली कियांग।",category:"viewpoints",lat:32.9100,lng:78.3100,district:"Leh",state:"Ladakh",season:"Jun–Sep",desc:"A high-altitude lake of changing blues in the Changthang plateau, ringed by nomadic camps and wild kiang, one of the remotest lakes on the Ladakh loop.",descTa:"சாங்தாங் மேட்டுநிலத்தில் நீல நிறம் மாறும் உயரமலை ஏரி; நாடோடி முகாம்கள், காட்டு குதிரைகள் சூழ்ந்த தொலைதூர ஏரி."},
+  {id:75,name:"Asola-Bhatti Sanctuary",nameTa:"அசோலா-பாட்டி சரணாலயம்",nameHi:"असोला-भट्टी अभयारण्य",descHi:"दिल्ली-हरियाणा सीमा का उबड़-खाबड़ पहाड़ी वन; नीलगाय और सियार शहर के पास विचरते हैं।",category:"viewpoints",lat:28.4400,lng:77.2000,district:"South Delhi",state:"Delhi",season:"Oct–Mar",desc:"A rugged ridge forest on the Delhi-Haryana border, laced with mine-scarred hills and hidden waterholes, where nilgai and jackals roam within sight of the city.",descTa:"டெல்லி-ஹரியானா எல்லையில் பள்ளங்கள் நிறைந்த மலைக் காடு; நீர்க் குட்டைகளில் மரமான், நரி நடமாடும், நகருக்கு அருகே மறைந்திருக்கும் இடம்."}
 ];
 
 var STATES = {
@@ -625,6 +701,9 @@ var STAMP_RADIUS_KM = 1.2;
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function clean(p,f){ return p[f]||"—"; }
+function subName(p){ return LANG==="hi" ? (p.nameHi||p.nameTa||"") : (p.nameTa||""); }
+function subDesc(p){ return LANG==="hi" ? (p.descHi||clean(p,"desc")) : clean(p,"desc"); }
+function T(ta,en,hi){ return LANG==="ta" ? ta : (LANG==="hi" ? (hi||en) : en); }
 function locLabel(p){
   var parts=[];
   if(p && p.state) parts.push(p.state);
@@ -782,7 +861,7 @@ function updateStamps(snap){
 function stampKey(){ return (currentUser || deviceId) || "anon"; }
 function isStamped(pid){ return !!(stampData[stampKey()] && stampData[stampKey()][pid]); }
 function stampAt(pid){ return (stampData[stampKey()]||{})[pid] || 0; }
-function dateStr(ts){ return new Date(ts).toLocaleDateString(LANG==="ta" ? "ta-IN" : "en-GB"); }
+function dateStr(ts){ var loc = LANG==="ta" ? "ta-IN" : (LANG==="hi" ? "hi-IN" : "en-GB"); return new Date(ts).toLocaleDateString(loc); }
 function loadLocalStamps(){
   try{ var s = JSON.parse(localStorage.getItem("hiddenStamps_v1")); if(s && typeof s === "object") stampData = s; }catch(e){}
 }
@@ -878,44 +957,44 @@ function refreshAdminUI(){
   var b = $("btn-admin");
   if(!b) return;
   b.style.display = (fbReady && adminClaim && !adminDeviceId) ? "" : "none";
-  b.title = LANG === "ta" ? "நிர்வாகியாக்க" : "Become admin";
+  b.title = T("நிர்வாகியாக்க","Become admin","एडमिन बनें");
   var a = $("btn-addadmin");
   if(a){
     a.style.display = (fbReady && isAdmin) ? "" : "none";
-    a.title = LANG === "ta" ? "புதிய நிர்வாகியைச் சேர்" : "Add admin";
+    a.title = T("புதிய நிர்வாகியைச் சேர்","Add admin","एडमिन जोड़ें");
   }
 }
 
 $("btn-addadmin").addEventListener("click", function(){
   if(!isAdmin) return;
-  var u = prompt(LANG === "ta" ? "நிர்வாகியாக சேர்க்க வேண்டிய பயனர் ஐடியை உள்ளிடவும்:" : "Enter the user id to make admin:");
+  var u = prompt(T("நிர்வாகியாக சேர்க்க வேண்டிய பயனர் ஐடியை உள்ளிடவும்:","Enter the user id to make admin:","एडमिन बनाने के लिए यूज़र आईडी दर्ज करें:"));
   if(!u) return;
   u = sanitizeUser(u);
-  if(!u || u.length < 3){ toast(LANG === "ta" ? "தவறான பயனர் ஐடி" : "Invalid user id"); return; }
+  if(!u || u.length < 3){ toast(T("தவறான பயனர் ஐடி","Invalid user id","गलत यूज़र आईडी")); return; }
   db.ref("users/"+u).once("value").then(function(snap){
-    if(!snap.exists()){ toast(LANG === "ta" ? "பயனர் இல்லை: " + u : "User not found: " + u); return; }
+    if(!snap.exists()){ toast(T("பயனர் இல்லை: ","User not found: ","यूज़र नहीं मिला: ") + u); return; }
     db.ref("meta/adminUsers/"+u).set(true).then(function(){
-      toast(LANG === "ta" ? u + " இப்போது நிர்வாகி!" : u + " is now an admin!");
+      toast(u + " " + T("இப்போது நிர்வாகி!","is now an admin!","अब एडमिन है!"));
     });
   });
 });
 
 $("btn-admin").addEventListener("click", function(){
   if(!adminClaim) return;
-  var code = prompt(LANG === "ta" ? "நிர்வாகி குறியீட்டை உள்ளிடவும்:" : "Enter the admin code:");
+  var code = prompt(T("நிர்வாகி குறியீட்டை உள்ளிடவும்:","Enter the admin code:","एडमिन कोड दर्ज करें:"));
   if(!code) return;
   if(code.trim() === adminClaim){
     db.ref("meta/adminDevice").set(deviceId);
     db.ref("meta/adminClaim").remove();
-    toast(LANG === "ta" ? "இந்த சாதனம் இப்போது நிர்வாகி!" : "This device is now the admin!");
+    toast(T("இந்த சாதனம் இப்போது நிர்வாகி!","This device is now the admin!","यह डिवाइस अब एडमिन है!"));
   } else {
-    toast(LANG === "ta" ? "தவறான குறியீடு" : "Wrong code");
+    toast(T("தவறான குறியீடு","Wrong code","गलत कोड"));
   }
 });
 
 $("btn-user").addEventListener("click", function(){
   if(currentUser){
-    if(confirm(LANG === "ta" ? ("வெளியேற வேண்டுமா? (" + currentUser + ")") : ("Logout " + currentUser + "?"))){
+    if(confirm(T("வெளியேற வேண்டுமா? (","Logout ","लॉगआउट करें? (") + currentUser + ")?")){
       logoutUser();
       toast(t.uLogout);
       updateUserUI();
@@ -1057,10 +1136,10 @@ function saveComment(pid, value, text){
 }
 function timeAgo(ts){
   var s = Math.floor((Date.now()-ts)/1000);
-  if(s < 60) return LANG==="ta" ? "இப்போது" : "just now";
-  var m = Math.floor(s/60); if(m < 60) return LANG==="ta" ? m+" நிமிடம் முன்" : m+"m ago";
-  var h = Math.floor(m/60); if(h < 24) return LANG==="ta" ? h+" மணி முன்" : h+"h ago";
-  var d = Math.floor(h/24); return LANG==="ta" ? d+" நாள் முன்" : d+"d ago";
+  if(s < 60) return T("இப்போது","just now","अभी");
+  var m = Math.floor(s/60); if(m < 60) return LANG==="ta" ? m+" நிமிடம் முன்" : (LANG==="hi" ? m+" मिनट पहले" : m+"m ago");
+  var h = Math.floor(m/60); if(h < 24) return LANG==="ta" ? h+" மணி முன்" : (LANG==="hi" ? h+" घंटे पहले" : h+"h ago");
+  var d = Math.floor(h/24); return LANG==="ta" ? d+" நாள் முன்" : (LANG==="hi" ? d+" दिन पहले" : d+"d ago");
 }
 function setMyRating(pid, v){
   var g = ratingData[pid] || {sum:0,count:0,mine:null};
@@ -1106,6 +1185,7 @@ function renderAll(){
     if(!q) return true;
     return p.name.toLowerCase().indexOf(q)!==-1 ||
            (p.nameTa||"").toLowerCase().indexOf(q)!==-1 ||
+           (p.nameHi||"").toLowerCase().indexOf(q)!==-1 ||
            (p.district||"").toLowerCase().indexOf(q)!==-1 ||
            (p.state||"").toLowerCase().indexOf(q)!==-1;
   });
@@ -1157,8 +1237,8 @@ function popupHTML(p){
   var rl = r.count ? "★ "+r.avg.toFixed(1)+" · "+r.count : t.noRatings;
   return '<div class="pop"><span style="font-size:.7rem;font-weight:700;color:'+c.color+'">'+c.label[LANG]+'</span>'+
     '<h3>'+esc(p.name)+'</h3>'+
-    (p.nameTa?'<div style="color:#38bdf8">'+esc(p.nameTa)+'</div>':'')+
-    '<div class="desc">'+esc(clean(p,"desc"))+'</div>'+
+    (subName(p)?'<div style="color:#38bdf8">'+esc(subName(p))+'</div>':'')+
+    '<div class="desc">'+esc(subDesc(p))+'</div>'+
     '<div class="row">📍 '+esc(locLabel(p))+'</div>'+
     '<div class="row">🗓 '+esc(clean(p,"season"))+'</div>'+
     '<div class="row">🧭 '+dms(p.lat, p.lng)+'</div>'+
@@ -1200,10 +1280,10 @@ function renderCards(list){
       '<span class="cat" style="background:'+c.color+'22;color:'+c.color+'">'+c.label[LANG]+'</span>'+
       (isStamped(p.id)?'<span style="background:#0d1117;border:1px solid #2ea043;border-radius:8px;font-size:.68rem;padding:2px 6px;margin-left:6px;color:#4ade80">✅ '+esc(t.stamped)+'</span>':'')+
       '<h3>'+esc(p.name)+'</h3>'+
-      (p.nameTa?'<div style="color:#38bdf8;font-size:.8rem">'+esc(p.nameTa)+'</div>':'')+
-      '<div class="desc">'+esc(clean(p,"desc"))+'</div>'+
+      (subName(p)?'<div style="color:#38bdf8;font-size:.8rem">'+esc(subName(p))+'</div>':'')+
+      '<div class="desc">'+esc(subDesc(p))+'</div>'+
       '<div class="meta"><span>📍'+esc(locLabel(p))+'</span><span>🗓 '+esc(clean(p,"season"))+'</span></div>'+
-      (p.nearby && p.nearby.hotels ? '<div class="nline2">🛏 '+p.nearby.hotels.length+' '+(LANG==="ta"?"ஹோட்டல்கள்":"hotels")+(p.nearby.transport && p.nearby.transport.bus ? ' · 🚌 '+p.nearby.transport.bus.dist+' km' : '')+'</div>' : '')+
+      (p.nearby && p.nearby.hotels ? '<div class="nline2">🛏 '+p.nearby.hotels.length+' '+T("ஹோட்டல்கள்","hotels","होटल")+(p.nearby.transport && p.nearby.transport.bus ? ' · 🚌 '+p.nearby.transport.bus.dist+' km' : '')+'</div>' : '')+
       '<div class="rate" data-pid="'+p.id+'">'+starsHTML(p.id)+'</div>'+
       '<button class="cbtn" data-cid="'+p.id+'">✎ '+t.comments+' ('+commentCount(p.id)+')</button>'+
       editBtn+delBtn+
@@ -1281,8 +1361,8 @@ function doSearch(){
   currentSearch = q;
   var matched = q ? places.filter(function(p){
     if(myOnly && !isMine(p)) return false;
-    var n=p.name.toLowerCase(), nt=(p.nameTa||"").toLowerCase(), d=(p.district||"").toLowerCase(), st=(p.state||"").toLowerCase();
-    return n.indexOf(q.toLowerCase())!==-1 || nt.indexOf(q.toLowerCase())!==-1 || d.indexOf(q.toLowerCase())!==-1 || st.indexOf(q.toLowerCase())!==-1;
+    var n=p.name.toLowerCase(), nt=(p.nameTa||"").toLowerCase(), nh=(p.nameHi||"").toLowerCase(), d=(p.district||"").toLowerCase(), st=(p.state||"").toLowerCase();
+    return n.indexOf(q.toLowerCase())!==-1 || nt.indexOf(q.toLowerCase())!==-1 || nh.indexOf(q.toLowerCase())!==-1 || d.indexOf(q.toLowerCase())!==-1 || st.indexOf(q.toLowerCase())!==-1;
   }) : [];
   if(matched.length){
     renderAll();
@@ -1616,7 +1696,7 @@ function trackLocation(){
     }
     reverseGeocode(lat, lng);
   }, function(err){
-    toast(LANG==="ta" ? "இருப்பிடத்தை அணுக முடியவில்லை" : "Could not get your location. Check browser permission.");
+    toast(T("இருப்பிடத்தை அணுக முடியவில்லை","Could not get your location. Check browser permission.","आपकी लोकेशन नहीं मिल सकी। ब्राउज़र अनुमति जाँचें।"));
   }, {enableHighAccuracy:true});
 }
 $("btn-track").addEventListener("click", trackLocation);
@@ -1663,25 +1743,37 @@ $("f-address").addEventListener("input", function(){
 });
 var nameTaAuto = "";
 var nameTaTimer = null;
-$("f-name").addEventListener("input", function(){
-  clearTimeout(nameTaTimer);
-  var v = this.value.trim();
-  var ta = $("f-nameTa");
-  if(ta.value.trim() && ta.value !== nameTaAuto){ return; }
+var nameHiAuto = "";
+var nameHiTimer = null;
+function autoNameFill(field, lang, sentinelRef, timerRef){
+  var el = $("f-name");
+  var target = $(field);
+  if(target.value.trim() && target.value !== sentinelRef.val){ return; }
+  clearTimeout(timerRef.timer);
+  var v = el.value.trim();
   if(!v) return;
-  nameTaTimer = setTimeout(function(){
-    fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(v)+"&langpair=en|ta")
+  timerRef.timer = setTimeout(function(){
+    fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(v)+"&langpair=en|"+lang)
     .then(function(r){ return r.json(); })
     .then(function(d){
       var tt = d && d.responseData && d.responseData.translatedText;
       if(!tt || tt.indexOf("MYMEMORY WARNING")===0) return;
-      nameTaAuto = tt;
-      $("f-nameTa").value = tt;
+      sentinelRef.val = tt;
+      $(field).value = tt;
     }).catch(function(){});
   }, 600);
+}
+$("f-name").addEventListener("input", function(){
+  autoNameFill("f-nameTa", "ta", {val:nameTaAuto}, {timer:nameTaTimer});
+});
+$("f-name").addEventListener("input", function(){
+  autoNameFill("f-nameHi", "hi", {val:nameHiAuto}, {timer:nameHiTimer});
 });
 $("f-nameTa").addEventListener("input", function(){
   if(this.value !== nameTaAuto) nameTaAuto = "";
+});
+$("f-nameHi").addEventListener("input", function(){
+  if(this.value !== nameHiAuto) nameHiAuto = "";
 });
 function reverseGeocode(lat, lng){
   fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng+"&zoom=16")
@@ -1707,9 +1799,11 @@ function openEdit(id){
   $("m-title").textContent = t.editTitle;
   $("f-name").value = p.name || "";
   $("f-nameTa").value = p.nameTa || "";
+  $("f-nameHi").value = p.nameHi || "";
   $("f-cat").value = p.category || "trekking";
   $("f-desc").value = p.desc || "";
   $("f-descTa").value = p.descTa || "";
+  $("f-descHi").value = p.descHi || "";
   $("f-district").value = p.district || "";
   setSeasonSel(parseSeason(p.season || ""));
   $("f-state").value = p.state || "";
@@ -1730,14 +1824,16 @@ function closeModal(){
 }
 var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var MONTHS_TA = ["ஜன","பிப்","மார்","ஏப்","மே","ஜூன்","ஜூலை","ஆக","செப்","அக்","நவ","டிச"];
+var MONTHS_HI = ["जन","फ़र","मार","अप्र","मई","जून","जुल","अगु","सिप","अक्ट","नव","दिस"];
+var monthLabel = function(i){ return LANG==="ta" ? MONTHS_TA[i] : (LANG==="hi" ? MONTHS_HI[i] : MONTHS[i]); };
 var MONTH_FULL = ["january","february","march","april","may","june","july","august","september","october","november","december"];
 var seasonSel = [];
 
 function renderSeasonChips(){
   var el = $("f-season");
   if(!el) return;
-  var opts = MONTHS.map(function(m,i){ return {v:m, l:(LANG==="ta"?MONTHS_TA[i]:m)}; });
-  opts.push({v:"All year", l:LANG==="ta"?"ஆண்டு முழுவதும்":"All year"});
+  var opts = MONTHS.map(function(m,i){ return {v:m, l:monthLabel(i)}; });
+  opts.push({v:"All year", l:LANG==="ta"?"ஆண்டு முழுவதும்":(LANG==="hi"?"पूरे साल":"All year")});
   el.innerHTML = opts.map(function(o){
     var on = seasonSel.indexOf(o.v)>=0 ? " active" : "";
     return '<button type="button" class="chip'+on+'" data-m="'+o.v+'">'+o.l+'</button>';
@@ -1796,9 +1892,11 @@ function setSeasonSel(arr){ seasonSel = arr; renderSeasonChips(); }
 
 function resetForm(){
   nameTaAuto = "";
+  nameHiAuto = "";
   clearTimeout(nameTaTimer);
+  clearTimeout(nameHiTimer);
   setSeasonSel([]);
-  ["f-name","f-nameTa","f-desc","f-descTa","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
+  ["f-name","f-nameTa","f-nameHi","f-desc","f-descTa","f-descHi","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
   $("f-state").value = ""; fillDistricts("");
   $("f-district").value = "";
   $("f-lat").value = ""; picking = false; syncCoord();
@@ -1856,17 +1954,19 @@ function geocodeToForm(addr){
 function saveNew(){
   var name = $("f-name").value.trim();
   var latlng = $("f-lat").value.trim();
-  if(!name || !latlng){ toast(LANG==="ta"?"பெயரும் ஆயத்தொலைவும் தேவை":"Name & coordinates required"); return; }
+  if(!name || !latlng){ toast(T("பெயரும் ஆயத்தொலைவும் தேவை","Name & coordinates required","नाम और निर्देशांक आवश्यक हैं")); return; }
   var parts = latlng.split(",").map(function(s){ return parseFloat(s.trim()); });
-  if(parts.length<2 || isNaN(parts[0]) || isNaN(parts[1])){ toast(LANG==="ta"?"ஆயத்தொலைவுகள் சரியாக இல்லை":"Invalid coordinates"); return; }
+  if(parts.length<2 || isNaN(parts[0]) || isNaN(parts[1])){ toast(T("ஆயத்தொலைவுகள் சரியாக இல்லை","Invalid coordinates","निर्देशांक गलत हैं")); return; }
   if(picking && tempMarker) parts = [tempMarker.getLatLng().lat, tempMarker.getLatLng().lng];
   var base = {
     name: name,
     nameTa: $("f-nameTa").value.trim(),
+    nameHi: $("f-nameHi").value.trim(),
     category: $("f-cat").value,
     lat: parts[0], lng: parts[1],
     desc: $("f-desc").value.trim(),
     descTa: $("f-descTa").value.trim(),
+    descHi: $("f-descHi").value.trim(),
     district: $("f-district").value.trim(),
     season: formatSeason(seasonSel),
     state: $("f-state").value.trim()
@@ -1900,7 +2000,7 @@ function openComment(pid){
   currentCid = pid;
   var mine = commentData[pid] && commentData[pid].mine;
   commentStar = (mine && mine.value) ? mine.value : (getRating(pid).mine || 0);
-  $("cm-place").textContent = esc(p.name) + (p.nameTa ? " · " + esc(p.nameTa) : "");
+  var sub = subName(p); $("cm-place").textContent = esc(p.name) + (sub ? " · " + esc(sub) : "");
   $("cm-text").value = (mine && mine.text) || "";
   renderCommentStars();
   renderCommentList(pid);
@@ -1959,7 +2059,7 @@ function delComment(pid, cid){
 $("cm-save").addEventListener("click", function(){
   if(currentCid === null) return;
   var text = $("cm-text").value.trim();
-  if(commentStar < 1 || !text){ toast(LANG==="ta"?"மதிப்பீடும் கருத்தும் தேவை":"Rating and comment required"); return; }
+  if(commentStar < 1 || !text){ toast(T("மதிப்பீடும் கருத்தும் தேவை","Rating and comment required","रेटिंग और टिप्पणी आवश्यक है")); return; }
   setMyRating(currentCid, commentStar);
   saveComment(currentCid, commentStar, text);
   closeComment();
@@ -2037,7 +2137,7 @@ function populateTripState(){
 }
 function populateTripMonth(){
   var sel = $("t-month");
-  sel.innerHTML = '<option value="-1">'+esc(t.monthsAll)+'</option>' + MONTHS.map(function(m,i){ return '<option value="'+i+'">'+(LANG==="ta"?MONTHS_TA[i]:m)+'</option>'; }).join("");
+  sel.innerHTML = '<option value="-1">'+esc(t.monthsAll)+'</option>' + MONTHS.map(function(m,i){ return '<option value="'+i+'">'+monthLabel(i)+'</option>'; }).join("");
 }
 function populateTripDays(){
   var sel = $("t-days");
@@ -2067,7 +2167,7 @@ function buildTrip(){
       var inc = seasonIncludesMonth(p.season, mi);
       var catCol = CATS[p.category].color;
       var nLine = '<div class="tripp"><span class="tcat" style="background:'+catCol+'22;color:'+catCol+'">'+CATS[p.category].label[LANG]+'</span>'+
-        '<div class="tinfo"><div class="tname">'+esc(p.name)+'</div>'+
+        '<div class="tinfo"><div class="tname">'+esc(subName(p))+'</div>'+
         '<div class="tmeta">📍 '+esc(locLabel(p))+' · 🗓 '+esc(clean(p,"season"))+'</div>'+
         '<div class="tsea '+(inc?"ok":"warn")+'">'+(inc?(LANG==="ta"?"✓ ":"✓ ")+esc(t.inSeason):"⚠ "+esc(t.offSeason))+'</div>'+
         (p.nearby && p.nearby.hotels && p.nearby.hotels.length ? '<div class="tmeta">🛏 '+t.stayCount.replace("{h}", p.nearby.hotels.length)+'</div>' : '')+
@@ -2086,6 +2186,7 @@ function buildTrip(){
 /* ===== language ===== */
 $("btn-en").addEventListener("click", function(){ setLang("en"); });
 $("btn-ta").addEventListener("click", function(){ setLang("ta"); });
+$("btn-hi").addEventListener("click", function(){ setLang("hi"); });
 $("btn-passport").addEventListener("click", openPassport);
 $("pm-close").addEventListener("click", closePassport);
 $("pmodal").addEventListener("click", function(e){ if(e.target===this) closePassport(); });
@@ -2102,8 +2203,8 @@ function updateModeLabel(){
   var mode = $("modeLabel");
   if(!mode) return;
   if(serverOn){
-    mode.textContent = LANG === "ta" ? "நேரலை ஒத்திசைவு · அனைவரும் உடனடியாக பார்க்கலாம்" : "Live sync · everyone sees changes instantly";
-    if(isAdmin) mode.textContent += LANG === "ta" ? " · நிர்வாகி" : " · Admin";
+    mode.textContent = T("நேரலை ஒத்திசைவு · அனைவரும் உடனடியாக பார்க்கலாம்","Live sync · everyone sees changes instantly","लाइव सिंक · सभी को बदलाव तुरंत दिखते हैं");
+    if(isAdmin) mode.textContent += T(" · நிர்வாகி"," · Admin"," · एडमिन");
   } else {
     mode.textContent = t.local;
   }
@@ -2115,6 +2216,7 @@ function setLang(l){
   document.documentElement.lang = l;
   $("btn-en").className = l==="en" ? "active" : "";
   $("btn-ta").className = l==="ta" ? "active" : "";
+  $("btn-hi").className = l==="hi" ? "active" : "";
   $("t-title").textContent = t.title;
   $("t-sub").textContent = t.sub;
   $("search").placeholder = t.search;
@@ -2123,9 +2225,11 @@ function setLang(l){
   $("m-title").textContent = t.mTitle;
   $("l-name").textContent = t.name;
   $("l-nameTa").textContent = t.nameTa;
+  $("l-nameHi").textContent = t.nameHi;
   $("l-cat").textContent = t.cat;
   $("l-desc").textContent = t.desc;
   $("l-descTa").textContent = t.descTa;
+  $("l-descHi").textContent = t.descHi;
   $("l-district").textContent = t.district;
   $("l-state").textContent = t.state;
   $("f-district").placeholder = t.districtPlaceholder;
