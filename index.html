@@ -723,7 +723,9 @@ function updatePlaces(snap){
   snap.forEach(function(child){
     var p = child.val();
     if(!p) return;
-    p.id = parseInt(child.key, 10);
+    var id = parseInt(child.key, 10);
+    if(!isFinite(id) || !p.name || !p.category) return;
+    p.id = id;
     list.push(p);
   });
   places = list;
