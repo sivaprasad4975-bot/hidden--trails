@@ -1481,6 +1481,7 @@ function placesNearby(place){
         if(!nm){ nm = f.tags && f.tags.operator ? String(f.tags.operator).trim() : ""; }
         if(!nm){ nm = f.tags && f.tags.cuisine ? String(f.tags.cuisine).trim() : ""; }
         if(!nm) return null;
+        if(/tasmac|wine\s*shop|liquor\s*shop|beer\s*shop|alcohol\s*shop|spirits?\s*(shop|store|beverages?)/i.test(nm)) return null;
         return { name:nm, dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10, lat:c.lat, lng:c.lon };
       }).filter(function(x){ return x !== null; });
       var seenF = {};
