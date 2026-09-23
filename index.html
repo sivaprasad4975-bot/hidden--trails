@@ -1462,15 +1462,17 @@ function placesNearby(place){
       var ok = res[0] !== null && res[1] !== null;
       var hotels=(res[0]||[]).map(function(h){
         var c=nearbyCenter(h);
+        var hn = h.tags && h.tags.name ? String(h.tags.name).trim() : "";
+        if(!hn) return null;
         return {
-          name:h.tags && h.tags.name ? h.tags.name : "Hotel",
+          name:hn,
           rating:h.tags && h.tags.stars ? parseInt(h.tags.stars) : 0,
           price:h.tags && h.tags.charge ? h.tags.charge : "",
           vic:h.tags && (h.tags["addr:street"] || h.tags["addr:city"] || "") ? (h.tags["addr:street"] || h.tags["addr:city"] || "") : "",
           dist:Math.round(haversineKm(lat,lng,c.lat,c.lon)*10)/10,
           lat:c.lat, lng:c.lon
         };
-      });
+      }).filter(function(x){ return x !== null; });
       hotels.sort(function(a,b){ return a.dist - b.dist; });
       hotels=hotels.slice(0,10);
 
