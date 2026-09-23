@@ -17,7 +17,7 @@
   --trek:#f0883e; --water:#38bdf8; --view:#a78bfa; --temple:#f472b6; --dam:#facc15;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,Tahoma,Arial,sans-serif}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,Tahoma,Arial,sans-serif;overflow-x:hidden}
 header{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 header h1{font-size:1.25rem;line-height:1.35}
 header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
@@ -122,7 +122,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .tripp .tsea{font-size:.7rem;margin-top:2px}
 .tripp .tsea.ok{color:#4ade80}
 .tripp .tsea.warn{color:#facc15}
-@media(max-width:900px){.main{grid-template-columns:1fr;height:auto}#list{order:2;border-right:none;border-top:1px solid var(--border)}#map{height:55vh}}
+@media(max-width:900px){.main{grid-template-columns:1fr;height:calc(100vh - 105px)}.main>div:first-child{order:2}#list{order:2;border-right:none;border-top:1px solid var(--border)}#map{height:100%;min-height:0}}
 </style>
 </head>
 <body>
@@ -1174,6 +1174,18 @@ function initMap(){
   } else {
     L.control.layers(base, null, {collapsed:true}).addTo(map);
   }
+  var mapResizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(mapResizeTimer);
+    mapResizeTimer = setTimeout(function(){
+      map.invalidateSize();
+      if(configMap) configMap.invalidateSize();
+    }, 120);
+  });
+  window.addEventListener("orientationchange", function(){
+    setTimeout(function(){ map.invalidateSize(); if(configMap) configMap.invalidateSize(); }, 250);
+  });
+  setTimeout(function(){ map.invalidateSize(); }, 400);
 }
 
 /* ===== markers + cards ===== */
