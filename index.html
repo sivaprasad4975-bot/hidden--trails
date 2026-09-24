@@ -122,7 +122,7 @@ header .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
 .tripp .tsea{font-size:.7rem;margin-top:2px}
 .tripp .tsea.ok{color:#4ade80}
 .tripp .tsea.warn{color:#facc15}
-@media(max-width:900px){.main{grid-template-columns:1fr;height:calc(100vh - 105px)}.main>div:first-child{order:2}#list{order:2;border-right:none;border-top:1px solid var(--border)}#map{height:100%;min-height:0}}
+@media(max-width:900px){.main{display:flex;flex-direction:column;height:calc(100vh - 105px)}.main>div:first-child{order:2}#list{order:2;flex:0 0 44%;overflow-y:auto;border-right:none;border-top:1px solid var(--border)}.main>div:last-child{order:1;flex:1;min-height:0;width:100%}#map{height:100%;min-height:0}}
 </style>
 </head>
 <body>
