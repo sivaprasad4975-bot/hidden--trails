@@ -797,6 +797,14 @@ function fbConfigured(){
 
 function recomputeMaxId(){ places.forEach(function(p){ if(p.id>placeId) placeId=p.id; }); placeId++; }
 
+function stateFor(p){
+  if(p.state) return p.state;
+  if(p.district){
+    for(var st in STATES){ if(STATES[st].indexOf(p.district) !== -1) return st; }
+  }
+  return "Tamil Nadu";
+}
+
 function updatePlaces(snap){
   var list = [];
   snap.forEach(function(child){
@@ -805,6 +813,7 @@ function updatePlaces(snap){
     var id = parseInt(child.key, 10);
     if(!isFinite(id) || !p.name || !p.category) return;
     p.id = id;
+    p.state = stateFor(p);
     list.push(p);
   });
   places = list;
