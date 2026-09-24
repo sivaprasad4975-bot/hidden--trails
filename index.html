@@ -1765,39 +1765,45 @@ $("f-address").addEventListener("input", function(){
   if(!m) return;
   try{ applyPlusCode(m[0]); }catch(e){ /* invalid code - ignore */ }
 });
-var nameTaAuto = "";
-var nameTaTimer = null;
-var nameHiAuto = "";
-var nameHiTimer = null;
-function autoNameFill(field, lang, sentinelRef, timerRef){
-  var el = $("f-name");
-  var target = $(field);
-  if(target.value.trim() && target.value !== sentinelRef.val){ return; }
-  clearTimeout(timerRef.timer);
-  var v = el.value.trim();
+var nameSent = { en:"", ta:"", hi:"" };
+var nameTimers = { en:{}, ta:{}, hi:{} };
+function translateText(v, pair, cb){
+  fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(v)+"&langpair="+pair)
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var tt = d && d.responseData && d.responseData.translatedText;
+    if(!tt || tt.indexOf("MYMEMORY WARNING")===0) return;
+    cb(tt);
+  }).catch(function(){});
+}
+function autoNameFrom(srcId, srcLang, dstId, dstLang){
+  var src = $(srcId), dst = $(dstId);
+  if(dst.value.trim() && dst.value !== nameSent[dstLang]) return;
+  var v = src.value.trim();
   if(!v) return;
-  timerRef.timer = setTimeout(function(){
-    fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(v)+"&langpair=en|"+lang)
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var tt = d && d.responseData && d.responseData.translatedText;
-      if(!tt || tt.indexOf("MYMEMORY WARNING")===0) return;
-      sentinelRef.val = tt;
-      $(field).value = tt;
-    }).catch(function(){});
+  clearTimeout(nameTimers[srcLang][dstLang]);
+  nameTimers[srcLang][dstLang] = setTimeout(function(){
+    translateText(v, srcLang+"|"+dstLang, function(tt){
+      if(dst.value.trim() && dst.value !== nameSent[dstLang]) return;
+      nameSent[dstLang] = tt;
+      dst.value = tt;
+    });
   }, 600);
 }
 $("f-name").addEventListener("input", function(){
-  autoNameFill("f-nameTa", "ta", {val:nameTaAuto}, {timer:nameTaTimer});
-});
-$("f-name").addEventListener("input", function(){
-  autoNameFill("f-nameHi", "hi", {val:nameHiAuto}, {timer:nameHiTimer});
+  if(this.value !== nameSent.en) nameSent.en = "";
+  autoNameFrom("f-name","en","f-nameTa","ta");
+  autoNameFrom("f-name","en","f-nameHi","hi");
 });
 $("f-nameTa").addEventListener("input", function(){
-  if(this.value !== nameTaAuto) nameTaAuto = "";
+  if(this.value !== nameSent.ta) nameSent.ta = "";
+  autoNameFrom("f-nameTa","ta","f-nameHi","hi");
+  autoNameFrom("f-nameTa","ta","f-name","en");
 });
 $("f-nameHi").addEventListener("input", function(){
-  if(this.value !== nameHiAuto) nameHiAuto = "";
+  if(this.value !== nameSent.hi) nameSent.hi = "";
+  autoNameFrom("f-nameHi","hi","f-nameTa","ta");
+  autoNameFrom("f-nameHi","hi","f-name","en");
 });
 function reverseGeocode(lat, lng){
   fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+lat+"&lon="+lng+"&zoom=16")
@@ -1915,10 +1921,8 @@ function parseSeason(v){
 function setSeasonSel(arr){ seasonSel = arr; renderSeasonChips(); }
 
 function resetForm(){
-  nameTaAuto = "";
-  nameHiAuto = "";
-  clearTimeout(nameTaTimer);
-  clearTimeout(nameHiTimer);
+  nameSent.en = ""; nameSent.ta = ""; nameSent.hi = "";
+  nameTimers = { en:{}, ta:{}, hi:{} };
   setSeasonSel([]);
   ["f-name","f-nameTa","f-nameHi","f-desc","f-descTa","f-descHi","f-address","f-pluscode"].forEach(function(id){ $(id).value=""; });
   $("f-state").value = ""; fillDistricts("");
