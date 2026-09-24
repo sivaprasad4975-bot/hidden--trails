@@ -398,7 +398,7 @@ var I18N = {
     monthsAll:"Any", statesAll:"All states",
     buildTrip:"Build Trip Route", tripClose:"Close",
     tripHint:"Pick a state, month and how many days. We'll route 2–3 hidden spots per day using each place's best season.",
-    dayLabel:"Day {n}",
+    dayLabel:"Day {n} · {c} places",
     noRoute:"Not enough places match those choices. Try another state or month.",
     routeHeading:"Route", routeDriving:"Drive route",
     inSeason:"In season", offSeason:"Off-season",
@@ -471,7 +471,7 @@ var I18N = {
     monthsAll:"ஏதேனும்", statesAll:"அனைத்து மாநிலங்கள்",
     buildTrip:"பயண வழி உருவாக்கு", tripClose:"மூடு",
     tripHint:"மாநிலம், மாதம், நாட்கள் தேர்வு செய்யவும். ஒவ்வொரு இடத்தின் சிறந்த பருவத்தை பயன்படுத்தி ஒரு நாளுக்கு 2–3 மறைவான இடங்களை வரிசைப்படுத்துகிறோம்.",
-    dayLabel:"நாள் {n}",
+    dayLabel:"நாள் {n} · {c} இடங்கள்",
     noRoute:"இந்த தேர்வுகளுக்கு போதுமான இடங்கள் இல்லை. வேறு மாநிலம் / மாதம் முயற்சிக்கவும்.",
     routeHeading:"வழி", routeDriving:"கார் வழி",
     inSeason:"சிறந்த பருவம்", offSeason:"பருவம் இல்லை",
@@ -544,7 +544,7 @@ var I18N = {
     monthsAll:"कोई भी", statesAll:"सभी राज्य",
     buildTrip:"ट्रिप रूट बनाएँ", tripClose:"बंद करें",
     tripHint:"राज्य, महीना और दिन चुनें। प्रत्येक स्थान के सबसे अच्छे मौसम के आधार पर हम प्रति दिन 2–3 छुपे स्थानों का रूट बनाएँगे।",
-    dayLabel:"दिन {n}",
+    dayLabel:"दिन {n} · {c} स्थान",
     noRoute:"इन विकल्पों के लिए पर्याप्त स्थान नहीं। दूसरा राज्य या महीना आज़माएँ।",
     routeHeading:"रूट", routeDriving:"गाड़ी का रूट",
     inSeason:"मौसम में", offSeason:"मौसम से बाहर",
@@ -2170,7 +2170,7 @@ function populateTripMonth(){
 function populateTripDays(){
   var sel = $("t-days");
   sel.innerHTML = "";
-  for(var d=1; d<=7; d++){ sel.innerHTML += '<option value="'+d+'">'+d+'</option>'; }
+  for(var d=1; d<=30; d++){ sel.innerHTML += '<option value="'+d+'">'+d+'</option>'; }
   sel.value = "2";
 }
 function buildTrip(){
@@ -2187,9 +2187,16 @@ function buildTrip(){
 
   // cluster as spread-out day packs: simple geo-cluster by sorting on lat then chunk
   pool = pool.slice().sort(function(a,b){ return String(a.state||"").localeCompare(String(b.state||"")) || String(a.district||"").localeCompare(String(b.district||"")) || (a.lat-b.lat); });
-  var perDay = Math.min(3, Math.max(2, Math.ceil(pool.length/days)));
+  var dayN = Math.max(1, Math.min(days, pool.length));
+  var base = Math.floor(pool.length / dayN);
+  var rem = pool.length % dayN;
   var groups = [];
-  for(var i=0;i<pool.length;i+=perDay){ groups.push(pool.slice(i, i+perDay)); }
+  var idx = 0;
+  for(var d=0; d<dayN; d++){
+    var size = base + (d < rem ? 1 : 0);
+    groups.push(pool.slice(idx, idx+size));
+    idx += size;
+  }
   var html = groups.map(function(g, gi){
     var stops = g.map(function(p,i){
       var inc = seasonIncludesMonth(p.season, mi);
@@ -2204,7 +2211,7 @@ function buildTrip(){
     }).join("");
     var coords = g.map(function(p){ return p.lat+","+p.lng; }).join("/");
     var drive = "https://www.google.com/maps/dir/"+coords;
-    return '<div class="tripday"><h4>🗓 '+esc(t.dayLabel.replace("{n}", gi+1))+'</h4>'+stops+
+    return '<div class="tripday"><h4>🗓 '+esc(t.dayLabel.replace("{n}", gi+1).replace("{c}", g.length))+'</h4>'+stops+
       '<div class="troute"><a class="nline" target="_blank" rel="noopener" href="'+drive+'">🧭 '+esc(t.routeDriving)+' ↗</a></div></div>';
   }).join("");
   $("trip-out").innerHTML = html;
